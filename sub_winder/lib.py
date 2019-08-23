@@ -56,6 +56,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 import os
+import time
 from xmlrpclib.client import ServerProxy, Transport
 
 from .constants import _API_BASE, _LANG_2, _TIME_FORMAT
@@ -65,6 +66,22 @@ from exceptions import (
     SubUploadError,
     SubDownloadError,
 )
+
+
+_API_ERROR_MAP = {
+    "401": SubAuthError,
+    "402": SubUploadError,
+    "407": SubDownloadError,
+    "408": SubWinderError,
+    "410": SubWinderError,
+    "411": SubAuthError,
+    "412": SubWinderError,
+    "413": SubWinderError,
+    "414": SubAuthError,
+    "415": SubAuthError,
+    "416": SubUploadError,
+    "506": SubWinderError
+}
 
 
 # TODO: include some way to check download limit for this account
@@ -81,56 +98,39 @@ class SubWinder:
 
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
 
-    # TODO: conversions to string are recommended
     def _request(self, method, *params):
-        # Flexible way to call method while reducing error handling
-        # TODO: bool to int, everything else to string
-        resp = getattr(self._client, method)(*params)
+        RETRIES = 5
+        for _ in range(RETRIES):
+            # Flexible way to call method while reducing error handling
+            # TODO: bool to int, everything else to string
+            resp = getattr(self._client, method)(*params)
 
-        if "status" not in resp:
-            # TODO: mention raising an issue
-            raise SubWinderError(
-                f'"{method}" should return a response and didn\'t'
-            )
+            # All requests are supposed to return a status
+            if "status" not in resp:
+                # TODO: mention raising an issue
+                raise SubWinderError(
+                    f'"{method}" should return a response and didn\'t'
+                )
 
-        # TODO: if the status is 503 then you should retry in 1 second
-        status = resp["status"][:3]
+            status_code = resp["status"][:3]
+            status_msg = resp[4:]
 
-        # TODO: see how many of these are using the statement returned by the
-        #       API
-        # Handle the response appropriately
+            # Retry if 503, otherwise handle appropriately
+            if status_code != "503":
+                break
+
+            # Server under heavy load, wait and retry
+            time.sleep(1)
+
+        # Handle the response
         # Responses 403, 404, 405, 406, 409 should be prevented by API
-        if status == "200":
-            # Correct response, pass on the resp
-            pass
-        elif status == "401":
-            raise SubAuthError(
-                "Unauthorized, verify username and password if using"
-                " `AuthSubWinder`"
-            )
-        elif status == "402":
-            raise SubUploadError("Subtitles have invalid format")
-        elif status == "407":
-            raise SubDownloadError(
-                "You've hit the daily download limit, upgrade your account to"
-                " a higher rank or wait until tomorrow"
-            )
-        elif status == "408":
-            raise SubWinderError(
-                f'Request "{method}", had invalid parameters: {params}'
-            )
-        elif status == "410":
-            raise SubWinderError("Unknown error")
-        elif status == "411":
-            raise SubAuthError("Invalid useragent")
-        elif status == "412":
-            # TODO: use the response used for this
-            raise SubWinderError
+        if status_code == "200":
+            return resp
+        elif status_code in _API_ERROR_MAP:
+            raise _API_ERROR_MAP[status_code](status_msg)
         else:
             # TODO: mention raising an issue once the github repo is up
             raise SubWinderError("The API returned an unhandled resp")
-
-        return resp
 
     def get_languages(self):
         return _LANG_2

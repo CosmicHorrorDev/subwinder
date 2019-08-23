@@ -16,3 +16,7 @@ class SubUploadError(SubWinderError):
 
 class SubDownloadError(SubWinderError):
     pass
+
+
+class SubServerError(SubWinderError):
+    pass
