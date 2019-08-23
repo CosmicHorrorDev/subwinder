@@ -57,10 +57,10 @@ from dataclasses import dataclass
 from datetime import datetime
 import os
 import time
-from xmlrpclib.client import ServerProxy, Transport
+from xmlrpc.client import ServerProxy, Transport
 
 from .constants import _API_BASE, _LANG_2, _TIME_FORMAT
-from exceptions import (
+from .exceptions import (
     SubWinderError,
     SubAuthError,
     SubUploadError,
@@ -68,6 +68,7 @@ from exceptions import (
 )
 
 
+# Responses 403, 404, 405, 406, 409 should be prevented by API
 _API_ERROR_MAP = {
     "401": SubAuthError,
     "402": SubUploadError,
@@ -80,7 +81,7 @@ _API_ERROR_MAP = {
     "414": SubAuthError,
     "415": SubAuthError,
     "416": SubUploadError,
-    "506": SubWinderError
+    "506": SubWinderError,
 }
 
 
@@ -102,14 +103,13 @@ class SubWinder:
         RETRIES = 5
         for _ in range(RETRIES):
             # Flexible way to call method while reducing error handling
-            # TODO: bool to int, everything else to string
             resp = getattr(self._client, method)(*params)
 
             # All requests are supposed to return a status
             if "status" not in resp:
                 # TODO: mention raising an issue
                 raise SubWinderError(
-                    f'"{method}" should return a response and didn\'t'
+                    f'"{method}" should return a status and didn\'t'
                 )
 
             status_code = resp["status"][:3]
@@ -123,14 +123,13 @@ class SubWinder:
             time.sleep(1)
 
         # Handle the response
-        # Responses 403, 404, 405, 406, 409 should be prevented by API
         if status_code == "200":
             return resp
         elif status_code in _API_ERROR_MAP:
             raise _API_ERROR_MAP[status_code](status_msg)
         else:
             # TODO: mention raising an issue once the github repo is up
-            raise SubWinderError("The API returned an unhandled resp")
+            raise SubWinderError("the API returned an unhandled response")
 
     def get_languages(self):
         return _LANG_2
@@ -169,10 +168,10 @@ class AuthSubWinder(SubWinder):
         password = password or os.environ.get("OPEN_SUBTITLES_PASSWORD")
 
         if username is None or password is None:
-            raise SubAuthError("Username or password is missing")
+            raise SubAuthError("username or password is missing")
 
         if not useragent:
-            raise SubAuthError("Useragent can not be empty")
+            raise SubAuthError("useragent can not be empty")
 
         self._token = self._login(useragent, username, password)
 
