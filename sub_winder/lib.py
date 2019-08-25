@@ -66,6 +66,7 @@ from .exceptions import (
     SubUploadError,
     SubDownloadError,
 )
+import utils
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
@@ -279,3 +280,45 @@ class FullUser(User):
 # # Base thing is name, year, kind, imdbid
 # class EpisodeSubtitle(Subtitle):
 #     raise NotImplementedError
+
+
+# TODO: to store filepath or not to store filepath, that is the question
+class Subtitles:
+    def __init__(self, filepath):
+        self.hash = utils.md5_hash(filepath)
+
+
+# TODO: to store filepath or not to store filepath, that is the question
+class Movie:
+    def __init__(self, filepath):
+        self.hash = utils.special_hash(filepath)
+        self.size = os.path.getsize(filepath)
+
+
+# # Design Goals
+# # Setting up our initial `AuthSubWinder` `Movie` and `Subtitles` objects
+# with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
+#     movie = Movie("/path/to/movie.mkv")
+#     subs = Subtitles("/path/to/movie.deu.srt")
+#
+#     # Method that needs both a `Movie` and `Subtitles` object
+#     sw.upload_subtitles(movie, subs, ...)
+#
+#     # Methods that need a `Movie` object
+#     sw.subscribe(movie)
+#     movie_results = sw.search_movies((movie, "en"), (movie, "es"))
+#
+#     en_movie_result, es_movie_result = movie_results
+#
+#     # Method that needs just a `MovieResult` object
+#     sw.report_wrong_movie(en_movie_result)
+#
+#     # Method that needs just a `Subtitles` object
+#     subs_result = sw.check_subtitles(subs)
+#
+#     # Methods that could take either a `MovieResult` or `SubtitlesResult`
+#     sw.vote(subs_result, 10)
+#     sw.add_comment(subs_result, "Subs were great, thanks!")
+#     comments = sw.get_comments(en_movie_result)
+#     # TODO: how will this give any location information on where to download?
+#     sw.download(en_movie_result, es_movie_result)
