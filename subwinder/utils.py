@@ -2,7 +2,7 @@ import hashlib
 import os
 import struct
 
-from .exceptions import SubHashError
+from subwinder.exceptions import SubHashError
 
 
 # As per API spec with some tweaks to make it a bit nicer

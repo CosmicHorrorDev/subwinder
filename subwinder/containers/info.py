@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from sub_winder.constants import _TIME_FORMAT
+from subwinder.constants import _TIME_FORMAT
 
 
 class Comment:

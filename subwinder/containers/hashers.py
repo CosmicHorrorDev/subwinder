@@ -1,6 +1,6 @@
 import os
 
-from side_winder import utils
+from subwinder import utils
 
 
 # TODO: to store filepath or not to store filepath, that is the question

@@ -57,9 +57,9 @@ import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from sub_winder.constants import _API_BASE, _LANG_2
-from sub_winder.containers.info import FullUserInfo
-from sub_winder.exceptions import (
+from subwinder.constants import _API_BASE, _LANG_2
+from subwinder.containers.info import FullUserInfo
+from subwinder.exceptions import (
     SubWinderError,
     SubAuthError,
     SubUploadError,

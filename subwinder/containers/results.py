@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from sub_winder.containers.info import MovieInfo, SubtitlesInfo, UserInfo
-from sub_winder.constants import _TIME_FORMAT
+from subwinder.containers.info import MovieInfo, SubtitlesInfo, UserInfo
+from subwinder.constants import _TIME_FORMAT
 
 
 # TODO: Yeahhhhhh, this class is only holding one thing, may not be worth it
