@@ -53,20 +53,18 @@
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
 
-from dataclasses import dataclass
-from datetime import datetime
 import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from .constants import _API_BASE, _LANG_2, _TIME_FORMAT
-from .exceptions import (
+from sub_winder.constants import _API_BASE, _LANG_2
+from sub_winder.containers.info import FullUserInfo
+from sub_winder.exceptions import (
     SubWinderError,
     SubAuthError,
     SubUploadError,
     SubDownloadError,
 )
-import utils
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
@@ -159,9 +157,6 @@ class SubWinder:
 
 
 # TODO: logout on exitting with statement
-# TODO: have query class?
-# TODO: query has parents for each type of search
-# TODO: have download class?
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
         # Try to get any info from env vars if not passed in
@@ -187,14 +182,14 @@ class AuthSubWinder(SubWinder):
     def _login(self, username, password, useragent):
         resp = self._request("LogIn", username, password, "en", useragent)
         self._token = resp["token"]
-        return FullUser(resp["data"])
+        return FullUserInfo(resp["data"])
 
     def _logout(self):
         self._request("LogOut")
 
     def user_info(self):
         resp = self._request("GetUserInfo")
-        return FullUser(resp["data"])
+        return FullUserInfo(resp["data"])
 
     def ping(self):
         self._request("NoOperation")
@@ -202,97 +197,6 @@ class AuthSubWinder(SubWinder):
     def add_comment(self, subtitle_result, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
         self._request("AddComment", subtitle_id, comment_str, bad)
-
-
-class Comment:
-    def __init__(self, data):
-        self.author = User(data["UserID"], data["UserNickName"])
-        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["comment"]
-
-
-@dataclass
-class User:
-    id: int
-    nickname: str
-
-
-class FullUser(User):
-    def __init__(self, data):
-        super().__init__(data["IDUser"], data["UserNickName"])
-        self.rank = data["UserRank"]
-        self.uploads = data["UploadCnt"]
-        # TODO: this is in lang_3 instead of lang_2, convert
-        self.prefered_languages = data["UserPreferedLanguages"].split(",")
-        self.downloads = data["DownloadCnt"]
-        self.web_language = data["UserWebLanguage"]
-
-
-# @dataclass
-# class Result:
-#     name: str
-#     year: int
-#     imdbid: int
-#
-#
-# # Nothing Added for a movie
-# class MovieResult(Result):
-#     pass
-#
-#
-# # TODO: see if all the searches will return this for tv shows/episodes
-# @dataclass
-# class EpisodeResult(Result):
-#     season: int
-#     episode: int
-#
-#
-# # This is hell, try to slim down if possible
-# class Subtitle:
-#     def __init__(self, data):
-#         self.name =  # Use movie_name_eng if en and defined
-#         self.format =
-#         # Just use to decode the download
-#         self._encoding =
-#         # 2 character language
-#         self.language =
-#         self.num_comments =
-#         self.rating =
-#         # Don't support?
-#         self.url =
-#         self.id_subtitle_file =
-#         self.id_subtitle
-#         self.author_comment =
-#         self.author =
-#         self.date =
-#         # Don't support?
-#         self.part =
-#         # Don't support?
-#         self.total_parts =
-#
-#
-# # Base thing is name, year, kind, imdbid
-# # name, year, imdbid, hash, is season or episode normally given?
-# class MovieSubtitle(Subtitle):
-#     raise NotImplementedError
-#
-#
-# # Base thing is name, year, kind, imdbid
-# class EpisodeSubtitle(Subtitle):
-#     raise NotImplementedError
-
-
-# TODO: to store filepath or not to store filepath, that is the question
-class Subtitles:
-    def __init__(self, filepath):
-        self.hash = utils.md5_hash(filepath)
-
-
-# TODO: to store filepath or not to store filepath, that is the question
-class Movie:
-    def __init__(self, filepath):
-        self.hash = utils.special_hash(filepath)
-        self.size = os.path.getsize(filepath)
 
 
 # # Design Goals
@@ -306,9 +210,10 @@ class Movie:
 #
 #     # Methods that need a `Movie` object
 #     sw.subscribe(movie)
-#     movie_results = sw.search_movies((movie, "en"), (movie, "es"))
-#
-#     en_movie_result, es_movie_result = movie_results
+#     en_movie_result, es_movie_result = sw.search_movies((movie, "en"),
+#                                                         (movie, "es"))
+#     # TODO: how will this give any location information on where to download?
+#     sw.download([en_movie_result, es_movie_result])
 #
 #     # Method that needs just a `MovieResult` object
 #     sw.report_wrong_movie(en_movie_result)
@@ -320,5 +225,3 @@ class Movie:
 #     sw.vote(subs_result, 10)
 #     sw.add_comment(subs_result, "Subs were great, thanks!")
 #     comments = sw.get_comments(en_movie_result)
-#     # TODO: how will this give any location information on where to download?
-#     sw.download(en_movie_result, es_movie_result)
