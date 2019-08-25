@@ -1,3 +1,4 @@
+import hashlib
 import os
 import struct
 
@@ -29,6 +30,7 @@ def special_hash(filepath):
                     f.seek(max(0, filesize - 65536), 0)
 
                 # Perform black magic
+                # TODO: can't this be read in similar way to `md5_hash`?
                 for _ in range(65536 / bytesize):
                     buffer = f.read(bytesize)
                     filehash += struct.unpack(LONGLONGFORMAT, buffer)[0]
@@ -39,3 +41,14 @@ def special_hash(filepath):
         raise SubHashError(f"Error on reading {filepath}")
 
     return "%016x" % filehash
+
+
+# Kindly stolen from stackoverflow
+def md5_hash(filepath):
+    CHUNK_SIZE = 4096
+    hash_md5 = hashlib.md5()
+    with open(filepath, "rb") as f:
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+            hash_md5.update(chunk)
+    # TODO: is hexstring the correct return type?
+    return hash_md5.hexdigest()
