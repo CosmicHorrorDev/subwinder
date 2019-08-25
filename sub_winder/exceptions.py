@@ -20,3 +20,7 @@ class SubDownloadError(SubWinderError):
 
 class SubServerError(SubWinderError):
     pass
+
+
+class SubHashError(SubWinderError):
+    pass

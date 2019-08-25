@@ -53,14 +53,13 @@
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
 
-from dataclasses import dataclass
-from datetime import datetime
 import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from .constants import _API_BASE, _LANG_2, _TIME_FORMAT
-from .exceptions import (
+from sub_winder.constants import _API_BASE, _LANG_2
+from sub_winder.containers.info import FullUserInfo
+from sub_winder.exceptions import (
     SubWinderError,
     SubAuthError,
     SubUploadError,
@@ -158,9 +157,6 @@ class SubWinder:
 
 
 # TODO: logout on exitting with statement
-# TODO: have query class?
-# TODO: query has parents for each type of search
-# TODO: have download class?
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
         # Try to get any info from env vars if not passed in
@@ -186,14 +182,14 @@ class AuthSubWinder(SubWinder):
     def _login(self, username, password, useragent):
         resp = self._request("LogIn", username, password, "en", useragent)
         self._token = resp["token"]
-        return FullUser(resp["data"])
+        return FullUserInfo(resp["data"])
 
     def _logout(self):
         self._request("LogOut")
 
     def user_info(self):
         resp = self._request("GetUserInfo")
-        return FullUser(resp["data"])
+        return FullUserInfo(resp["data"])
 
     def ping(self):
         self._request("NoOperation")
@@ -203,79 +199,29 @@ class AuthSubWinder(SubWinder):
         self._request("AddComment", subtitle_id, comment_str, bad)
 
 
-class Comment:
-    def __init__(self, data):
-        self.author = User(data["UserID"], data["UserNickName"])
-        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["comment"]
-
-
-@dataclass
-class User:
-    id: int
-    nickname: str
-
-
-class FullUser(User):
-    def __init__(self, data):
-        super().__init__(data["IDUser"], data["UserNickName"])
-        self.rank = data["UserRank"]
-        self.uploads = data["UploadCnt"]
-        # TODO: this is in lang_3 instead of lang_2, convert
-        self.prefered_languages = data["UserPreferedLanguages"].split(",")
-        self.downloads = data["DownloadCnt"]
-        self.web_language = data["UserWebLanguage"]
-
-
-# @dataclass
-# class Result:
-#     name: str
-#     year: int
-#     imdbid: int
+# # Design Goals
+# # Setting up our initial `AuthSubWinder` `Movie` and `Subtitles` objects
+# with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
+#     movie = Movie("/path/to/movie.mkv")
+#     subs = Subtitles("/path/to/movie.deu.srt")
 #
+#     # Method that needs both a `Movie` and `Subtitles` object
+#     sw.upload_subtitles(movie, subs, ...)
 #
-# # Nothing Added for a movie
-# class MovieResult(Result):
-#     pass
+#     # Methods that need a `Movie` object
+#     sw.subscribe(movie)
+#     en_movie_result, es_movie_result = sw.search_movies((movie, "en"),
+#                                                         (movie, "es"))
+#     # TODO: how will this give any location information on where to download?
+#     sw.download([en_movie_result, es_movie_result])
 #
+#     # Method that needs just a `MovieResult` object
+#     sw.report_wrong_movie(en_movie_result)
 #
-# # TODO: see if all the searches will return this for tv shows/episodes
-# @dataclass
-# class EpisodeResult(Result):
-#     season: int
-#     episode: int
+#     # Method that needs just a `Subtitles` object
+#     subs_result = sw.check_subtitles(subs)
 #
-#
-# # This is hell, try to slim down if possible
-# class Subtitle:
-#     def __init__(self, data):
-#         self.name =  # Use movie_name_eng if en and defined
-#         self.format =
-#         # Just use to decode the download
-#         self._encoding =
-#         # 2 character language
-#         self.language =
-#         self.num_comments =
-#         self.rating =
-#         # Don't support?
-#         self.url =
-#         self.id_subtitle_file =
-#         self.id_subtitle
-#         self.author_comment =
-#         self.author =
-#         self.date =
-#         # Don't support?
-#         self.part =
-#         # Don't support?
-#         self.total_parts =
-#
-#
-# # Base thing is name, year, kind, imdbid
-# # name, year, imdbid, hash, is season or episode normally given?
-# class MovieSubtitle(Subtitle):
-#     raise NotImplementedError
-#
-#
-# # Base thing is name, year, kind, imdbid
-# class EpisodeSubtitle(Subtitle):
-#     raise NotImplementedError
+#     # Methods that could take either a `MovieResult` or `SubtitlesResult`
+#     sw.vote(subs_result, 10)
+#     sw.add_comment(subs_result, "Subs were great, thanks!")
+#     comments = sw.get_comments(en_movie_result)
