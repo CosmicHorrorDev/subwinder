@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
@@ -11,28 +10,35 @@ class Comment:
         self.comment_str = data["comment"]
 
 
-@dataclass
 class UserInfo:
-    id: str
-    nickname: str
+    def __init__(self, id, nickname):
+        self.id = id
+        self.nickname = nickname
 
 
 class FullUserInfo(UserInfo):
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
-        self.uploads = data["UploadCnt"]
+        self.uploads = int(data["UploadCnt"])
+        self.downloads = int(data["DownloadCnt"])
         # FIXME: this is in lang_3 instead of lang_2, convert
         self.prefered_languages = data["UserPreferedLanguages"].split(",")
-        self.downloads = data["DownloadCnt"]
         self.web_language = data["UserWebLanguage"]
 
 
-@dataclass
 class MovieInfo:
-    name: str
-    year: int
-    imdbid: str
+    def __init__(self, name, year, imdbid):
+        self.name = name
+        self.year = int(year)
+        self.imdbid = imdbid
+
+
+class EpisodeInfo(MovieInfo):
+    def __init__(self, name, year, imdbid, season_num, episode_num):
+        super().__init__(name, year, imdbid)
+        self.season_num = int(season_num)
+        self.episode_num = int(episode_num)
 
 
 class SubtitlesInfo:

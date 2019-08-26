@@ -58,7 +58,7 @@ import time
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2
-from subwinder.containers.info import FullUserInfo
+from subwinder.info import FullUserInfo
 from subwinder.exceptions import (
     SubWinderError,
     SubAuthError,
@@ -215,13 +215,13 @@ class AuthSubWinder(SubWinder):
 #     # TODO: how will this give any location information on where to download?
 #     sw.download([en_movie_result, es_movie_result])
 #
-#     # Method that needs just a `MovieResult` object
+#     # Method that needs just a `SearchResult` object
 #     sw.report_wrong_movie(en_movie_result)
 #
 #     # Method that needs just a `Subtitles` object
 #     subs_result = sw.check_subtitles(subs)
 #
-#     # Methods that could take either a `MovieResult` or `SubtitlesResult`
+#     # Methods that could take either a `SearchResult` or `SubtitlesResult`
 #     sw.vote(subs_result, 10)
 #     sw.add_comment(subs_result, "Subs were great, thanks!")
 #     comments = sw.get_comments(en_movie_result)

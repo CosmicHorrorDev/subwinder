@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from subwinder.containers.info import MovieInfo, SubtitlesInfo, UserInfo
+from subwinder.info import (
+    EpisodeInfo,
+    MovieInfo,
+    SubtitlesInfo,
+    UserInfo,
+)
 from subwinder.constants import _TIME_FORMAT
 
 
@@ -11,12 +16,22 @@ class SubtitlesResult:
     id: int
 
 
-class MovieResult:
+# TODO: Rename to `SearchResult`?
+class SearchResult:
     def __init__(self, data):
         self.author = UserInfo(data["UserID"], data["UserNickName"])
         if data["MovieKind"] == "movie":
-            self.media = MovieInfo(data["MovieName"], data["MovieYear"],
-                                   data["IDMovieImdb"])
+            self.media = MovieInfo(
+                data["MovieName"], data["MovieYear"], data["IDMovieImdb"]
+            )
+        elif data["MovieKind"] == "episode":
+            self.media = EpisodeInfo(
+                data["MovieName"],
+                data["MovieYear"],
+                data["IDMovieImdb"],
+                data["SeriesSeason"],
+                data["SeriesEpisode"],
+            )
         else:
             # FIXME: this is just for getting types for debugging
             raise Exception(f"Undefined MovieKind {data['MovieKind']}")
