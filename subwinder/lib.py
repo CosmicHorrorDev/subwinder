@@ -85,9 +85,24 @@ _API_ERROR_MAP = {
 #       Info is just included in ServerInfo
 
 
-# TODO: setup this ranking scheme
-def _default_ranking(results):
-    pass
+def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
+    best_result = None
+    max_downloads = None
+    DOWN_KEY = "SubDownloadsCnt"
+    for result in results:
+        # Skip if someone listed sub as bad and `exclude_bad`
+        if exclude_bad and result["SubBad"] != "0":
+            continue
+
+        # Skip incorrect `sub_ext`s if provided
+        if sub_exts is not None and result["SubFormat"].lower() in sub_exts:
+            continue
+
+        if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
+            best_result = result
+            max_downloads = int(result[DOWN_KEY])
+
+    return best_result
 
 
 class SubWinder:
@@ -133,7 +148,7 @@ class SubWinder:
 
     # Use limit of searching for 20 different video_paths
     def search_subtitles(
-        self, video_paths, ranking=_default_ranking, *rank_params
+        self, video_paths, ranking_function=_default_ranking, *rank_params
     ):
         raise NotImplementedError
 
