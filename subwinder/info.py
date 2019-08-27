@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 from datetime import datetime
 
-from sub_winder.constants import _TIME_FORMAT
+from subwinder.constants import _TIME_FORMAT
 
 
 class Comment:
@@ -11,28 +10,38 @@ class Comment:
         self.comment_str = data["comment"]
 
 
-@dataclass
 class UserInfo:
-    id: str
-    nickname: str
+    def __init__(self, id, nickname):
+        self.id = id
+        self.nickname = nickname
 
 
 class FullUserInfo(UserInfo):
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
-        self.uploads = data["UploadCnt"]
+        self.uploads = int(data["UploadCnt"])
+        self.downloads = int(data["DownloadCnt"])
         # FIXME: this is in lang_3 instead of lang_2, convert
         self.prefered_languages = data["UserPreferedLanguages"].split(",")
-        self.downloads = data["DownloadCnt"]
         self.web_language = data["UserWebLanguage"]
 
 
-@dataclass
 class MovieInfo:
-    name: str
-    year: int
-    imdbid: str
+    def __init__(self, data):
+        self.name = data["MovieName"]
+        self.year = int(data["MovieYear"])
+        self.imdbid = data.get("IDMovieImdb") or data.get("IDMovieIMDB")
+
+
+class EpisodeInfo(MovieInfo):
+    def __init__(self, data):
+        super().__init__(data)
+        # Yay different keys for the same data!
+        season = data.get("SeriesSeason") or data.get("Season")
+        episode = data.get("SeriesEpisode") or data.get("Episode")
+        self.season_num = int(season)
+        self.episode_num = int(episode)
 
 
 class SubtitlesInfo:

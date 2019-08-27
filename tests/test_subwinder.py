@@ -1,4 +1,4 @@
-from sub_winder import __version__
+from subwinder import __version__
 
 
 def test_version():
