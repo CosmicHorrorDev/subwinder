@@ -1,28 +1,23 @@
 # Endpoints
-# * [  ]                   ServerInfo
+# * [??]                   ServerInfo - Can be used to get download limit,
+#                              may or may not be supported
 # * [E?] search_subtitles  SearchSubtitles - pass in (moviehash, size) or tag,
 #                              or imdbid, or query
 # * [IY] param of ^^       SearchToMail - Have this be a param on above
-# * [ Y]                   CheckSubHash - Used for getting tag from the md5
+# * [EY] check_subtitles   CheckSubHash - Used for getting tag from the md5
 #                              hash, can this get subtitle info from just tag??
 # * [E?] search_movie      CheckMovieHash - Useful for getting movie info from
 #                              hash
 # * [I?] param of ^^       CheckMovieHash2 - May be used in place of ^^
-# * [  ] pending           InsertMovieHash - Needs a lot of info, may not be
+# * [??] pending           InsertMovieHash - Needs a lot of info, may not be
 #                              supported
 # * [IN] pending           TryUploadSubtitles - Also needs a lot of info, may
 #                              not be supported
 # * [EN] pending           UploadSubtitles - Same story as ^^
-# * [  ]                   DetectLanguage
-# * [  ]                   PreviewSubtitles
 # * [E?] download          DownloadSubtitles - Uses idsubfile
 # * [E?] report_movie?     ReportWrongMovieHash - Uses idsubfile
 # * [E?] pending           ReportWrongImdbMovie - uses movie information for
 #                              changing imdb info, look into
-# * [EN] get_languages     GetSubLanguages - use this to make sure any language
-#                              given is good
-# * [  ]                   GetAvailableTranslations
-# * [  ]                   GetTranslation
 # * [??] pending           InsertMovie
 # * [EY] vote              SubtitlesVote - Uses idsubtitle
 # * [E?] get_comments      GetComments - Uses idsubtitle
@@ -35,7 +30,6 @@
 # * [E?] suggest_movie     SuggestMovie - ^^
 # * [E?] param of srch_mv? GuessMovieFromString - Just needs the title string,
 #                              is slow though
-# * [  ]                   AutoUpdate
 
 # Hide from user:
 # * Any of the hashes and sizes needed
@@ -52,6 +46,9 @@
 #     * Nevermind, specify format with the download class?
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
+
+# TODO: try to switch movie to media in places where it could be a movie or
+#       episode
 
 import os
 import time
@@ -121,6 +118,7 @@ class SubWinder:
             # Server under heavy load, wait and retry
             time.sleep(1)
 
+        # FIXME: add handling for 503 exausting all `RETRIES`
         # Handle the response
         if status_code == "200":
             return resp
@@ -139,6 +137,7 @@ class SubWinder:
     ):
         raise NotImplementedError
 
+    # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
     def download_subtitles(self, downloads, fmt="{path}/{name}.{lang_3}{ext}"):
         raise NotImplementedError
 
