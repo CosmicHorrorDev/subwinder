@@ -28,17 +28,20 @@ class FullUserInfo(UserInfo):
 
 
 class MovieInfo:
-    def __init__(self, name, year, imdbid):
-        self.name = name
-        self.year = int(year)
-        self.imdbid = imdbid
+    def __init__(self, data):
+        self.name = data["MovieName"]
+        self.year = int(data["MovieYear"])
+        self.imdbid = data.get("IDMovieImdb") or data.get("IDMovieIMDB")
 
 
 class EpisodeInfo(MovieInfo):
-    def __init__(self, name, year, imdbid, season_num, episode_num):
-        super().__init__(name, year, imdbid)
-        self.season_num = int(season_num)
-        self.episode_num = int(episode_num)
+    def __init__(self, data):
+        super().__init__(data)
+        # Yay different keys for the same data!
+        season = data.get("SeriesSeason") or data.get("Season")
+        episode = data.get("SeriesEpisode") or data.get("Episode")
+        self.season_num = int(season)
+        self.episode_num = int(episode)
 
 
 class SubtitlesInfo:
