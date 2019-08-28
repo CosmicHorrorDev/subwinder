@@ -23,7 +23,8 @@ class FullUserInfo(UserInfo):
         self.uploads = int(data["UploadCnt"])
         self.downloads = int(data["DownloadCnt"])
         # FIXME: this is in lang_3 instead of lang_2, convert
-        self.prefered_languages = data["UserPreferedLanguages"].split(",")
+        prefered_languages = data["UserPreferedLanguages"].split(",")
+        self.prefered_languages = [p_l for p_l in prefered_languages if p_l]
         self.web_language = data["UserWebLanguage"]
 
 

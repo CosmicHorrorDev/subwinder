@@ -106,17 +106,24 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
 
 
 class SubWinder:
-    # TODO: Move to constants
-
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
+    _token = None
 
+    # FIXME: Handle xmlrpc.client.ProtocolError being raised
     def _request(self, method, *params):
         RETRIES = 5
         for _ in range(RETRIES):
-            # Flexible way to call method while reducing error handling
-            resp = getattr(self._client, method)(*params)
+            if method in ("ServerInfo", "LogIn"):
+                # Flexible way to call method while reducing error handling
+                resp = getattr(self._client, method)(*params)
+            else:
+                # Use the token if it's defined
+                resp = getattr(self._client, method)(self._token, *params)
 
             # All requests are supposed to return a status
+            # But of course ServerInfo doesn't for no reason
+            if method == "ServerInfo":
+                return resp
             if "status" not in resp:
                 # TODO: mention raising an issue
                 raise SubWinderError(
@@ -124,7 +131,7 @@ class SubWinder:
                 )
 
             status_code = resp["status"][:3]
-            status_msg = resp[4:]
+            status_msg = resp["status"][4:]
 
             # Retry if 503, otherwise handle appropriately
             if status_code != "503":
@@ -148,9 +155,25 @@ class SubWinder:
 
     # Use limit of searching for 20 different video_paths
     def search_subtitles(
-        self, video_paths, ranking_function=_default_ranking, *rank_params
+        self, queries, ranking_function=_default_ranking, *rank_params
     ):
-        raise NotImplementedError
+        internal_queries = []
+        for movie, lang in queries:
+            internal_queries.append(
+                {
+                    "sublanguageid": lang,
+                    "moviehash": movie.hash,
+                    "moviebytesize": movie.size
+                }
+            )
+        # FIXME: How to get it to use the token if this is AuthSubWinder
+        #        Look at value of first param given?
+        resp = self._request(None, internal_queries)
+        # FIXME: actually use the ranking function and format before returning
+        return resp
+
+    def server_info(self):
+        return self._request("ServerInfo")
 
     # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
     def download_subtitles(self, downloads, fmt="{path}/{name}.{lang_3}{ext}"):
@@ -183,20 +206,11 @@ class AuthSubWinder(SubWinder):
         if not useragent:
             raise SubAuthError("useragent can not be empty")
 
-        self._token = self._login(useragent, username, password)
-
-    def _request(self, method, *params):
-        # These methods don't take auth token
-        if method in ("ServerInfo", "LogIn"):
-            return super()._request(method, *params)
-
-        # All other methods take the auth token
-        return super()._request(method, self._token, *params)
+        self._token = self._login(username, password, useragent)
 
     def _login(self, username, password, useragent):
         resp = self._request("LogIn", username, password, "en", useragent)
-        self._token = resp["token"]
-        return FullUserInfo(resp["data"])
+        return resp["token"]
 
     def _logout(self):
         self._request("LogOut")
