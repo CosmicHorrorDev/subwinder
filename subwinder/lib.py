@@ -55,7 +55,7 @@ import time
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2
-from subwinder.info import FullUserInfo
+from subwinder.info import FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubWinderError,
     SubAuthError,
@@ -90,13 +90,14 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
     max_downloads = None
     DOWN_KEY = "SubDownloadsCnt"
     for result in results:
-        # Skip if someone listed sub as bad and `exclude_bad`
+        # Skip if someone listed sub as bad and `exclude_bad` is `True`
         if exclude_bad and result["SubBad"] != "0":
             continue
 
         # Skip incorrect `sub_ext`s if provided
-        if sub_exts is not None and result["SubFormat"].lower() in sub_exts:
-            continue
+        if sub_exts is not None:
+            if result["SubFormat"].lower() not in sub_exts:
+                continue
 
         if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
             best_result = result
@@ -109,7 +110,9 @@ class SubWinder:
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
     _token = None
 
-    # FIXME: Handle xmlrpc.client.ProtocolError being raised
+    # FIXME: Handle xmlrpc.client.ProtocolError, 503 is passed as a protocol
+    #        error
+    # TODO: give a way to let lib user to set `RETRIES`?
     def _request(self, method, *params):
         RETRIES = 5
         for _ in range(RETRIES):
@@ -157,6 +160,7 @@ class SubWinder:
     def search_subtitles(
         self, queries, ranking_function=_default_ranking, *rank_params
     ):
+        raise NotImplementedError
         internal_queries = []
         for movie, lang in queries:
             internal_queries.append(
@@ -173,6 +177,8 @@ class SubWinder:
         return resp
 
     def server_info(self):
+        # FIXME: return this info in a nicer way?
+        # TODO: should we support this method at all?
         return self._request("ServerInfo")
 
     # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
@@ -180,10 +186,6 @@ class SubWinder:
         raise NotImplementedError
 
     def search_movies(self, video_paths, limit=1):
-        raise NotImplementedError
-
-    # TODO: use an enum for method?
-    def suggest_movie(self, query, method="default"):
         raise NotImplementedError
 
     def report_movie(self, movie_result):
@@ -221,6 +223,23 @@ class AuthSubWinder(SubWinder):
 
     def ping(self):
         self._request("NoOperation")
+
+    def guess_media(self, queries):
+        if isinstance(queries, str):
+            queries = (queries,)
+
+        resp = self._request("GuessMovieFromString", queries)
+        data = resp["data"]
+
+        # TODO: same deal as vv
+        return [MediaInfo(data[q]["BestGuess"]) for q in queries]
+
+    def suggest_media(self, query):
+        resp = self._request("SuggestMovie", query)
+        raw_movies = resp["data"][query]
+
+        # TODO: is there a better to set up the class for this?
+        return [MediaInfo(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_result, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
