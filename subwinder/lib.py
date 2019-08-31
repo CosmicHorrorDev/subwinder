@@ -62,6 +62,7 @@ from subwinder.exceptions import (
     SubUploadError,
     SubDownloadError,
 )
+from subwinder.results import SearchResult
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
@@ -85,6 +86,7 @@ _API_ERROR_MAP = {
 #       Info is just included in ServerInfo
 
 
+# FIXME: rank by highest score?
 def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
     best_result = None
     max_downloads = None
@@ -110,9 +112,11 @@ class SubWinder:
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
     _token = None
 
-    # FIXME: Handle xmlrpc.client.ProtocolError, 503 is passed as a protocol
-    #        error
+    # FIXME: Handle xmlrpc.client.ProtocolError, 503 and 506 are raised as
+    #        protocol errors, change to allow for this
+    #        Also occurs for 520 which isn't listed
     # TODO: give a way to let lib user to set `RETRIES`?
+    # TODO: should it do constant retries or exponential backoff with timeout?
     def _request(self, method, *params):
         RETRIES = 5
         for _ in range(RETRIES):
@@ -127,6 +131,7 @@ class SubWinder:
             # But of course ServerInfo doesn't for no reason
             if method == "ServerInfo":
                 return resp
+
             if "status" not in resp:
                 # TODO: mention raising an issue
                 raise SubWinderError(
@@ -156,26 +161,6 @@ class SubWinder:
     def get_languages(self):
         return _LANG_2
 
-    # Use limit of searching for 20 different video_paths
-    def search_subtitles(
-        self, queries, ranking_function=_default_ranking, *rank_params
-    ):
-        raise NotImplementedError
-        internal_queries = []
-        for movie, lang in queries:
-            internal_queries.append(
-                {
-                    "sublanguageid": lang,
-                    "moviehash": movie.hash,
-                    "moviebytesize": movie.size
-                }
-            )
-        # FIXME: How to get it to use the token if this is AuthSubWinder
-        #        Look at value of first param given?
-        resp = self._request(None, internal_queries)
-        # FIXME: actually use the ranking function and format before returning
-        return resp
-
     def server_info(self):
         # FIXME: return this info in a nicer way?
         # TODO: should we support this method at all?
@@ -183,19 +168,22 @@ class SubWinder:
 
     # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
     def download_subtitles(self, downloads, fmt="{path}/{name}.{lang_3}{ext}"):
+        # FIXME: Implement this
         raise NotImplementedError
 
     def search_movies(self, video_paths, limit=1):
+        # FIXME: Implement this
         raise NotImplementedError
 
     def report_movie(self, movie_result):
+        # FIXME: Implement this
         raise NotImplementedError
 
     def get_comments(self, subtitle_result):
+        # FIXME: Implement this
         raise NotImplementedError
 
 
-# TODO: logout on exitting with statement
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
         # Try to get any info from env vars if not passed in
@@ -214,6 +202,7 @@ class AuthSubWinder(SubWinder):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]
 
+    # FIXME: this should be done on exiting `with`
     def _logout(self):
         self._request("LogOut")
 
@@ -231,8 +220,40 @@ class AuthSubWinder(SubWinder):
         resp = self._request("GuessMovieFromString", queries)
         data = resp["data"]
 
-        # TODO: same deal as vv
+        # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
+
+    # TODO: Use limit of searching for 20 different video_paths
+    # TODO: this takes 3-char language, convert from 2-char internally
+    # TODO: see if limiting for each search is possible, looks to be total
+    def search_subtitles(
+        self, queries, *, ranking_function=_default_ranking, **rank_params
+    ):
+        internal_queries = []
+        for movie, lang in queries:
+            internal_queries.append(
+                {
+                    "sublanguageid": lang,
+                    "moviehash": movie.hash,
+                    "moviebytesize": movie.size
+                }
+            )
+
+        data = self._request("SearchSubtitles", internal_queries)["data"]
+        groups = [[] for _ in internal_queries]
+        # TODO: this is slightly ugly, rethink
+        # Go through the results and organize them in the order of `queries`
+        for i, query in enumerate(internal_queries):
+            for d in data:
+                if d["QueryParameters"] == query:
+                    groups[i].append(d)
+
+        results = []
+        for group, query in zip(groups, queries):
+            result = ranking_function(group, query, **rank_params)
+            results.append(result)
+
+        return [SearchResult(r) for r in results]
 
     def suggest_media(self, query):
         resp = self._request("SuggestMovie", query)
@@ -257,8 +278,8 @@ class AuthSubWinder(SubWinder):
 #
 #     # Methods that need a `Movie` object
 #     sw.subscribe(movie)
-#     en_movie_result, es_movie_result = sw.search_movies((movie, "en"),
-#                                                         (movie, "es"))
+#     en_movie_result, es_movie_result = sw.search_movies([(movie, "en"),
+#                                                          (movie, "es")])
 #     # TODO: how will this give any location information on where to download?
 #     sw.download([en_movie_result, es_movie_result])
 #
