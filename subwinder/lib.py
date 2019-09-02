@@ -1,8 +1,6 @@
 # Endpoints
 # * [??]                   ServerInfo - Can be used to get download limit,
 #                              may or may not be supported
-# * [E?] search_subtitles  SearchSubtitles - pass in (moviehash, size) or tag,
-#                              or imdbid, or query
 # * [IY] param of ^^       SearchToMail - Have this be a param on above
 # * [EY] check_subtitles   CheckSubHash - Used for getting tag from the md5
 #                              hash, can this get subtitle info from just tag??
@@ -50,6 +48,8 @@
 # TODO: try to switch movie to media in places where it could be a movie or
 #       episode
 
+import base64
+import gzip
 import os
 import time
 from xmlrpc.client import ServerProxy, Transport
@@ -166,11 +166,7 @@ class SubWinder:
         # TODO: should we support this method at all?
         return self._request("ServerInfo")
 
-    # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
-    def download_subtitles(self, downloads, fmt="{path}/{name}.{lang_3}{ext}"):
-        # FIXME: Implement this
-        raise NotImplementedError
-
+    # TODO: is this even useful?
     def search_movies(self, video_paths, limit=1):
         # FIXME: Implement this
         raise NotImplementedError
@@ -179,7 +175,7 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    def get_comments(self, subtitle_result):
+    def get_comments(self, subtitle_ids):
         # FIXME: Implement this
         raise NotImplementedError
 
@@ -206,25 +202,45 @@ class AuthSubWinder(SubWinder):
     def _logout(self):
         self._request("LogOut")
 
+    # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
+    # FIXME: have this work for more than 20 queries
+    def download_subtitles(self, downloads):
+        encodings = []
+        sub_file_ids = []
+        filepaths = []
+        for search_result, fpath in downloads:
+            encodings.append(search_result.subtitles.encoding)
+            sub_file_ids.append(search_result.subtitles.file_id)
+            filepaths.append(fpath)
+
+        data = self._request("DownloadSubtitles", sub_file_ids)["data"]
+
+        for encoding, result, fpath in zip(encodings, data, filepaths):
+            b64_encoded = result["data"]
+            compressed = base64.b64decode(b64_encoded)
+            # FIXME: handle more encodings, based on .subtitles.encoding
+            # Currently pray that python supports all the encodings and is
+            # called the same as what opensubtitles returns
+            subtitles = gzip.decompress(compressed).decode(encoding)
+            with open(fpath, "w") as f:
+                f.write(subtitles)
+
     def user_info(self):
-        resp = self._request("GetUserInfo")
-        return FullUserInfo(resp["data"])
+        data = self._request("GetUserInfo")["data"]
+        return FullUserInfo(data)
 
     def ping(self):
         self._request("NoOperation")
 
+    # FIXME: this should be chunked into 3's
     def guess_media(self, queries):
-        if isinstance(queries, str):
-            queries = (queries,)
-
-        resp = self._request("GuessMovieFromString", queries)
-        data = resp["data"]
+        data = self._request("GuessMovieFromString", queries)["data"]
 
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
-    # TODO: Use limit of searching for 20 different video_paths
-    # TODO: this takes 3-char language, convert from 2-char internally
+    # FIXME: this should be chunked into 20's?
+    # FIXME: this takes 3-char language, convert from 2-char internally
     # TODO: see if limiting for each search is possible, looks to be total
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
@@ -256,13 +272,13 @@ class AuthSubWinder(SubWinder):
         return [SearchResult(r) for r in results]
 
     def suggest_media(self, query):
-        resp = self._request("SuggestMovie", query)
-        raw_movies = resp["data"][query]
+        data = self._request("SuggestMovie", query)["data"]
+        raw_movies = data[query]
 
         # TODO: is there a better to set up the class for this?
         return [MediaInfo(r_m) for r_m in raw_movies]
 
-    def add_comment(self, subtitle_result, comment_str, bad=False):
+    def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
         self._request("AddComment", subtitle_id, comment_str, bad)
 
