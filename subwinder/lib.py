@@ -1,28 +1,19 @@
 # Endpoints
-# * [  ]                   ServerInfo
-# * [E?] search_subtitles  SearchSubtitles - pass in (moviehash, size) or tag,
-#                              or imdbid, or query
-# * [IY] param of ^^       SearchToMail - Have this be a param on above
-# * [ Y]                   CheckSubHash - Used for getting tag from the md5
-#                              hash, can this get subtitle info from just tag??
+# * [??]                   ServerInfo - Can be used to get download limit,
+#                              may or may not be supported
+# * [IY] search_subtitles param  SearchToMail - Have this be a param on above
 # * [E?] search_movie      CheckMovieHash - Useful for getting movie info from
 #                              hash
 # * [I?] param of ^^       CheckMovieHash2 - May be used in place of ^^
-# * [  ] pending           InsertMovieHash - Needs a lot of info, may not be
+# * [??] pending           InsertMovieHash - Needs a lot of info, may not be
 #                              supported
 # * [IN] pending           TryUploadSubtitles - Also needs a lot of info, may
 #                              not be supported
 # * [EN] pending           UploadSubtitles - Same story as ^^
-# * [  ]                   DetectLanguage
-# * [  ]                   PreviewSubtitles
 # * [E?] download          DownloadSubtitles - Uses idsubfile
 # * [E?] report_movie?     ReportWrongMovieHash - Uses idsubfile
 # * [E?] pending           ReportWrongImdbMovie - uses movie information for
 #                              changing imdb info, look into
-# * [EN] get_languages     GetSubLanguages - use this to make sure any language
-#                              given is good
-# * [  ]                   GetAvailableTranslations
-# * [  ]                   GetTranslation
 # * [??] pending           InsertMovie
 # * [EY] vote              SubtitlesVote - Uses idsubtitle
 # * [E?] get_comments      GetComments - Uses idsubtitle
@@ -35,7 +26,6 @@
 # * [E?] suggest_movie     SuggestMovie - ^^
 # * [E?] param of srch_mv? GuessMovieFromString - Just needs the title string,
 #                              is slow though
-# * [  ]                   AutoUpdate
 
 # Hide from user:
 # * Any of the hashes and sizes needed
@@ -53,18 +43,29 @@
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
 
+# TODO: try to switch movie to media in places where it could be a movie or
+#       episode
+# TODO: not really an easy way to re-get a subtitle result, best option without
+#       the lib user saving info is to do another search on the movie and
+#       matching the subhash again, but that's not very flexible or nice so ask
+#       the devs if there is a nicer way
+# TODO: Email the devs about what idsubtitlefile is even used for, related ^^
+
+import base64
+import gzip
 import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2
-from subwinder.info import FullUserInfo
+from subwinder.info import FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubWinderError,
     SubAuthError,
     SubUploadError,
     SubDownloadError,
 )
+from subwinder.results import SearchResult
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
@@ -86,25 +87,55 @@ _API_ERROR_MAP = {
 
 # TODO: include some way to check download limit for this account
 #       Info is just included in ServerInfo
+# TODO: would be nice to see headers info, but can't
 
 
-# TODO: setup this ranking scheme
-def _default_ranking(results):
-    pass
+# FIXME: rank by highest score?
+def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
+    best_result = None
+    max_downloads = None
+    DOWN_KEY = "SubDownloadsCnt"
+    for result in results:
+        # Skip if someone listed sub as bad and `exclude_bad` is `True`
+        if exclude_bad and result["SubBad"] != "0":
+            continue
+
+        # Skip incorrect `sub_ext`s if provided
+        if sub_exts is not None:
+            if result["SubFormat"].lower() not in sub_exts:
+                continue
+
+        if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
+            best_result = result
+            max_downloads = int(result[DOWN_KEY])
+
+    return best_result
 
 
 class SubWinder:
-    # TODO: Move to constants
-
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
+    _token = None
 
+    # FIXME: Handle xmlrpc.client.ProtocolError, 503 and 506 are raised as
+    #        protocol errors, change to allow for this
+    #        Also occurs for 520 which isn't listed
+    # TODO: give a way to let lib user to set `RETRIES`?
+    # TODO: should it do constant retries or exponential backoff with timeout?
     def _request(self, method, *params):
         RETRIES = 5
         for _ in range(RETRIES):
-            # Flexible way to call method while reducing error handling
-            resp = getattr(self._client, method)(*params)
+            if method in ("ServerInfo", "LogIn"):
+                # Flexible way to call method while reducing error handling
+                resp = getattr(self._client, method)(*params)
+            else:
+                # Use the token if it's defined
+                resp = getattr(self._client, method)(self._token, *params)
 
             # All requests are supposed to return a status
+            # But of course ServerInfo doesn't for no reason
+            if method == "ServerInfo":
+                return resp
+
             if "status" not in resp:
                 # TODO: mention raising an issue
                 raise SubWinderError(
@@ -112,7 +143,7 @@ class SubWinder:
                 )
 
             status_code = resp["status"][:3]
-            status_msg = resp[4:]
+            status_msg = resp["status"][4:]
 
             # Retry if 503, otherwise handle appropriately
             if status_code != "503":
@@ -121,6 +152,7 @@ class SubWinder:
             # Server under heavy load, wait and retry
             time.sleep(1)
 
+        # FIXME: add handling for 503 exausting all `RETRIES`
         # Handle the response
         if status_code == "200":
             return resp
@@ -133,30 +165,28 @@ class SubWinder:
     def get_languages(self):
         return _LANG_2
 
-    # Use limit of searching for 20 different video_paths
-    def search_subtitles(
-        self, video_paths, ranking=_default_ranking, *rank_params
-    ):
-        raise NotImplementedError
+    def server_info(self):
+        # FIXME: return this info in a nicer way?
+        # TODO: should we support this method at all?
+        return self._request("ServerInfo")
 
-    def download_subtitles(self, downloads, fmt="{path}/{name}.{lang_3}{ext}"):
-        raise NotImplementedError
-
+    # TODO: is this even useful?
+    #       not likely externally at least
     def search_movies(self, video_paths, limit=1):
-        raise NotImplementedError
-
-    # TODO: use an enum for method?
-    def suggest_movie(self, query, method="default"):
+        # FIXME: Implement this
         raise NotImplementedError
 
     def report_movie(self, movie_result):
+        # FIXME: Implement this
         raise NotImplementedError
 
-    def get_comments(self, subtitle_result):
-        raise NotImplementedError
+    def get_comments(self, subtitle_results):
+        subtitle_ids = []
+        for result in subtitle_results:
+            if type(result) == SearchResult:
+                subtitle_ids.append(result.subtitles.id)
 
 
-# TODO: logout on exitting with statement
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
         # Try to get any info from env vars if not passed in
@@ -169,59 +199,105 @@ class AuthSubWinder(SubWinder):
         if not useragent:
             raise SubAuthError("useragent can not be empty")
 
-        self._token = self._login(useragent, username, password)
-
-    def _request(self, method, *params):
-        # These methods don't take auth token
-        if method in ("ServerInfo", "LogIn"):
-            return super()._request(method, *params)
-
-        # All other methods take the auth token
-        return super()._request(method, self._token, *params)
+        self._token = self._login(username, password, useragent)
 
     def _login(self, username, password, useragent):
         resp = self._request("LogIn", username, password, "en", useragent)
-        self._token = resp["token"]
-        return FullUserInfo(resp["data"])
+        return resp["token"]
 
+    # FIXME: this should be done on exiting `with`
     def _logout(self):
         self._request("LogOut")
 
+    # FIXME: This should also batch? check to see return limits
+    # FIXME: test if this actually works correctly
+    # FIXME: Can this be integrated into search_subtitles?
+    #        ^^ maybe not a good plan because of different params
+    # TODO: unless I'm missing an endpoint option this isn't useful externally
+    #       can be used internally though
+    def check_subtitles(self, subtitles_hashers):
+        # Get all of the subtitles_ids from the hashes
+        hashes = [s.hash for s in subtitles_hashers]
+        data = self._request("CheckSubHash", hashes)["data"]
+        subtitles_ids = [data[h] for h in hashes]
+        return subtitles_ids
+
+    # FIXME: have this work for more than 20 queries
+    def download_subtitles(self, downloads):
+        encodings = []
+        sub_file_ids = []
+        filepaths = []
+        for search_result, fpath in downloads:
+            encodings.append(search_result.subtitles.encoding)
+            sub_file_ids.append(search_result.subtitles.file_id)
+            filepaths.append(fpath)
+
+        data = self._request("DownloadSubtitles", sub_file_ids)["data"]
+
+        for encoding, result, fpath in zip(encodings, data, filepaths):
+            b64_encoded = result["data"]
+            compressed = base64.b64decode(b64_encoded)
+            # Currently pray that python supports all the encodings and is
+            # called the same as what opensubtitles returns
+            subtitles = gzip.decompress(compressed).decode(encoding)
+            with open(fpath, "w") as f:
+                f.write(subtitles)
+
     def user_info(self):
-        resp = self._request("GetUserInfo")
-        return FullUserInfo(resp["data"])
+        data = self._request("GetUserInfo")["data"]
+        return FullUserInfo(data)
 
     def ping(self):
         self._request("NoOperation")
 
-    def add_comment(self, subtitle_result, comment_str, bad=False):
+    # FIXME: this should be chunked into 3's
+    def guess_media(self, queries):
+        data = self._request("GuessMovieFromString", queries)["data"]
+
+        # TODO: is there a better return type for this?
+        return [MediaInfo(data[q]["BestGuess"]) for q in queries]
+
+    # FIXME: this needs to handle not gettign any results for a query
+    # FIXME: this should be chunked into 20's?
+    # FIXME: this takes 3-char language, convert from 2-char internally
+    # TODO: see if limiting for each search is possible, looks to be total
+    def search_subtitles(
+        self, queries, *, ranking_function=_default_ranking, **rank_params
+    ):
+        internal_queries = []
+        for movie, lang in queries:
+            # Search by movie's hash and size
+            internal_queries.append(
+                {
+                    "sublanguageid": lang,
+                    "moviehash": movie.hash,
+                    "moviebytesize": movie.size,
+                }
+            )
+
+        data = self._request("SearchSubtitles", internal_queries)["data"]
+        groups = [[] for _ in internal_queries]
+        # TODO: this is slightly ugly, rethink
+        # Go through the results and organize them in the order of `queries`
+        for i, query in enumerate(internal_queries):
+            for d in data:
+                if d["QueryParameters"] == query:
+                    groups[i].append(d)
+
+        results = []
+        for group, query in zip(groups, queries):
+            result = ranking_function(group, query, **rank_params)
+            results.append(result)
+
+        return [SearchResult(r) for r in results]
+
+    def suggest_media(self, query):
+        data = self._request("SuggestMovie", query)["data"]
+        raw_movies = data[query]
+
+        # TODO: is there a better to set up the class for this?
+        return [MediaInfo(r_m) for r_m in raw_movies]
+
+    def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
         self._request("AddComment", subtitle_id, comment_str, bad)
-
-
-# # Design Goals
-# # Setting up our initial `AuthSubWinder` `Movie` and `Subtitles` objects
-# with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
-#     movie = Movie("/path/to/movie.mkv")
-#     subs = Subtitles("/path/to/movie.deu.srt")
-#
-#     # Method that needs both a `Movie` and `Subtitles` object
-#     sw.upload_subtitles(movie, subs, ...)
-#
-#     # Methods that need a `Movie` object
-#     sw.subscribe(movie)
-#     en_movie_result, es_movie_result = sw.search_movies((movie, "en"),
-#                                                         (movie, "es"))
-#     # TODO: how will this give any location information on where to download?
-#     sw.download([en_movie_result, es_movie_result])
-#
-#     # Method that needs just a `SearchResult` object
-#     sw.report_wrong_movie(en_movie_result)
-#
-#     # Method that needs just a `Subtitles` object
-#     subs_result = sw.check_subtitles(subs)
-#
-#     # Methods that could take either a `SearchResult` or `SubtitlesResult`
-#     sw.vote(subs_result, 10)
-#     sw.add_comment(subs_result, "Subs were great, thanks!")
-#     comments = sw.get_comments(en_movie_result)

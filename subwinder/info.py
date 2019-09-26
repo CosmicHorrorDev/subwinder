@@ -3,6 +3,22 @@ from datetime import datetime
 from subwinder.constants import _TIME_FORMAT
 
 
+# Just build the right info object from the "MovieKind"
+def build_media_info(data):
+    MEDIA_MAP = {
+        "movie": MovieInfo,
+        "episode": EpisodeInfo,
+        "tv series": EpisodeInfo,
+    }
+
+    kind = data["MovieKind"]
+    if kind in MEDIA_MAP:
+        return MEDIA_MAP[kind](data)
+
+    # TODO: just being used for developing, remove before 1.0
+    raise Exception(f"Undefined MovieKind {data['MovieKind']}")
+
+
 class Comment:
     def __init__(self, data):
         self.author = UserInfo(data["UserID"], data["UserNickName"])
@@ -23,18 +39,23 @@ class FullUserInfo(UserInfo):
         self.uploads = int(data["UploadCnt"])
         self.downloads = int(data["DownloadCnt"])
         # FIXME: this is in lang_3 instead of lang_2, convert
-        self.prefered_languages = data["UserPreferedLanguages"].split(",")
+        prefered_languages = data["UserPreferedLanguages"].split(",")
+        self.prefered_languages = [p_l for p_l in prefered_languages if p_l]
         self.web_language = data["UserWebLanguage"]
 
 
-class MovieInfo:
+class MediaInfo:
     def __init__(self, data):
         self.name = data["MovieName"]
         self.year = int(data["MovieYear"])
         self.imdbid = data.get("IDMovieImdb") or data.get("IDMovieIMDB")
 
 
-class EpisodeInfo(MovieInfo):
+class MovieInfo(MediaInfo):
+    pass
+
+
+class EpisodeInfo(MediaInfo):
     def __init__(self, data):
         super().__init__(data)
         # Yay different keys for the same data!
