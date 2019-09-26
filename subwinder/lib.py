@@ -1,9 +1,7 @@
 # Endpoints
 # * [??]                   ServerInfo - Can be used to get download limit,
 #                              may or may not be supported
-# * [IY] param of ^^       SearchToMail - Have this be a param on above
-# * [EY] check_subtitles   CheckSubHash - Used for getting tag from the md5
-#                              hash, can this get subtitle info from just tag??
+# * [IY] search_subtitles param  SearchToMail - Have this be a param on above
 # * [E?] search_movie      CheckMovieHash - Useful for getting movie info from
 #                              hash
 # * [I?] param of ^^       CheckMovieHash2 - May be used in place of ^^
@@ -47,6 +45,11 @@
 
 # TODO: try to switch movie to media in places where it could be a movie or
 #       episode
+# TODO: not really an easy way to re-get a subtitle result, best option without
+#       the lib user saving info is to do another search on the movie and
+#       matching the subhash again, but that's not very flexible or nice so ask
+#       the devs if there is a nicer way
+# TODO: Email the devs about what idsubtitlefile is even used for, related ^^
 
 import base64
 import gzip
@@ -84,6 +87,7 @@ _API_ERROR_MAP = {
 
 # TODO: include some way to check download limit for this account
 #       Info is just included in ServerInfo
+# TODO: would be nice to see headers info, but can't
 
 
 # FIXME: rank by highest score?
@@ -167,6 +171,7 @@ class SubWinder:
         return self._request("ServerInfo")
 
     # TODO: is this even useful?
+    #       not likely externally at least
     def search_movies(self, video_paths, limit=1):
         # FIXME: Implement this
         raise NotImplementedError
@@ -175,9 +180,11 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    def get_comments(self, subtitle_ids):
-        # FIXME: Implement this
-        raise NotImplementedError
+    def get_comments(self, subtitle_results):
+        subtitle_ids = []
+        for result in subtitle_results:
+            if type(result) == SearchResult:
+                subtitle_ids.append(result.subtitles.id)
 
 
 class AuthSubWinder(SubWinder):
@@ -202,7 +209,19 @@ class AuthSubWinder(SubWinder):
     def _logout(self):
         self._request("LogOut")
 
-    # TODO: have the downloads be list of pairs for `(SearchResult, path)`?
+    # FIXME: This should also batch? check to see return limits
+    # FIXME: test if this actually works correctly
+    # FIXME: Can this be integrated into search_subtitles?
+    #        ^^ maybe not a good plan because of different params
+    # TODO: unless I'm missing an endpoint option this isn't useful externally
+    #       can be used internally though
+    def check_subtitles(self, subtitles_hashers):
+        # Get all of the subtitles_ids from the hashes
+        hashes = [s.hash for s in subtitles_hashers]
+        data = self._request("CheckSubHash", hashes)["data"]
+        subtitles_ids = [data[h] for h in hashes]
+        return subtitles_ids
+
     # FIXME: have this work for more than 20 queries
     def download_subtitles(self, downloads):
         encodings = []
@@ -218,7 +237,6 @@ class AuthSubWinder(SubWinder):
         for encoding, result, fpath in zip(encodings, data, filepaths):
             b64_encoded = result["data"]
             compressed = base64.b64decode(b64_encoded)
-            # FIXME: handle more encodings, based on .subtitles.encoding
             # Currently pray that python supports all the encodings and is
             # called the same as what opensubtitles returns
             subtitles = gzip.decompress(compressed).decode(encoding)
@@ -239,6 +257,7 @@ class AuthSubWinder(SubWinder):
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
+    # FIXME: this needs to handle not gettign any results for a query
     # FIXME: this should be chunked into 20's?
     # FIXME: this takes 3-char language, convert from 2-char internally
     # TODO: see if limiting for each search is possible, looks to be total
@@ -247,11 +266,12 @@ class AuthSubWinder(SubWinder):
     ):
         internal_queries = []
         for movie, lang in queries:
+            # Search by movie's hash and size
             internal_queries.append(
                 {
                     "sublanguageid": lang,
                     "moviehash": movie.hash,
-                    "moviebytesize": movie.size
+                    "moviebytesize": movie.size,
                 }
             )
 
@@ -281,31 +301,3 @@ class AuthSubWinder(SubWinder):
     def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
         self._request("AddComment", subtitle_id, comment_str, bad)
-
-
-# # Design Goals
-# # Setting up our initial `AuthSubWinder` `Movie` and `Subtitles` objects
-# with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
-#     movie = Movie("/path/to/movie.mkv")
-#     subs = Subtitles("/path/to/movie.deu.srt")
-#
-#     # Method that needs both a `Movie` and `Subtitles` object
-#     sw.upload_subtitles(movie, subs, ...)
-#
-#     # Methods that need a `Movie` object
-#     sw.subscribe(movie)
-#     en_movie_result, es_movie_result = sw.search_movies([(movie, "en"),
-#                                                          (movie, "es")])
-#     # TODO: how will this give any location information on where to download?
-#     sw.download([en_movie_result, es_movie_result])
-#
-#     # Method that needs just a `SearchResult` object
-#     sw.report_wrong_movie(en_movie_result)
-#
-#     # Method that needs just a `Subtitles` object
-#     subs_result = sw.check_subtitles(subs)
-#
-#     # Methods that could take either a `SearchResult` or `SubtitlesResult`
-#     sw.vote(subs_result, 10)
-#     sw.add_comment(subs_result, "Subs were great, thanks!")
-#     comments = sw.get_comments(en_movie_result)
