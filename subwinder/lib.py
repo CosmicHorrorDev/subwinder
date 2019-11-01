@@ -60,7 +60,7 @@ import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from subwinder.constants import _API_BASE, _LANG_2
+from subwinder.constants import _API_BASE, _LANG_2, _REPO_URL
 from subwinder.info import FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubWinderError,
@@ -140,9 +140,9 @@ class SubWinder:
                 return resp
 
             if "status" not in resp:
-                # TODO: mention raising an issue
                 raise SubWinderError(
-                    f'"{method}" should return a status and didn\'t'
+                    f'"{method}" should return a status and didn\'t, consider'
+                    f" raising an issue at {_REPO_URL}"
                 )
 
             status_code = resp["status"][:3]
@@ -157,15 +157,17 @@ class SubWinder:
             # TODO: exponential backoff till time limit is hit then error?
             time.sleep(1)
 
-        # FIXME: add handling for 503 exausting all `RETRIES`
         # Handle the response
         if status_code == "200":
             return resp
         elif status_code in _API_ERROR_MAP:
             raise _API_ERROR_MAP[status_code](status_msg)
         else:
-            # TODO: mention raising an issue once the github repo is up
-            raise SubWinderError("the API returned an unhandled response")
+            raise SubWinderError(
+                "the API returned an unhandled response, consider raising an"
+                f" issue to addres this at {_REPO_URL}"
+                f"\nResp: {status_code}: {status_msg}"
+            )
 
     def get_languages(self):
         return _LANG_2
@@ -204,7 +206,11 @@ class AuthSubWinder(SubWinder):
             raise SubAuthError("username or password is missing")
 
         if not useragent:
-            raise SubAuthError("useragent can not be empty")
+            raise SubAuthError(
+                "`useragent` must be sepcified for your app according to"
+                " instructions given at https://trac.opensubtitles.org/"
+                "projects/opensubtitles/wiki/DevReadFirst"
+            )
 
         self._token = self._login(username, password, useragent)
 
@@ -310,4 +316,5 @@ class AuthSubWinder(SubWinder):
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
+        raise NotImplementedError
         self._request("AddComment", subtitle_id, comment_str, bad)
