@@ -50,6 +50,9 @@
 #       matching the subhash again, but that's not very flexible or nice so ask
 #       the devs if there is a nicer way
 # TODO: Email the devs about what idsubtitlefile is even used for, related ^^
+# TODO: handle selecting result from checkmoviehash like search result, where
+#       a custom ranking function can be used, if not provided use the default
+#       results
 
 import base64
 import gzip
@@ -146,10 +149,12 @@ class SubWinder:
             status_msg = resp["status"][4:]
 
             # Retry if 503, otherwise handle appropriately
+            # FIXME: 503 fails the request so it won't be passed in this way
             if status_code != "503":
                 break
 
             # Server under heavy load, wait and retry
+            # TODO: exponential backoff till time limit is hit then error?
             time.sleep(1)
 
         # FIXME: add handling for 503 exausting all `RETRIES`
@@ -180,7 +185,9 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
+    # TODO: finish this
     def get_comments(self, subtitle_results):
+        raise NotImplementedError
         subtitle_ids = []
         for result in subtitle_results:
             if type(result) == SearchResult:
@@ -227,6 +234,7 @@ class AuthSubWinder(SubWinder):
         encodings = []
         sub_file_ids = []
         filepaths = []
+        # Unpack stored info
         for search_result, fpath in downloads:
             encodings.append(search_result.subtitles.encoding)
             sub_file_ids.append(search_result.subtitles.file_id)
@@ -237,6 +245,8 @@ class AuthSubWinder(SubWinder):
         for encoding, result, fpath in zip(encodings, data, filepaths):
             b64_encoded = result["data"]
             compressed = base64.b64decode(b64_encoded)
+            # TODO: later have mapping for supported encodings, works at the
+            #       moment though
             # Currently pray that python supports all the encodings and is
             # called the same as what opensubtitles returns
             subtitles = gzip.decompress(compressed).decode(encoding)
