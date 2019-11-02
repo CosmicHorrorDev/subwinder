@@ -222,12 +222,10 @@ class AuthSubWinder(SubWinder):
     def _logout(self):
         self._request("LogOut")
 
-    # FIXME: This should also batch? check to see return limits
-    # FIXME: test if this actually works correctly
-    # FIXME: Can this be integrated into search_subtitles?
-    #        ^^ maybe not a good plan because of different params
     # TODO: unless I'm missing an endpoint option this isn't useful externally
     #       can be used internally though
+    # Note: This doesn't look like it batches (likely because it's use is very
+    #       limited
     def check_subtitles(self, subtitles_hashers):
         # Get all of the subtitles_ids from the hashes
         hashes = [s.hash for s in subtitles_hashers]
@@ -235,8 +233,17 @@ class AuthSubWinder(SubWinder):
         subtitles_ids = [data[h] for h in hashes]
         return subtitles_ids
 
-    # FIXME: have this work for more than 20 queries
+    def raw_check(self, hashes):
+        data = self._request("CheckSubHash", hashes)["data"]
+        subtitles_ids = [data[h] for h in hashes]
+        return subtitles_ids
+
     def download_subtitles(self, downloads):
+        BATCH_SIZE = 20
+        for i in range(0, len(downloads), BATCH_SIZE):
+            self._download_subtitles(downloads[i : i + BATCH_SIZE])
+
+    def _download_subtitles(self, downloads):
         encodings = []
         sub_file_ids = []
         filepaths = []
@@ -266,19 +273,32 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
-    # FIXME: this should be chunked into 3's
     def guess_media(self, queries):
+        BATCH_SIZE = 3
+        for i in range(0, len(queries), BATCH_SIZE):
+            self._guess_media(queries[i : i + BATCH_SIZE])
+
+    def _guess_media(self, queries):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
-    # FIXME: this needs to handle not gettign any results for a query
-    # FIXME: this should be chunked into 20's?
-    # FIXME: this takes 3-char language, convert from 2-char internally
-    # TODO: see if limiting for each search is possible, looks to be total
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
+    ):
+        # This can return 500 items, but one query could return multiple so
+        # 20 is being used in hope that there are plenty of results for each
+        BATCH_SIZE = 20
+        for i in range(0, len(queries), BATCH_SIZE):
+            self._search_subtitles(
+                queries[i : i + BATCH_SIZE], ranking_function, **rank_params
+            )
+
+    # FIXME: this needs to handle not gettign any results for a query
+    # FIXME: this takes 3-char language, convert from 2-char internally
+    def _search_subtitles(
+        self, queries, ranking_function=_default_ranking, **rank_params
     ):
         internal_queries = []
         for movie, lang in queries:
