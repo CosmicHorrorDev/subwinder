@@ -7,7 +7,6 @@ from subwinder.exceptions import SubHashError
 # As per API spec with some tweaks to make it a bit nicer
 # https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 def special_hash(filepath):
-    # TODO: This is not min size, min size is actually 65536 * 2 * 8, right?
     FILE_MIN_SIZE = 65536 * 2
     HASH_SIZE = 8  # bytes
 
@@ -45,5 +44,4 @@ def md5_hash(filepath):
     with open(filepath, "rb") as f:
         for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
             hash_md5.update(chunk)
-    # TODO: is hexstring the correct return type?
     return hash_md5.hexdigest()
