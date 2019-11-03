@@ -283,10 +283,10 @@ class AuthSubWinder(SubWinder):
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
-    def report_movie(self, movie_result):
-        raise NotImplementedError
-        # TODO: need to store the IDSubMovieFile from search result
-        # self._request("ReportWrongMovieHash", movie_result.
+    def report_movie(self, search_result):
+        self._request(
+            "ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id
+        )
 
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params

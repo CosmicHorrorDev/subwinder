@@ -15,7 +15,7 @@ def build_media_info(data):
     if kind in MEDIA_MAP:
         return MEDIA_MAP[kind](data)
 
-    # TODO: just being used for developing, remove before 1.0
+    # TODO: switch to a sub based error
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
 
 
@@ -75,6 +75,7 @@ class SubtitlesInfo:
 
         self.id = data["IDSubtitle"]
         self.file_id = data["IDSubtitleFile"]
+        self.sub_to_movie_id = data["IDSubMovieFile"]
         self.lang_2 = data["ISO639"]
         self.ext = data["SubFormat"]
         self.encoding = data["SubEncoding"]
