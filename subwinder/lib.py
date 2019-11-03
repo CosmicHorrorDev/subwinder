@@ -27,6 +27,7 @@
 # * [E?] param of srch_mv? GuessMovieFromString - Just needs the title string,
 #                              is slow though
 
+
 # Hide from user:
 # * Any of the hashes and sizes needed
 # * Token
@@ -43,6 +44,7 @@
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
 
+# TODO: switch to the json api
 # TODO: try to switch movie to media in places where it could be a movie or
 #       episode
 # TODO: not really an easy way to re-get a subtitle result, best option without
@@ -185,14 +187,6 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    # TODO: finish this
-    def get_comments(self, subtitle_results):
-        raise NotImplementedError
-        subtitle_ids = []
-        for result in subtitle_results:
-            if type(result) == SearchResult:
-                subtitle_ids.append(result.subtitles.id)
-
 
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
@@ -261,6 +255,12 @@ class AuthSubWinder(SubWinder):
             subtitles = gzip.decompress(compressed).decode(encoding)
             with open(fpath, "w") as f:
                 f.write(subtitles)
+
+    # TODO: find test-case for this
+    def get_comments(self, subtitle_results):
+        raise NotImplementedError
+        subtitle_ids = [s.subtitles.id for s in subtitle_results]
+        resp = self._request("GetComments", subtitle_ids)
 
     def user_info(self):
         data = self._request("GetUserInfo")["data"]
@@ -332,6 +332,7 @@ class AuthSubWinder(SubWinder):
             result = ranking_function(group, query, **rank_params)
             results.append(result)
 
+        # FIXME: have this handle results being `None` by returning None
         return [SearchResult(r) for r in results]
 
     def suggest_media(self, query):
