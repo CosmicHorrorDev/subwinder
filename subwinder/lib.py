@@ -88,6 +88,8 @@ _API_ERROR_MAP = {
 }
 
 
+# TODO: go through all the lang_3 options and get the equivalent lang_2 so that
+#       it can be converted correctly
 # TODO: include some way to check download limit for this account
 #       Info is just included in ServerInfo
 # TODO: would be nice to see headers info, but can't
@@ -183,10 +185,6 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    def report_movie(self, movie_result):
-        # FIXME: Implement this
-        raise NotImplementedError
-
     # TODO: finish this
     def get_comments(self, subtitle_results):
         raise NotImplementedError
@@ -225,7 +223,7 @@ class AuthSubWinder(SubWinder):
     # TODO: unless I'm missing an endpoint option this isn't useful externally
     #       can be used internally though
     # Note: This doesn't look like it batches (likely because it's use is very
-    #       limited
+    #       limited)
     def check_subtitles(self, subtitles_hashers):
         # Get all of the subtitles_ids from the hashes
         hashes = [s.hash for s in subtitles_hashers]
@@ -233,15 +231,13 @@ class AuthSubWinder(SubWinder):
         subtitles_ids = [data[h] for h in hashes]
         return subtitles_ids
 
-    def raw_check(self, hashes):
-        data = self._request("CheckSubHash", hashes)["data"]
-        subtitles_ids = [data[h] for h in hashes]
-        return subtitles_ids
-
     def download_subtitles(self, downloads):
         BATCH_SIZE = 20
+        results = []
         for i in range(0, len(downloads), BATCH_SIZE):
-            self._download_subtitles(downloads[i : i + BATCH_SIZE])
+            results += self._download_subtitles(downloads[i : i + BATCH_SIZE])
+
+        return results
 
     def _download_subtitles(self, downloads):
         encodings = []
@@ -275,8 +271,11 @@ class AuthSubWinder(SubWinder):
 
     def guess_media(self, queries):
         BATCH_SIZE = 3
+        results = []
         for i in range(0, len(queries), BATCH_SIZE):
-            self._guess_media(queries[i : i + BATCH_SIZE])
+            results += self._guess_media(queries[i : i + BATCH_SIZE])
+
+        return results
 
     def _guess_media(self, queries):
         data = self._request("GuessMovieFromString", queries)["data"]
@@ -284,16 +283,24 @@ class AuthSubWinder(SubWinder):
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
+    def report_movie(self, movie_result):
+        raise NotImplementedError
+        # TODO: need to store the IDSubMovieFile from search result
+        # self._request("ReportWrongMovieHash", movie_result.
+
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
     ):
         # This can return 500 items, but one query could return multiple so
         # 20 is being used in hope that there are plenty of results for each
         BATCH_SIZE = 20
+        results = []
         for i in range(0, len(queries), BATCH_SIZE):
-            self._search_subtitles(
+            results += self._search_subtitles(
                 queries[i : i + BATCH_SIZE], ranking_function, **rank_params
             )
+
+        return results
 
     # FIXME: this needs to handle not gettign any results for a query
     # FIXME: this takes 3-char language, convert from 2-char internally
