@@ -2,6 +2,7 @@ class SubWinderError(Exception):
     pass
 
 
+# FIXME: this is unused
 class SubLangError(SubWinderError):
     pass
 
@@ -18,6 +19,7 @@ class SubDownloadError(SubWinderError):
     pass
 
 
+# FIXME: this is unused
 class SubServerError(SubWinderError):
     pass
 

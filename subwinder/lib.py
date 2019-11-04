@@ -96,6 +96,7 @@ _API_ERROR_MAP = {
 
 
 # FIXME: rank by highest score?
+# FIXME: force the exts to be lowercase because they can be passed in
 def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
     best_result = None
     max_downloads = None
