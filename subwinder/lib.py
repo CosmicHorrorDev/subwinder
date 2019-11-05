@@ -309,7 +309,6 @@ class AuthSubWinder(SubWinder):
 
         return results
 
-    # FIXME: this needs to handle not gettign any results for a query
     # FIXME: this takes 3-char language, convert from 2-char internally
     def _search_subtitles(
         self, queries, ranking_function=_default_ranking, **rank_params
@@ -326,20 +325,20 @@ class AuthSubWinder(SubWinder):
             )
 
         data = self._request("SearchSubtitles", internal_queries)["data"]
-        groups = [[] for _ in internal_queries]
-        # TODO: this is slightly ugly, rethink
+
         # Go through the results and organize them in the order of `queries`
-        for i, query in enumerate(internal_queries):
-            for d in data:
-                if d["QueryParameters"] == query:
-                    groups[i].append(d)
+        groups = [[] for _ in internal_queries]
+        for d in data:
+            query_index = internal_queries.index(d["QueryParameters"])
+            groups[query_index].append(d)
 
         results = []
         for group, query in zip(groups, queries):
             result = ranking_function(group, query, **rank_params)
             results.append(result)
 
-        return [SearchResult(r) for r in results]
+        # Return list of `SearchResult` if found, `None` on no matching entry
+        return [r if r is None else SearchResult(r) for r in results]
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
