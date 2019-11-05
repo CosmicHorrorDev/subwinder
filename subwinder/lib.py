@@ -232,8 +232,12 @@ class AuthSubWinder(SubWinder):
         subtitles_ids = [data[h] for h in hashes]
         return subtitles_ids
 
-    # FIXME: all of the batching breaks if some generator object is passed in
     def download_subtitles(self, downloads):
+        # Can commonly be used with `zip`, but that would break batching so
+        # extend to a `list` if it is `zip`ed
+        if isinstance(downloads, zip):
+            downloads = list(downloads)
+
         BATCH_SIZE = 20
         for i in range(0, len(downloads), BATCH_SIZE):
             self._download_subtitles(downloads[i : i + BATCH_SIZE])
