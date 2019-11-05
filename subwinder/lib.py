@@ -50,6 +50,9 @@
 #       matching the subhash again, but that's not very flexible or nice so ask
 #       the devs if there is a nicer way
 # TODO: Email the devs about what idsubtitlefile is even used for, related ^^
+# TODO: handle selecting result from checkmoviehash like search result, where
+#       a custom ranking function can be used, if not provided use the default
+#       results
 
 import base64
 import gzip
@@ -57,13 +60,14 @@ import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from subwinder.constants import _API_BASE, _LANG_2
+from subwinder.constants import _API_BASE, _LANG_2, _LANG_2_TO_3, _REPO_URL
 from subwinder.info import FullUserInfo, MediaInfo
 from subwinder.exceptions import (
-    SubWinderError,
     SubAuthError,
-    SubUploadError,
     SubDownloadError,
+    SubLangError,
+    SubUploadError,
+    SubWinderError,
 )
 from subwinder.results import SearchResult
 
@@ -85,16 +89,23 @@ _API_ERROR_MAP = {
 }
 
 
+# TODO: go through all the lang_3 options and get the equivalent lang_2 so that
+#       it can be converted correctly
 # TODO: include some way to check download limit for this account
 #       Info is just included in ServerInfo
 # TODO: would be nice to see headers info, but can't
 
 
 # FIXME: rank by highest score?
-def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
+def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
     best_result = None
     max_downloads = None
     DOWN_KEY = "SubDownloadsCnt"
+
+    # Force list of `sub_exts` to be lowercase
+    if sub_exts is not None:
+        sub_exts = [sub_ext.lower() for sub_ext in sub_exts]
+
     for result in results:
         # Skip if someone listed sub as bad and `exclude_bad` is `True`
         if exclude_bad and result["SubBad"] != "0":
@@ -137,30 +148,34 @@ class SubWinder:
                 return resp
 
             if "status" not in resp:
-                # TODO: mention raising an issue
                 raise SubWinderError(
-                    f'"{method}" should return a status and didn\'t'
+                    f'"{method}" should return a status and didn\'t, consider'
+                    f" raising an issue at {_REPO_URL}"
                 )
 
             status_code = resp["status"][:3]
             status_msg = resp["status"][4:]
 
             # Retry if 503, otherwise handle appropriately
+            # FIXME: 503 fails the request so it won't be passed in this way
             if status_code != "503":
                 break
 
             # Server under heavy load, wait and retry
+            # TODO: exponential backoff till time limit is hit then error?
             time.sleep(1)
 
-        # FIXME: add handling for 503 exausting all `RETRIES`
         # Handle the response
         if status_code == "200":
             return resp
         elif status_code in _API_ERROR_MAP:
             raise _API_ERROR_MAP[status_code](status_msg)
         else:
-            # TODO: mention raising an issue once the github repo is up
-            raise SubWinderError("the API returned an unhandled response")
+            raise SubWinderError(
+                "the API returned an unhandled response, consider raising an"
+                f" issue to addres this at {_REPO_URL}"
+                f"\nResp: {status_code}: {status_msg}"
+            )
 
     def get_languages(self):
         return _LANG_2
@@ -176,11 +191,9 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    def report_movie(self, movie_result):
-        # FIXME: Implement this
-        raise NotImplementedError
-
+    # TODO: finish this
     def get_comments(self, subtitle_results):
+        raise NotImplementedError
         subtitle_ids = []
         for result in subtitle_results:
             if type(result) == SearchResult:
@@ -197,7 +210,11 @@ class AuthSubWinder(SubWinder):
             raise SubAuthError("username or password is missing")
 
         if not useragent:
-            raise SubAuthError("useragent can not be empty")
+            raise SubAuthError(
+                "`useragent` must be sepcified for your app according to"
+                " instructions given at https://trac.opensubtitles.org/"
+                "projects/opensubtitles/wiki/DevReadFirst"
+            )
 
         self._token = self._login(username, password, useragent)
 
@@ -209,12 +226,10 @@ class AuthSubWinder(SubWinder):
     def _logout(self):
         self._request("LogOut")
 
-    # FIXME: This should also batch? check to see return limits
-    # FIXME: test if this actually works correctly
-    # FIXME: Can this be integrated into search_subtitles?
-    #        ^^ maybe not a good plan because of different params
     # TODO: unless I'm missing an endpoint option this isn't useful externally
     #       can be used internally though
+    # Note: This doesn't look like it batches (likely because it's use is very
+    #       limited)
     def check_subtitles(self, subtitles_hashers):
         # Get all of the subtitles_ids from the hashes
         hashes = [s.hash for s in subtitles_hashers]
@@ -222,24 +237,70 @@ class AuthSubWinder(SubWinder):
         subtitles_ids = [data[h] for h in hashes]
         return subtitles_ids
 
-    # FIXME: have this work for more than 20 queries
-    def download_subtitles(self, downloads):
+    def download_subtitles(
+        self, downloads, download_dir=None, name_format="{upload_filename}"
+    ):
+        # List of paths where the subtitle files should be saved
+        download_paths = []
+        for download in downloads:
+            # Store the subtitle file next to the original media unless
+            # `download_dir` was set
+            if download_dir is None:
+                dir_path = os.path.dirname(download.media_filepath)
+            else:
+                dir_path = download_dir
+
+            # Format the `filename` according to the `name_format` passed in
+            subtitles = download.subtitles
+            media_filename = os.path.basename(download.media_filepath)
+            media_name, _ = os.path.splitext(media_filename)
+            upload_name, _ = os.path.splitext(subtitles.media_filename)
+
+            filename = name_format.format(
+                **{
+                    "media_name": media_name,
+                    "lang_2": subtitles.lang_2,
+                    "lang_3": subtitles.lang_3,
+                    "ext": subtitles.ext,
+                    "upload_name": upload_name,
+                    "upload_filename": subtitles.media_filename,
+                }
+            )
+
+            download_paths.append(os.path.join(dir_path, filename))
+
+        # Download the subtitles in batches of 20, per api spec
+        BATCH_SIZE = 20
+        for i in range(0, len(downloads), BATCH_SIZE):
+            download_chunk = downloads[i : i + BATCH_SIZE]
+            paths_chunk = download_paths[i : i + BATCH_SIZE]
+            self._download_subtitles(download_chunk, paths_chunk)
+
+        # Return the list of paths where subtitle files were saved
+        return download_paths
+
+    def _download_subtitles(self, downloads, filepaths):
         encodings = []
         sub_file_ids = []
-        filepaths = []
-        for search_result, fpath in downloads:
+        # Unpack stored info
+        for search_result in downloads:
             encodings.append(search_result.subtitles.encoding)
             sub_file_ids.append(search_result.subtitles.file_id)
-            filepaths.append(fpath)
 
         data = self._request("DownloadSubtitles", sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
             b64_encoded = result["data"]
             compressed = base64.b64decode(b64_encoded)
+            # FIXME: later have mapping for supported encodings, works at the
+            #       moment though
             # Currently pray that python supports all the encodings and is
             # called the same as what opensubtitles returns
             subtitles = gzip.decompress(compressed).decode(encoding)
+
+            # Create the directories is needed, then save the file
+            dirpath = os.path.dirname(fpath)
+            os.makedirs(dirpath, exist_ok=True)
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
@@ -250,46 +311,85 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
-    # FIXME: this should be chunked into 3's
     def guess_media(self, queries):
+        BATCH_SIZE = 3
+        results = []
+        for i in range(0, len(queries), BATCH_SIZE):
+            results += self._guess_media(queries[i : i + BATCH_SIZE])
+
+        return results
+
+    def _guess_media(self, queries):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
-    # FIXME: this needs to handle not gettign any results for a query
-    # FIXME: this should be chunked into 20's?
-    # FIXME: this takes 3-char language, convert from 2-char internally
-    # TODO: see if limiting for each search is possible, looks to be total
+    def report_movie(self, movie_result):
+        raise NotImplementedError
+        # TODO: need to store the IDSubMovieFile from search result
+        # self._request("ReportWrongMovieHash", movie_result.
+
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
+    ):
+        # Verify that all the languages are correct before doing any requests
+        for _, lang_2 in queries:
+            if lang_2 not in _LANG_2:
+                # TODO: may want to include the long names as well to make it
+                #       easier for people to find the correct lang_2
+                raise SubLangError(
+                    f"'{lang_2}' not found in valid lang list: {_LANG_2}"
+                )
+
+        # This can return 500 items, but one query could return multiple so
+        # 20 is being used in hope that there are plenty of results for each
+        BATCH_SIZE = 20
+        results = []
+        for i in range(0, len(queries), BATCH_SIZE):
+            results += self._search_subtitles(
+                queries[i : i + BATCH_SIZE], ranking_function, **rank_params
+            )
+
+        return results
+
+    # FIXME: this takes 3-char language, convert from 2-char internally
+    def _search_subtitles(
+        self, queries, ranking_function=_default_ranking, **rank_params
     ):
         internal_queries = []
         for movie, lang in queries:
             # Search by movie's hash and size
             internal_queries.append(
                 {
-                    "sublanguageid": lang,
+                    "sublanguageid": _LANG_2_TO_3[lang],
                     "moviehash": movie.hash,
                     "moviebytesize": movie.size,
                 }
             )
 
         data = self._request("SearchSubtitles", internal_queries)["data"]
-        groups = [[] for _ in internal_queries]
-        # TODO: this is slightly ugly, rethink
+
         # Go through the results and organize them in the order of `queries`
-        for i, query in enumerate(internal_queries):
-            for d in data:
-                if d["QueryParameters"] == query:
-                    groups[i].append(d)
+        groups = [[] for _ in internal_queries]
+        for d in data:
+            query_index = internal_queries.index(d["QueryParameters"])
+            groups[query_index].append(d)
 
         results = []
         for group, query in zip(groups, queries):
             result = ranking_function(group, query, **rank_params)
             results.append(result)
 
-        return [SearchResult(r) for r in results]
+        # Return list of `SearchResult` if found, `None` on no matching entry
+        search_results = []
+        for result, (query, _) in zip(results, queries):
+            if result is None:
+                search_results.append(None)
+            else:
+                search_results.append(SearchResult(result, query.filepath))
+
+        return search_results
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
@@ -300,4 +400,5 @@ class AuthSubWinder(SubWinder):
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
+        raise NotImplementedError
         self._request("AddComment", subtitle_id, comment_str, bad)

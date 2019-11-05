@@ -1,3 +1,4 @@
+# TODO: add `__repr__` to all of these to ease development
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
@@ -15,7 +16,7 @@ def build_media_info(data):
     if kind in MEDIA_MAP:
         return MEDIA_MAP[kind](data)
 
-    # TODO: just being used for developing, remove before 1.0
+    # TODO: switch to a sub based error
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
 
 
@@ -39,8 +40,8 @@ class FullUserInfo(UserInfo):
         self.uploads = int(data["UploadCnt"])
         self.downloads = int(data["DownloadCnt"])
         # FIXME: this is in lang_3 instead of lang_2, convert
-        prefered_languages = data["UserPreferedLanguages"].split(",")
-        self.prefered_languages = [p_l for p_l in prefered_languages if p_l]
+        preferred_languages = data["UserPreferedLanguages"].split(",")
+        self.preferred_languages = [p_l for p_l in preferred_languages if p_l]
         self.web_language = data["UserWebLanguage"]
 
 
@@ -75,6 +76,10 @@ class SubtitlesInfo:
 
         self.id = data["IDSubtitle"]
         self.file_id = data["IDSubtitleFile"]
+        self.sub_to_movie_id = data["IDSubMovieFile"]
+
+        self.media_filename = data["SubFileName"]
         self.lang_2 = data["ISO639"]
-        self.ext = data["SubFormat"]
+        self.lang_3 = data["SubLanguageID"]
+        self.ext = data["SubFormat"].lower()
         self.encoding = data["SubEncoding"]
