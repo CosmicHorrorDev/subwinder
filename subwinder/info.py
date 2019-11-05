@@ -77,6 +77,9 @@ class SubtitlesInfo:
         self.id = data["IDSubtitle"]
         self.file_id = data["IDSubtitleFile"]
         self.sub_to_movie_id = data["IDSubMovieFile"]
+
+        self.media_filename = data["SubFileName"]
         self.lang_2 = data["ISO639"]
-        self.ext = data["SubFormat"]
+        self.lang_3 = data["SubLanguageID"]
+        self.ext = data["SubFormat"].lower()
         self.encoding = data["SubEncoding"]
