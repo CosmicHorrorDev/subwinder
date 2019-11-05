@@ -1,5 +1,5 @@
 from subwinder import __version__
-import subwinder.utils
+import subwinder.hashers
 
 import os
 
@@ -14,7 +14,7 @@ def test_special_hash():
 
     tests_dir = os.path.dirname(__file__)
     for file, ideal_hash in hashes.items():
-        hash = subwinder.utils.special_hash(
+        hash = subwinder.hashers.special_hash(
             os.path.join(tests_dir, "hash_files", file)
         )
         assert hash == ideal_hash
