@@ -21,9 +21,11 @@ class SubtitlesResult:
 # TODO: Rename to `SearchResult`?
 class SearchResult:
     def __init__(self, data):
-        # FIXME: this could be be nothing, handle that
-        #        example case is provided hash and size in API doc example
-        self.author = UserInfo(data.get("UserID"), data["UserNickName"])
+        if data.get("UserID") == "0":
+            self.author = None
+        else:
+            self.author = UserInfo(data.get("UserID"), data["UserNickName"])
+
         self.media = build_media_info(data)
         self.subtitles = SubtitlesInfo(data)
         self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
