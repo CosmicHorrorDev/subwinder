@@ -60,13 +60,14 @@ import os
 import time
 from xmlrpc.client import ServerProxy, Transport
 
-from subwinder.constants import _API_BASE, _LANG_2, _REPO_URL
+from subwinder.constants import _API_BASE, _LANG_2, _LANG_2_TO_3, _REPO_URL
 from subwinder.info import FullUserInfo, MediaInfo
 from subwinder.exceptions import (
-    SubWinderError,
     SubAuthError,
-    SubUploadError,
     SubDownloadError,
+    SubLangError,
+    SubUploadError,
+    SubWinderError,
 )
 from subwinder.results import SearchResult
 
@@ -291,6 +292,15 @@ class AuthSubWinder(SubWinder):
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
     ):
+        # Verify that all the languages are correct before doing any requests
+        for _, lang_2 in queries:
+            if lang_2 not in _LANG_2:
+                # TODO: may want to include the long names as well to make it
+                #       easier for people to find the correct lang_2
+                raise SubLangError(
+                    f"'{lang_2}' not found in valid lang list: {_LANG_2}"
+                )
+
         # This can return 500 items, but one query could return multiple so
         # 20 is being used in hope that there are plenty of results for each
         BATCH_SIZE = 20
@@ -312,7 +322,7 @@ class AuthSubWinder(SubWinder):
             # Search by movie's hash and size
             internal_queries.append(
                 {
-                    "sublanguageid": lang,
+                    "sublanguageid": _LANG_2_TO_3[lang],
                     "moviehash": movie.hash,
                     "moviebytesize": movie.size,
                 }

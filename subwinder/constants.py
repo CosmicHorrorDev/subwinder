@@ -78,8 +78,8 @@ _LANG_TEMP = [
     ("vie", "vi"),  # Vietnamese
 ]
 
-# TODO: switch _LANG_2 over to a set?
-_LANG_2 = [lang_2 for _, lang_2 in _LANG_TEMP]
-_LANG_MAP = dict(_LANG_TEMP)
+_LANG_2 = set([lang_2 for _, lang_2 in _LANG_TEMP])
+_LANG_3_TO_2 = dict(_LANG_TEMP)
+_LANG_2_TO_3 = {lang_2: lang_3 for lang_3, lang_2 in _LANG_TEMP}
 
 del _LANG_TEMP
