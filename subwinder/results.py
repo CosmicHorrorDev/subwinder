@@ -20,7 +20,7 @@ class SubtitlesResult:
 
 # TODO: Rename to `SearchResult`?
 class SearchResult:
-    def __init__(self, data):
+    def __init__(self, data, media_filepath):
         if data.get("UserID") == "0":
             self.author = None
         else:
@@ -29,3 +29,4 @@ class SearchResult:
         self.media = build_media_info(data)
         self.subtitles = SubtitlesInfo(data)
         self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+        self.media_filepath = media_filepath

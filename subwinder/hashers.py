@@ -1,17 +1,47 @@
-# TODO: should this file be renamed, it seems misleading
+import hashlib
 import os
 
-from subwinder import utils
+from subwinder.exceptions import SubHashError
 
 
-# TODO: to store filepath or not to store filepath, that is the question
-class Subtitles:
-    def __init__(self, filepath):
-        self.hash = utils.md5_hash(filepath)
+# As per API spec with some tweaks to make it a bit nicer
+# https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+def special_hash(filepath):
+    FILE_MIN_SIZE = 65536 * 2
+    HASH_SIZE = 8  # bytes
+
+    with open(filepath, "rb") as f:
+        filesize = os.path.getsize(filepath)
+        filehash = filesize
+
+        if filesize < FILE_MIN_SIZE:
+            raise SubHashError(
+                f"Filesize is below minimum of {FILE_MIN_SIZE} bytes"
+            )
+
+        try:
+            for i in range(2):
+                # Seek to 64KiB before the end on second pass
+                if i == 1:
+                    f.seek(-65536, 2)
+
+                # Read the first 64 KiB summing every 8 bytes
+                for _ in range(int(65536 / HASH_SIZE)):
+                    buffer = f.read(HASH_SIZE)
+                    filehash += int.from_bytes(buffer, byteorder="little")
+        except IOError:
+            raise SubHashError(f"Error on reading {filepath}")
+
+    # Keep as 64-bit int
+    filehash &= 0xFFFFFFFFFFFFFFFF
+    return f"{filehash:016x}"
 
 
-# TODO: to store filepath or not to store filepath, that is the question
-class Movie:
-    def __init__(self, filepath):
-        self.hash = utils.special_hash(filepath)
-        self.size = os.path.getsize(filepath)
+# Kindly stolen from stackoverflow
+def md5_hash(filepath):
+    CHUNK_SIZE = 4096
+    hash_md5 = hashlib.md5()
+    with open(filepath, "rb") as f:
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

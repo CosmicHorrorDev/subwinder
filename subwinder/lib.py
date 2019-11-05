@@ -96,11 +96,15 @@ _API_ERROR_MAP = {
 
 
 # FIXME: rank by highest score?
-# FIXME: force the exts to be lowercase because they can be passed in
-def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
+def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
     best_result = None
     max_downloads = None
     DOWN_KEY = "SubDownloadsCnt"
+
+    # Force list of `sub_exts` to be lowercase
+    if sub_exts is not None:
+        sub_exts = [sub_ext.lower() for sub_ext in sub_exts]
+
     for result in results:
         # Skip if someone listed sub as bad and `exclude_bad` is `True`
         if exclude_bad and result["SubBad"] != "0":
@@ -232,36 +236,70 @@ class AuthSubWinder(SubWinder):
         subtitles_ids = [data[h] for h in hashes]
         return subtitles_ids
 
-    def download_subtitles(self, downloads):
-        # Can commonly be used with `zip`, but that would break batching so
-        # extend to a `list` if it is `zip`ed
-        if isinstance(downloads, zip):
-            downloads = list(downloads)
+    def download_subtitles(
+        self, downloads, download_dir=None, name_format="{upload_filename}"
+    ):
+        # List of paths where the subtitle files should be saved
+        download_paths = []
+        for download in downloads:
+            # Store the subtitle file next to the original media unless
+            # `download_dir` was set
+            if download_dir is None:
+                dir_path = os.path.dirname(download.media_filepath)
+            else:
+                dir_path = download_dir
 
+            # Format the `filename` according to the `name_format` passed in
+            subtitles = download.subtitles
+            media_filename = os.path.basename(download.media_filepath)
+            media_name, _ = os.path.splitext(media_filename)
+            upload_name, _ = os.path.splitext(subtitles.media_filename)
+
+            filename = name_format.format(
+                **{
+                    "media_name": media_name,
+                    "lang_2": subtitles.lang_2,
+                    "lang_3": subtitles.lang_3,
+                    "ext": subtitles.ext,
+                    "upload_name": upload_name,
+                    "upload_filename": subtitles.media_filename,
+                }
+            )
+
+            download_paths.append(os.path.join(dir_path, filename))
+
+        # Download the subtitles in batches of 20, per api spec
         BATCH_SIZE = 20
         for i in range(0, len(downloads), BATCH_SIZE):
-            self._download_subtitles(downloads[i : i + BATCH_SIZE])
+            download_chunk = downloads[i : i + BATCH_SIZE]
+            paths_chunk = download_paths[i : i + BATCH_SIZE]
+            self._download_subtitles(download_chunk, paths_chunk)
 
-    def _download_subtitles(self, downloads):
+        # Return the list of paths where subtitle files were saved
+        return download_paths
+
+    def _download_subtitles(self, downloads, filepaths):
         encodings = []
         sub_file_ids = []
-        filepaths = []
         # Unpack stored info
-        for search_result, fpath in downloads:
+        for search_result in downloads:
             encodings.append(search_result.subtitles.encoding)
             sub_file_ids.append(search_result.subtitles.file_id)
-            filepaths.append(fpath)
 
         data = self._request("DownloadSubtitles", sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
             b64_encoded = result["data"]
             compressed = base64.b64decode(b64_encoded)
-            # TODO: later have mapping for supported encodings, works at the
+            # FIXME: later have mapping for supported encodings, works at the
             #       moment though
             # Currently pray that python supports all the encodings and is
             # called the same as what opensubtitles returns
             subtitles = gzip.decompress(compressed).decode(encoding)
+
+            # Create the directories is needed, then save the file
+            dirpath = os.path.dirname(fpath)
+            os.makedirs(dirpath, exist_ok=True)
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
@@ -305,7 +343,6 @@ class AuthSubWinder(SubWinder):
 
         return results
 
-    # FIXME: this needs to handle not gettign any results for a query
     # FIXME: this takes 3-char language, convert from 2-char internally
     def _search_subtitles(
         self, queries, ranking_function=_default_ranking, **rank_params
@@ -322,20 +359,27 @@ class AuthSubWinder(SubWinder):
             )
 
         data = self._request("SearchSubtitles", internal_queries)["data"]
-        groups = [[] for _ in internal_queries]
-        # TODO: this is slightly ugly, rethink
+
         # Go through the results and organize them in the order of `queries`
-        for i, query in enumerate(internal_queries):
-            for d in data:
-                if d["QueryParameters"] == query:
-                    groups[i].append(d)
+        groups = [[] for _ in internal_queries]
+        for d in data:
+            query_index = internal_queries.index(d["QueryParameters"])
+            groups[query_index].append(d)
 
         results = []
         for group, query in zip(groups, queries):
             result = ranking_function(group, query, **rank_params)
             results.append(result)
 
-        return [SearchResult(r) for r in results]
+        # Return list of `SearchResult` if found, `None` on no matching entry
+        search_results = []
+        for result, (query, _) in zip(results, queries):
+            if result is None:
+                search_results.append(None)
+            else:
+                search_results.append(SearchResult(result, query.filepath))
+
+        return search_results
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
