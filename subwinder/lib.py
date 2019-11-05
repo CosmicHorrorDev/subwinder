@@ -96,6 +96,7 @@ _API_ERROR_MAP = {
 
 
 # FIXME: rank by highest score?
+# FIXME: force the exts to be lowercase because they can be passed in
 def _default_ranking(results, query_index, exclude_bad=True, sub_exts=["srt"]):
     best_result = None
     max_downloads = None
@@ -232,12 +233,14 @@ class AuthSubWinder(SubWinder):
         return subtitles_ids
 
     def download_subtitles(self, downloads):
-        BATCH_SIZE = 20
-        results = []
-        for i in range(0, len(downloads), BATCH_SIZE):
-            results += self._download_subtitles(downloads[i : i + BATCH_SIZE])
+        # Can commonly be used with `zip`, but that would break batching so
+        # extend to a `list` if it is `zip`ed
+        if isinstance(downloads, zip):
+            downloads = list(downloads)
 
-        return results
+        BATCH_SIZE = 20
+        for i in range(0, len(downloads), BATCH_SIZE):
+            self._download_subtitles(downloads[i : i + BATCH_SIZE])
 
     def _download_subtitles(self, downloads):
         encodings = []
