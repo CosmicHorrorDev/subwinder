@@ -18,8 +18,6 @@ with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
     sw.subscribe(movie)
     en_movie_result, es_movie_result = sw.search_movies([(movie, "en"),
                                                          (movie, "es")])
-    # TODO: how will this give any location information on where to download?
-    #       passing in as a pair again isn't a horrible way of doing this
     sw.download([en_movie_result, es_movie_result])
 
     # Method that needs just a `SearchResult` object
