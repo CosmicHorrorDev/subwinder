@@ -63,7 +63,7 @@ import time
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2, _REPO_URL
-from subwinder.info import FullUserInfo, MediaInfo
+from subwinder.info import Comment, FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubWinderError,
     SubAuthError,
@@ -256,11 +256,27 @@ class AuthSubWinder(SubWinder):
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
-    # TODO: find test-case for this
     def get_comments(self, subtitle_results):
-        raise NotImplementedError
         subtitle_ids = [s.subtitles.id for s in subtitle_results]
-        resp = self._request("GetComments", subtitle_ids)
+        data = self._request("GetComments", subtitle_ids)["data"]
+
+        # Group the results, if any, by the query order
+        groups = [[] for _ in subtitle_results]
+        if data:
+            for id, comments in data.items():
+                # Returned `id` has a leading _ for some reason so strip it
+                index = subtitle_ids.index(id[1:])
+                groups[index] = data[id]
+
+        # Pack results, if any, into comment objects
+        comments = []
+        for raw_comments in groups:
+            if not raw_comments:
+                comments.append(raw_comments)
+            else:
+                comments.append([Comment(c) for c in raw_comments])
+
+        return comments
 
     def user_info(self):
         data = self._request("GetUserInfo")["data"]

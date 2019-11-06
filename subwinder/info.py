@@ -23,7 +23,7 @@ class Comment:
     def __init__(self, data):
         self.author = UserInfo(data["UserID"], data["UserNickName"])
         self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["comment"]
+        self.comment_str = data["Comment"]
 
 
 class UserInfo:
