@@ -314,18 +314,17 @@ class AuthSubWinder(SubWinder):
                 {
                     "sublanguageid": lang,
                     "moviehash": movie.hash,
-                    "moviebytesize": movie.size,
+                    "moviebytesize": str(movie.size),
                 }
             )
 
         data = self._request("SearchSubtitles", internal_queries)["data"]
+
         groups = [[] for _ in internal_queries]
-        # TODO: this is slightly ugly, rethink
         # Go through the results and organize them in the order of `queries`
-        for i, query in enumerate(internal_queries):
-            for d in data:
-                if d["QueryParameters"] == query:
-                    groups[i].append(d)
+        for d in data:
+            query_index = int(d["QueryNumber"])
+            groups[query_index].append(d)
 
         results = []
         for group, query in zip(groups, queries):
