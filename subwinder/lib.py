@@ -175,7 +175,7 @@ class SubWinder:
         else:
             raise SubWinderError(
                 "the API returned an unhandled response, consider raising an"
-                f" issue to addres this at {_REPO_URL}"
+                f" issue to address this at {_REPO_URL}"
                 f"\nResp: {status_code}: {status_msg}"
             )
 
@@ -292,29 +292,30 @@ class AuthSubWinder(SubWinder):
             # called the same as what opensubtitles returns
             subtitles = gzip.decompress(compressed).decode(encoding)
 
-            # Create the directories is needed, then save the file
+            # Create the directories if needed, then save the file
             dirpath = os.path.dirname(fpath)
             os.makedirs(dirpath, exist_ok=True)
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
-    def get_comments(self, subtitle_results):
-        subtitle_ids = [s.subtitles.id for s in subtitle_results]
+    # TODO: does this need to be batched
+    def get_comments(self, search_results):
+        subtitle_ids = [s.subtitles.id for s in search_results]
         data = self._request("GetComments", subtitle_ids)["data"]
 
         # Group the results, if any, by the query order
-        groups = [[] for _ in subtitle_results]
+        groups = [[] for _ in search_results]
         if data:
             for id, comments in data.items():
                 # Returned `id` has a leading _ for some reason so strip it
                 index = subtitle_ids.index(id[1:])
                 groups[index] = data[id]
 
-        # Pack results, if any, into comment objects
+        # Pack results, if any, into `Comment` objects
         comments = []
         for raw_comments in groups:
             if not raw_comments:
-                comments.append(raw_comments)
+                comments.append([])
             else:
                 comments.append([Comment(c) for c in raw_comments])
 
@@ -369,7 +370,6 @@ class AuthSubWinder(SubWinder):
 
         return results
 
-    # FIXME: this takes 3-char language, convert from 2-char internally
     def _search_subtitles(
         self, queries, ranking_function=_default_ranking, **rank_params
     ):
