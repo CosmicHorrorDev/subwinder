@@ -27,6 +27,7 @@
 # * [E?] param of srch_mv? GuessMovieFromString - Just needs the title string,
 #                              is slow though
 
+
 # Hide from user:
 # * Any of the hashes and sizes needed
 # * Token
@@ -43,6 +44,7 @@
 # * report_movie_hash should take a good_result
 # * vote_subtitles should be limited 1 to 10
 
+# TODO: switch to the json api
 # TODO: try to switch movie to media in places where it could be a movie or
 #       episode
 # TODO: not really an easy way to re-get a subtitle result, best option without
@@ -61,7 +63,7 @@ import time
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2, _LANG_2_TO_3, _REPO_URL
-from subwinder.info import FullUserInfo, MediaInfo
+from subwinder.info import Comment, FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -191,14 +193,6 @@ class SubWinder:
         # FIXME: Implement this
         raise NotImplementedError
 
-    # TODO: finish this
-    def get_comments(self, subtitle_results):
-        raise NotImplementedError
-        subtitle_ids = []
-        for result in subtitle_results:
-            if type(result) == SearchResult:
-                subtitle_ids.append(result.subtitles.id)
-
 
 class AuthSubWinder(SubWinder):
     def __init__(self, useragent, username=None, password=None):
@@ -304,6 +298,28 @@ class AuthSubWinder(SubWinder):
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
+    def get_comments(self, subtitle_results):
+        subtitle_ids = [s.subtitles.id for s in subtitle_results]
+        data = self._request("GetComments", subtitle_ids)["data"]
+
+        # Group the results, if any, by the query order
+        groups = [[] for _ in subtitle_results]
+        if data:
+            for id, comments in data.items():
+                # Returned `id` has a leading _ for some reason so strip it
+                index = subtitle_ids.index(id[1:])
+                groups[index] = data[id]
+
+        # Pack results, if any, into comment objects
+        comments = []
+        for raw_comments in groups:
+            if not raw_comments:
+                comments.append(raw_comments)
+            else:
+                comments.append([Comment(c) for c in raw_comments])
+
+        return comments
+
     def user_info(self):
         data = self._request("GetUserInfo")["data"]
         return FullUserInfo(data)
@@ -325,10 +341,10 @@ class AuthSubWinder(SubWinder):
         # TODO: is there a better return type for this?
         return [MediaInfo(data[q]["BestGuess"]) for q in queries]
 
-    def report_movie(self, movie_result):
-        raise NotImplementedError
-        # TODO: need to store the IDSubMovieFile from search result
-        # self._request("ReportWrongMovieHash", movie_result.
+    def report_movie(self, search_result):
+        self._request(
+            "ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id
+        )
 
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
@@ -364,7 +380,7 @@ class AuthSubWinder(SubWinder):
                 {
                     "sublanguageid": _LANG_2_TO_3[lang],
                     "moviehash": movie.hash,
-                    "moviebytesize": movie.size,
+                    "moviebytesize": str(movie.size),
                 }
             )
 
@@ -373,7 +389,7 @@ class AuthSubWinder(SubWinder):
         # Go through the results and organize them in the order of `queries`
         groups = [[] for _ in internal_queries]
         for d in data:
-            query_index = internal_queries.index(d["QueryParameters"])
+            query_index = int(d["QueryNumber"])
             groups[query_index].append(d)
 
         results = []

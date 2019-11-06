@@ -24,7 +24,7 @@ class Comment:
     def __init__(self, data):
         self.author = UserInfo(data["UserID"], data["UserNickName"])
         self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["comment"]
+        self.comment_str = data["Comment"]
 
 
 class UserInfo:
@@ -76,9 +76,7 @@ class SubtitlesInfo:
 
         self.id = data["IDSubtitle"]
         self.file_id = data["IDSubtitleFile"]
-        self.sub_to_movie_id = data["IDSubMovieFile"]
 
-        self.media_filename = data["SubFileName"]
         self.lang_2 = data["ISO639"]
         self.lang_3 = data["SubLanguageID"]
         self.ext = data["SubFormat"].lower()
