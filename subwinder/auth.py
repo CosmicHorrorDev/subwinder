@@ -8,10 +8,9 @@
 #       a custom ranking function can be used, if not provided use the default
 #       results
 
-import base64
-import gzip
 import os
 
+from subwinder import utils
 from subwinder.base import SubWinder
 from subwinder.constants import _LANG_2, _LANG_2_TO_3
 from subwinder.info import Comment, FullUserInfo, MediaInfo
@@ -143,13 +142,9 @@ class AuthSubWinder(SubWinder):
         data = self._request("DownloadSubtitles", sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
-            b64_encoded = result["data"]
-            compressed = base64.b64decode(b64_encoded)
-            # FIXME: later have mapping for supported encodings, works at the
-            #       moment though
-            # Currently pray that python supports all the encodings and is
-            # called the same as what opensubtitles returns
-            subtitles = gzip.decompress(compressed).decode(encoding)
+            # # Currently pray that python supports all the encodings and is
+            # # called the same as what opensubtitles returns
+            subtitles = utils.extract(result["data"], encoding)
 
             # Create the directories if needed, then save the file
             dirpath = os.path.dirname(fpath)
