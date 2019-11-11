@@ -1,6 +1,4 @@
 # Endpoints
-# * [??]                   ServerInfo - Can be used to get download limit,
-#                              may or may not be supported
 # * [IY] search_subtitles param  SearchToMail - Have this be a param on above
 # * [E?] search_movie      CheckMovieHash - Useful for getting movie info from
 #                              hash
@@ -10,14 +8,10 @@
 # * [IN] pending           TryUploadSubtitles - Also needs a lot of info, may
 #                              not be supported
 # * [EN] pending           UploadSubtitles - Same story as ^^
-# * [E?] download          DownloadSubtitles - Uses idsubfile
-# * [E?] report_movie?     ReportWrongMovieHash - Uses idsubfile
 # * [E?] pending           ReportWrongImdbMovie - uses movie information for
 #                              changing imdb info, look into
 # * [??] pending           InsertMovie
 # * [EY] vote              SubtitlesVote - Uses idsubtitle
-# * [E?] get_comments      GetComments - Uses idsubtitle
-# * [EY] add_comment       AddComment - Uses idsubtitle
 # * [E?] request           AddRequest - uses imdbid
 # * [E?] set_subscribe_url SetSubscribeUrl - Just give url
 # * [E?] subscribe         SubscribeToHash - Give the moviehash (should check

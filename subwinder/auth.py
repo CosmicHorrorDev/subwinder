@@ -142,8 +142,8 @@ class AuthSubWinder(SubWinder):
         data = self._request("DownloadSubtitles", sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
-            # # Currently pray that python supports all the encodings and is
-            # # called the same as what opensubtitles returns
+            # Currently pray that python supports all the encodings and is
+            # called the same as what opensubtitles returns
             subtitles = utils.extract(result["data"], encoding)
 
             # Create the directories if needed, then save the file
@@ -246,14 +246,10 @@ class AuthSubWinder(SubWinder):
             query_index = int(d["QueryNumber"])
             groups[query_index].append(d)
 
-        results = []
+        search_results = []
         for group, query in zip(groups, queries):
             result = ranking_function(group, query, **rank_params)
-            results.append(result)
 
-        # Return list of `SearchResult` if found, `None` on no matching entry
-        search_results = []
-        for result, (query, _) in zip(results, queries):
             if result is None:
                 search_results.append(None)
             else:
