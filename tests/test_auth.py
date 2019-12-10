@@ -1,12 +1,7 @@
-from subwinder import __version__
 from subwinder.exceptions import SubAuthError
-from subwinder.lib import AuthSubWinder
+from subwinder.auth import AuthSubWinder
 
 import pytest
-
-
-def test_version():
-    assert __version__ == "0.1.0"
 
 
 def test_authsubwinder_init():
