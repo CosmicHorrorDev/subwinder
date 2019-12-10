@@ -2,7 +2,6 @@ class SubWinderError(Exception):
     pass
 
 
-# FIXME: this is unused
 class SubLangError(SubWinderError):
     pass
 
