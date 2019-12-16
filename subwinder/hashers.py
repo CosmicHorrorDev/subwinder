@@ -20,18 +20,15 @@ def special_hash(filepath):
                 f"Filesize is below minimum of {FILE_MIN_SIZE} bytes"
             )
 
-        try:
-            for i in range(2):
-                # Seek to 64KiB before the end on second pass
-                if i == 1:
-                    f.seek(-CHUNK_SIZE_BYTES, 2)
+        for i in range(2):
+            # Seek to 64KiB before the end on second pass
+            if i == 1:
+                f.seek(-CHUNK_SIZE_BYTES, 2)
 
-                # Read the first 64 KiB summing every 8 bytes
-                for _ in range(CHUNK_SIZE_BYTES // HASH_SIZE_BYTES):
-                    buffer = f.read(HASH_SIZE_BYTES)
-                    filehash += int.from_bytes(buffer, byteorder="little")
-        except IOError:
-            raise SubHashError(f"Error on reading {filepath}")
+            # Read the first 64 KiB summing every 8 bytes
+            for _ in range(CHUNK_SIZE_BYTES // HASH_SIZE_BYTES):
+                buffer = f.read(HASH_SIZE_BYTES)
+                filehash += int.from_bytes(buffer, byteorder="little")
 
     # Keep output in `HASH_SIZE_BYTES`
     filehash &= 2 ** (HASH_SIZE_BYTES * 8) - 1
