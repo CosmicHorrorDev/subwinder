@@ -3,8 +3,6 @@ from datetime import datetime
 
 # FIXME: handle these warning
 from subwinder.info import (
-    EpisodeInfo,
-    MovieInfo,
     SubtitlesInfo,
     UserInfo,
     build_media_info,
@@ -18,15 +16,13 @@ class SubtitlesResult:
     file_id: int
 
 
-# TODO: Rename to `SearchResult`?
 class SearchResult:
-    def __init__(self, data, media_filepath):
+    def __init__(self, data, query):
         if data.get("UserID") == "0":
             self.author = None
         else:
             self.author = UserInfo(data.get("UserID"), data["UserNickName"])
 
-        self.media = build_media_info(data)
+        self.media = build_media_info(data, query)
         self.subtitles = SubtitlesInfo(data)
         self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
-        self.media_filepath = media_filepath
