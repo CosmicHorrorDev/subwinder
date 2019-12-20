@@ -42,12 +42,14 @@
 # TODO: Email the devs about what idsubtitlefile is even used for, related ^^
 
 import time
+from datetime import datetime
 from xmlrpc.client import ServerProxy, Transport
 
 from subwinder.constants import _API_BASE, _LANG_2, _REPO_URL
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
+    SubServerError,
     SubUploadError,
     SubWinderError,
 )
@@ -66,6 +68,8 @@ _API_ERROR_MAP = {
     "414": SubAuthError,
     "415": SubAuthError,
     "416": SubUploadError,
+    "429": SubServerError,
+    "503": SubServerError,
     "506": SubWinderError,
 }
 
@@ -82,11 +86,14 @@ class SubWinder:
     # FIXME: Handle xmlrpc.client.ProtocolError, 503 and 506 are raised as
     #        protocol errors, change to allow for this
     #        Also occurs for 520 which isn't listed
-    # TODO: give a way to let lib user to set `RETRIES`?
-    # TODO: should it do constant retries or exponential backoff with timeout?
+    # TODO: give a way to let lib user to set `TIMEOUT`?
     def _request(self, method, *params):
-        RETRIES = 5
-        for _ in range(RETRIES):
+        TIMEOUT = 15
+        DELAY_FACTOR = 2
+        current_delay = 1.5
+        start = datetime.now()
+
+        while (datetime.now() - start).total_seconds() <= TIMEOUT:
             if method in ("ServerInfo", "LogIn"):
                 # Flexible way to call method while reducing error handling
                 resp = getattr(self._client, method)(*params)
@@ -108,14 +115,20 @@ class SubWinder:
             status_code = resp["status"][:3]
             status_msg = resp["status"][4:]
 
-            # Retry if 503, otherwise handle appropriately
+            # Retry if 429 or 503, otherwise handle appropriately
             # FIXME: 503 fails the request so it won't be passed in this way
-            if status_code != "503":
+            if status_code not in ("429", "503"):
                 break
 
             # Server under heavy load, wait and retry
-            # TODO: exponential backoff till time limit is hit then error?
-            time.sleep(1)
+            remaining_time = TIMEOUT - (datetime.now() - start).total_seconds()
+            if remaining_time > current_delay:
+                time.sleep(current_delay)
+            else:
+                # Not enough time to try again so go ahead and `break`
+                break
+
+            current_delay *= DELAY_FACTOR
 
         # Handle the response
         if status_code == "200":

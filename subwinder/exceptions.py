@@ -18,7 +18,6 @@ class SubDownloadError(SubWinderError):
     pass
 
 
-# FIXME: this is unused
 class SubServerError(SubWinderError):
     pass
 
