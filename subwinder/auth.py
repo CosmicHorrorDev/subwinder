@@ -247,7 +247,7 @@ class AuthSubWinder(SubWinder):
             groups[query_index].append(d)
 
         search_results = []
-        for group, query in zip(groups, queries):
+        for group, (query, _) in zip(groups, queries):
             result = ranking_function(group, query, **rank_params)
 
             if result is None:
