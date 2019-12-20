@@ -5,7 +5,7 @@ from subwinder.constants import _TIME_FORMAT
 
 
 # Just build the right info object from the "MovieKind"
-def build_media_info(data):
+def build_media_info(data, query):
     MEDIA_MAP = {
         "movie": MovieInfo,
         "episode": EpisodeInfo,
@@ -14,7 +14,7 @@ def build_media_info(data):
 
     kind = data["MovieKind"]
     if kind in MEDIA_MAP:
-        return MEDIA_MAP[kind](data)
+        return MEDIA_MAP[kind](data, query)
 
     # TODO: switch to a sub based error
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
@@ -46,10 +46,13 @@ class FullUserInfo(UserInfo):
 
 
 class MediaInfo:
-    def __init__(self, data):
+    def __init__(self, data, query):
         self.name = data["MovieName"]
         self.year = int(data["MovieYear"])
         self.imdbid = data.get("IDMovieImdb") or data.get("IDMovieIMDB")
+
+        self.file_dir = query.file_dir
+        self.file_name = query.file_name
 
 
 class MovieInfo(MediaInfo):
@@ -57,8 +60,8 @@ class MovieInfo(MediaInfo):
 
 
 class EpisodeInfo(MediaInfo):
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self, data, query):
+        super().__init__(data, query)
         # Yay different keys for the same data!
         season = data.get("SeriesSeason") or data.get("Season")
         episode = data.get("SeriesEpisode") or data.get("Episode")

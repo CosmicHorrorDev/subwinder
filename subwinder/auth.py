@@ -16,6 +16,7 @@ from subwinder.constants import _LANG_2, _LANG_2_TO_3
 from subwinder.info import Comment, FullUserInfo, MediaInfo
 from subwinder.exceptions import (
     SubAuthError,
+    SubDownloadError,
     SubLangError,
 )
 from subwinder.results import SearchResult
@@ -95,16 +96,33 @@ class AuthSubWinder(SubWinder):
         # List of paths where the subtitle files should be saved
         download_paths = []
         for download in downloads:
+            media = download.media
+            subtitles = download.subtitles
+
+            # Make sure there is enough context to save subtitles
+            if media.file_dir is None and download_dir is None:
+                raise SubDownloadError(
+                    "Insufficient context. Need to set either the `file_dir`"
+                    f" in {download} or `download_dir` in `download_subtitles`"
+                )
+
+            # Same as ^^
+            if media.file_name is None and "{media_name}" in name_format:
+                raise SubDownloadError(
+                    "Insufficient context. Need to set either the `file_name`"
+                    f" in {download} or avoid using '{{media_name}}' in"
+                    " `name_format`"
+                )
+
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
             if download_dir is None:
-                dir_path = os.path.dirname(download.media_filepath)
+                dir_path = media.file_dir
             else:
                 dir_path = download_dir
 
             # Format the `filename` according to the `name_format` passed in
-            subtitles = download.subtitles
-            media_filename = os.path.basename(download.media_filepath)
+            media_filename = media.file_name
             media_name, _ = os.path.splitext(media_filename)
             upload_name, _ = os.path.splitext(subtitles.media_filename)
 
@@ -251,7 +269,7 @@ class AuthSubWinder(SubWinder):
             if result is None:
                 search_results.append(None)
             else:
-                search_results.append(SearchResult(result, query.filepath))
+                search_results.append(SearchResult(result, query))
 
         return search_results
 
