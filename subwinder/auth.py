@@ -53,19 +53,31 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
 
 
 class AuthSubWinder(SubWinder):
-    def __init__(self, useragent, username=None, password=None):
+    def __init__(self, username=None, password=None, useragent=None):
         # Try to get any info from env vars if not passed in
+        useragent = useragent or os.environ.get("OPEN_SUBTITLES_USERAGENT")
         username = username or os.environ.get("OPEN_SUBTITLES_USERNAME")
         password = password or os.environ.get("OPEN_SUBTITLES_PASSWORD")
 
-        if username is None or password is None:
-            raise SubAuthError("username or password is missing")
-
-        if not useragent:
+        if username is None:
             raise SubAuthError(
-                "`useragent` must be sepcified for your app according to"
-                " instructions given at https://trac.opensubtitles.org/"
-                "projects/opensubtitles/wiki/DevReadFirst"
+                "missing `username`, set when initializing `AuthSubWinder` or"
+                " with the OPEN_SUBTITLES_USERNAME env var"
+            )
+
+        if password is None:
+            raise SubAuthError(
+                "missing `password`, set when initializing `AuthSubWinder` or"
+                " set the OPEN_SUBTITLES_PASSWORD env var"
+            )
+
+        if useragent is None:
+            raise SubAuthError(
+                "missing `useragent`, set when initializing `AuthSubWinder` or"
+                " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
+                "be sepcified for your app according to instructions given at"
+                " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
+                "DevReadFirst"
             )
 
         self._token = self._login(username, password, useragent)
