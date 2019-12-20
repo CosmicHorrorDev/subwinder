@@ -109,14 +109,12 @@ class AuthSubWinder(SubWinder):
             upload_name, _ = os.path.splitext(subtitles.media_filename)
 
             filename = name_format.format(
-                **{
-                    "media_name": media_name,
-                    "lang_2": subtitles.lang_2,
-                    "lang_3": subtitles.lang_3,
-                    "ext": subtitles.ext,
-                    "upload_name": upload_name,
-                    "upload_filename": subtitles.media_filename,
-                }
+                media_name=media_name,
+                lang_2=subtitles.lang_2,
+                lang_3=subtitles.lang_3,
+                ext=subtitles.ext,
+                upload_name=upload_name,
+                upload_filename=subtitles.media_filename,
             )
 
             download_paths.append(os.path.join(dir_path, filename))
