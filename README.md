@@ -7,7 +7,7 @@ from subwinder import AuthSubWinder, Movie, Subtitles
 
 # Design Goals
 # Setting up our initial `AuthSubWinder` `Movie` and `Subtitles` objects
-movie = Movie("/path/to/movie.mkv")
+movie = Movie.from_file("/path/to/movie.mkv")
 subs = Subtitles("/path/to/movie.deu.srt")
 with AuthSubWinder("<user-agent>", "<username>", "<password>") as sw:
     # Method that needs both a `Movie` and `Subtitles` object
