@@ -83,6 +83,9 @@ class SubWinder:
     _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
     _token = None
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}"
+
     # FIXME: Handle xmlrpc.client.ProtocolError, 503 and 506 are raised as
     #        protocol errors, change to allow for this
     #        Also occurs for 520 which isn't listed

@@ -1,7 +1,7 @@
-# TODO: add `__repr__` to all of these to ease development
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
+from subwinder.utils import auto_repr
 
 
 # Just build the right info object from the "MovieKind"
@@ -20,6 +20,7 @@ def build_media_info(data, query):
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
 
 
+@auto_repr
 class Comment:
     def __init__(self, data):
         self.author = UserInfo(data["UserID"], data["UserNickName"])
@@ -27,12 +28,14 @@ class Comment:
         self.comment_str = data["Comment"]
 
 
+@auto_repr
 class UserInfo:
     def __init__(self, id, nickname):
         self.id = id
         self.nickname = nickname
 
 
+@auto_repr
 class FullUserInfo(UserInfo):
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
@@ -45,6 +48,7 @@ class FullUserInfo(UserInfo):
         self.web_language = data["UserWebLanguage"]
 
 
+@auto_repr
 class MediaInfo:
     def __init__(self, data, query):
         self.name = data["MovieName"]
@@ -55,10 +59,12 @@ class MediaInfo:
         self.file_name = query.file_name
 
 
+@auto_repr
 class MovieInfo(MediaInfo):
     pass
 
 
+@auto_repr
 class EpisodeInfo(MediaInfo):
     def __init__(self, data, query):
         super().__init__(data, query)
@@ -69,6 +75,7 @@ class EpisodeInfo(MediaInfo):
         self.episode_num = int(episode)
 
 
+@auto_repr
 class SubtitlesInfo:
     def __init__(self, data):
         self.size = int(data["SubSize"])
