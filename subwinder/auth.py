@@ -83,6 +83,9 @@ class AuthSubWinder(SubWinder):
 
         self._token = self._login(username, password, useragent)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(_token: {self._token.__repr__()})"
+
     def _login(self, username, password, useragent):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]

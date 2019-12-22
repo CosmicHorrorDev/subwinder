@@ -1,21 +1,23 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-# FIXME: handle these warning
+from subwinder.constants import _TIME_FORMAT
 from subwinder.info import (
     SubtitlesInfo,
     UserInfo,
     build_media_info,
 )
-from subwinder.constants import _TIME_FORMAT
+from subwinder.utils import auto_repr
 
 
 # TODO: Yeahhhhhh, this class is only holding one thing, may not be worth it
+@auto_repr
 @dataclass
 class SubtitlesResult:
     file_id: int
 
 
+@auto_repr
 class SearchResult:
     def __init__(self, data, query):
         if data.get("UserID") == "0":

@@ -1,14 +1,17 @@
 import os
 
 from subwinder import hashers
+from subwinder.utils import auto_repr
 
 
 # TODO: to store filepath or not to store filepath, that is the question
+@auto_repr
 class Subtitles:
     def __init__(self, filepath):
         self.hash = hashers.md5_hash(filepath)
 
 
+@auto_repr
 class Movie:
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
