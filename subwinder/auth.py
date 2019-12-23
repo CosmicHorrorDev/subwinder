@@ -83,6 +83,14 @@ class AuthSubWinder(SubWinder):
 
         self._token = self._login(username, password, useragent)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # Logout on exiting `with` if all is well
+        if exc_type is None:
+            self._logout()
+
     def __repr__(self):
         return f"{self.__class__.__name__}(_token: {self._token.__repr__()})"
 
@@ -90,7 +98,6 @@ class AuthSubWinder(SubWinder):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]
 
-    # FIXME: this should be done on exiting `with`
     def _logout(self):
         self._request("LogOut")
 
