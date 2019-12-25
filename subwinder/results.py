@@ -19,12 +19,12 @@ class SubtitlesResult:
 
 @auto_repr
 class SearchResult:
-    def __init__(self, data, query):
+    def __init__(self, data, file_dir=None, file_name=None):
         if data.get("UserID") == "0":
             self.author = None
         else:
             self.author = UserInfo(data.get("UserID"), data["UserNickName"])
 
-        self.media = build_media_info(data, query)
+        self.media = build_media_info(data, file_dir, file_name)
         self.subtitles = SubtitlesInfo(data)
         self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)

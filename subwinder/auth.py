@@ -13,17 +13,14 @@ import os
 from subwinder import utils
 from subwinder.base import SubWinder
 from subwinder.constants import _LANG_2, _LANG_2_TO_3
-from subwinder.info import Comment, FullUserInfo, MediaInfo
+from subwinder.info import build_media_info, Comment, FullUserInfo
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
     SubLangError,
 )
+from subwinder.media import Movie
 from subwinder.results import SearchResult
-
-
-# TODO: go through all the lang_3 options and get the equivalent lang_2 so that
-#       it can be converted correctly
 
 
 # FIXME: rank by highest score?
@@ -110,7 +107,9 @@ class AuthSubWinder(SubWinder):
         hashes = [s.hash for s in subtitles_hashers]
         data = self._request("CheckSubHash", hashes)["data"]
         subtitles_ids = [data[h] for h in hashes]
-        return subtitles_ids
+
+        # Subtitle id "0" means no subtitle match so return as `None`
+        return [sub_id if sub_id != "0" else None for sub_id in subtitles_ids]
 
     def download_subtitles(
         self, downloads, download_dir=None, name_format="{upload_filename}"
@@ -129,6 +128,7 @@ class AuthSubWinder(SubWinder):
                 )
 
             # Same as ^^
+            # FIXME: technically "{{media_name}}" would be a false positive
             if media.file_name is None and "{media_name}" in name_format:
                 raise SubDownloadError(
                     "Insufficient context. Need to set either the `file_name`"
@@ -144,9 +144,9 @@ class AuthSubWinder(SubWinder):
                 dir_path = download_dir
 
             # Format the `filename` according to the `name_format` passed in
-            media_filename = media.file_name
-            media_name, _ = os.path.splitext(media_filename)
-            upload_name, _ = os.path.splitext(subtitles.media_filename)
+            media_name, _ = os.path.splitext(media.file_name)
+            upload_filename = subtitles.media_filename
+            upload_name, _ = os.path.splitext(upload_filename)
 
             filename = name_format.format(
                 media_name=media_name,
@@ -154,13 +154,14 @@ class AuthSubWinder(SubWinder):
                 lang_3=subtitles.lang_3,
                 ext=subtitles.ext,
                 upload_name=upload_name,
-                upload_filename=subtitles.media_filename,
+                upload_filename=upload_filename,
             )
 
             download_paths.append(os.path.join(dir_path, filename))
 
         # Download the subtitles in batches of 20, per api spec
         BATCH_SIZE = 20
+        # TODO: should I just `zip` `downloads` and `download_paths`?
         for i in range(0, len(downloads), BATCH_SIZE):
             download_chunk = downloads[i : i + BATCH_SIZE]
             paths_chunk = download_paths[i : i + BATCH_SIZE]
@@ -232,7 +233,8 @@ class AuthSubWinder(SubWinder):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         # TODO: is there a better return type for this?
-        return [MediaInfo(data[q]["BestGuess"]) for q in queries]
+        # TODO: test if this returns enough information to for `EpisodeInfo`
+        return [build_media_info(data[q]["BestGuess"]) for q in queries]
 
     def report_movie(self, search_result):
         self._request(
@@ -291,7 +293,13 @@ class AuthSubWinder(SubWinder):
             if result is None:
                 search_results.append(None)
             else:
-                search_results.append(SearchResult(result, query))
+                if type(query) == Movie:
+                    # Movie could have the original file information tied to it
+                    search_results.append(
+                        SearchResult(result, query.file_dir, query.file_name)
+                    )
+                else:
+                    search_results.append(SearchResult(result))
 
         return search_results
 
@@ -299,8 +307,8 @@ class AuthSubWinder(SubWinder):
         data = self._request("SuggestMovie", query)["data"]
         raw_movies = data[query]
 
-        # TODO: is there a better to set up the class for this?
-        return [MediaInfo(r_m) for r_m in raw_movies]
+        # TODO: does this return enough information for `EpisodeInfo`
+        return [build_media_info(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
         # TODO: magically get the subtitle id from the result
