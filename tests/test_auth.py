@@ -37,7 +37,7 @@ def test_guess_media():
     # The calls are split due to batching
     CALLS = [
         call("GuessMovieFromString", QUERIES[:3]),
-        call("GuessMovieFromString", QUERIES[3:],),
+        call("GuessMovieFromString", QUERIES[3:]),
     ]
     IDEAL_RESULT = [
         TvSeriesInfo("Heroes", 2006, "0813715", None, None),

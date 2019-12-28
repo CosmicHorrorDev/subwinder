@@ -13,12 +13,12 @@ import os
 from subwinder import utils
 from subwinder.base import SubWinder
 from subwinder.constants import _LANG_2, _LANG_2_TO_3
-from subwinder.info import build_media_info, Comment, FullUserInfo
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
     SubLangError,
 )
+from subwinder.info import build_media_info, Comment, FullUserInfo
 from subwinder.media import Movie
 from subwinder.results import SearchResult
 
@@ -73,7 +73,7 @@ class AuthSubWinder(SubWinder):
             raise SubAuthError(
                 "missing `useragent`, set when initializing `AuthSubWinder` or"
                 " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
-                "be sepcified for your app according to instructions given at"
+                " be sepcified for your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"
             )
@@ -121,17 +121,17 @@ class AuthSubWinder(SubWinder):
             subtitles = download.subtitles
 
             # Make sure there is enough context to save subtitles
-            if media.file_dir is None and download_dir is None:
+            if media.dirname is None and download_dir is None:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `file_dir`"
+                    "Insufficient context. Need to set either the `dirname`"
                     f" in {download} or `download_dir` in `download_subtitles`"
                 )
 
             # Same as ^^
             # FIXME: technically "{{media_name}}" would be a false positive
-            if media.file_name is None and "{media_name}" in name_format:
+            if media.filename is None and "{media_name}" in name_format:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `file_name`"
+                    "Insufficient context. Need to set either the `filename`"
                     f" in {download} or avoid using '{{media_name}}' in"
                     " `name_format`"
                 )
@@ -139,13 +139,13 @@ class AuthSubWinder(SubWinder):
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
             if download_dir is None:
-                dir_path = media.file_dir
+                dir_path = media.dirname
             else:
                 dir_path = download_dir
 
             # Format the `filename` according to the `name_format` passed in
-            media_name, _ = os.path.splitext(media.file_name)
-            upload_filename = subtitles.media_filename
+            media_name, _ = os.path.splitext(media.filename)
+            upload_filename = subtitles.filename
             upload_name, _ = os.path.splitext(upload_filename)
 
             filename = name_format.format(
@@ -229,10 +229,9 @@ class AuthSubWinder(SubWinder):
 
         return results
 
+    # TODO: switch this to do a ranking function like in `search_subtitles`?
     def _guess_media(self, queries):
         data = self._request("GuessMovieFromString", queries)["data"]
-
-        # TODO: is there a better return type for this?
         return [build_media_info(data[q]["BestGuess"]) for q in queries]
 
     def report_movie(self, search_result):
@@ -295,7 +294,7 @@ class AuthSubWinder(SubWinder):
                 if type(query) == Movie:
                     # Movie could have the original file information tied to it
                     search_results.append(
-                        SearchResult(result, query.file_dir, query.file_name)
+                        SearchResult(result, query.dirname, query.filename)
                     )
                 else:
                     search_results.append(SearchResult(result))

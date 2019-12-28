@@ -6,7 +6,7 @@ from subwinder.utils import auto_repr
 
 
 # Just build the right info object from the "MovieKind"
-def build_media_info(data, file_dir=None, file_name=None):
+def build_media_info(data, dirname=None, filename=None):
     MEDIA_MAP = {
         "movie": MovieInfo,
         "episode": EpisodeInfo,
@@ -15,7 +15,7 @@ def build_media_info(data, file_dir=None, file_name=None):
 
     kind = data["MovieKind"]
     if kind in MEDIA_MAP:
-        return MEDIA_MAP[kind].from_data(data, file_dir, file_name)
+        return MEDIA_MAP[kind].from_data(data, dirname, filename)
 
     # TODO: switch to a sub based error
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
@@ -53,16 +53,16 @@ class MediaInfo:
     name: str
     year: int
     imdbid: str
-    file_dir: str
-    file_name: str
+    dirname: str
+    filename: str
 
     @classmethod
-    def from_data(cls, data, file_dir, file_name):
+    def from_data(cls, data, dirname, filename):
         name = data["MovieName"]
         year = int(data["MovieYear"])
         imdbid = data.get("IDMovieImdb") or data["IDMovieIMDB"]
 
-        return cls(name, year, imdbid, file_dir, file_name)
+        return cls(name, year, imdbid, dirname, filename)
 
 
 class MovieInfo(MediaInfo):
@@ -76,15 +76,15 @@ class TvSeriesInfo(MediaInfo):
 @auto_repr
 class EpisodeInfo(TvSeriesInfo):
     def __init__(
-        self, name, year, imdbid, season, episode, file_dir, file_name
+        self, name, year, imdbid, season, episode, dirname, filename
     ):
-        super().__init__(name, year, imdbid, file_dir, file_name)
+        super().__init__(name, year, imdbid, dirname, filename)
         self.season = season
         self.episode = episode
 
     @classmethod
-    def from_data(cls, data, file_dir, file_name):
-        tv_series = TvSeriesInfo.from_data(data, file_dir, file_name)
+    def from_data(cls, data, dirname, filename):
+        tv_series = TvSeriesInfo.from_data(data, dirname, filename)
         # Yay different keys for the same data!
         season = int(data.get("SeriesSeason") or data.get("Season"))
         episode = int(data.get("SeriesEpisode") or data.get("Episode"))
@@ -99,8 +99,8 @@ class EpisodeInfo(TvSeriesInfo):
             tv_series.imdbid,
             season,
             episode,
-            tv_series.file_dir,
-            tv_series.file_name,
+            tv_series.dirname,
+            tv_series.filename,
         )
 
 
@@ -116,7 +116,7 @@ class SubtitlesInfo:
         self.id = data["IDSubtitle"]
         self.file_id = data["IDSubtitleFile"]
 
-        self.media_filename = data["SubFileName"]
+        self.filename = data["SubFileName"]
         self.lang_2 = data["ISO639"]
         self.lang_3 = data["SubLanguageID"]
         self.ext = data["SubFormat"].lower()
