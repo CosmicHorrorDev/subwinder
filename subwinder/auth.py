@@ -233,7 +233,6 @@ class AuthSubWinder(SubWinder):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         # TODO: is there a better return type for this?
-        # TODO: test if this returns enough information to for `EpisodeInfo`
         return [build_media_info(data[q]["BestGuess"]) for q in queries]
 
     def report_movie(self, search_result):
@@ -305,9 +304,10 @@ class AuthSubWinder(SubWinder):
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
+        # FIXME: something returning no results returns an empty list, causing
+        #        this to fail
         raw_movies = data[query]
 
-        # TODO: does this return enough information for `EpisodeInfo`
         return [build_media_info(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
