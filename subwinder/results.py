@@ -29,4 +29,4 @@ class SearchResult:
 
         self.media = build_media_info(data, dirname, filename)
         self.subtitles = SubtitlesInfo(data)
-        self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+        self.upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)

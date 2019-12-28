@@ -145,7 +145,7 @@ class AuthSubWinder(SubWinder):
 
             # Format the `filename` according to the `name_format` passed in
             media_name, _ = os.path.splitext(media.filename)
-            upload_filename = subtitles.media_filename
+            upload_filename = subtitles.filename
             upload_name, _ = os.path.splitext(upload_filename)
 
             filename = name_format.format(
