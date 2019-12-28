@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
@@ -9,12 +10,12 @@ def build_media_info(data, file_dir=None, file_name=None):
     MEDIA_MAP = {
         "movie": MovieInfo,
         "episode": EpisodeInfo,
-        "tv series": EpisodeInfo,
+        "tv series": TvSeriesInfo,
     }
 
     kind = data["MovieKind"]
     if kind in MEDIA_MAP:
-        return MEDIA_MAP[kind](data, file_dir, file_name)
+        return MEDIA_MAP[kind].from_data(data, file_dir, file_name)
 
     # TODO: switch to a sub based error
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
@@ -28,11 +29,10 @@ class Comment:
         self.comment_str = data["Comment"]
 
 
-@auto_repr
+@dataclass
 class UserInfo:
-    def __init__(self, id, nickname):
-        self.id = id
-        self.nickname = nickname
+    id: str
+    nickname: str
 
 
 @auto_repr
@@ -48,31 +48,60 @@ class FullUserInfo(UserInfo):
         self.web_language = data["UserWebLanguage"]
 
 
-@auto_repr
+@dataclass
 class MediaInfo:
-    def __init__(self, data, file_dir, file_name):
-        self.name = data["MovieName"]
-        self.year = int(data["MovieYear"])
-        self.imdbid = data.get("IDMovieImdb") or data.get("IDMovieIMDB")
+    name: str
+    year: int
+    imdbid: str
+    file_dir: str
+    file_name: str
 
-        self.file_dir = file_dir
-        self.file_name = file_name
+    @classmethod
+    def from_data(cls, data, file_dir, file_name):
+        name = data["MovieName"]
+        year = int(data["MovieYear"])
+        imdbid = data.get("IDMovieImdb") or data["IDMovieIMDB"]
+
+        return cls(name, year, imdbid, file_dir, file_name)
 
 
-@auto_repr
 class MovieInfo(MediaInfo):
     pass
 
 
+class TvSeriesInfo(MediaInfo):
+    pass
+
+
 @auto_repr
-class EpisodeInfo(MediaInfo):
-    def __init__(self, data, file_dir, file_name):
-        super().__init__(data, file_dir, file_name)
+class EpisodeInfo(TvSeriesInfo):
+    def __init__(
+        self, name, year, imdbid, season, episode, file_dir, file_name
+    ):
+        super().__init__(name, year, imdbid, file_dir, file_name)
+        self.season = season
+        self.episode = episode
+
+    @classmethod
+    def from_data(cls, data, file_dir, file_name):
+        tv_series = TvSeriesInfo.from_data(data, file_dir, file_name)
         # Yay different keys for the same data!
-        season = data.get("SeriesSeason") or data.get("Season")
-        episode = data.get("SeriesEpisode") or data.get("Episode")
-        self.season_num = int(season)
-        self.episode_num = int(episode)
+        season = int(data.get("SeriesSeason") or data.get("Season"))
+        episode = int(data.get("SeriesEpisode") or data.get("Episode"))
+
+        return cls.from_tv_series(tv_series, season, episode)
+
+    @classmethod
+    def from_tv_series(cls, tv_series, season, episode):
+        return cls(
+            tv_series.name,
+            tv_series.year,
+            tv_series.imdbid,
+            season,
+            episode,
+            tv_series.file_dir,
+            tv_series.file_name,
+        )
 
 
 @auto_repr

@@ -20,6 +20,8 @@ class SubtitlesResult:
 @auto_repr
 class SearchResult:
     def __init__(self, data, file_dir=None, file_name=None):
+        # TODO: why is `get` used here, is there a situation where there's no
+        #       "UserID"
         if data.get("UserID") == "0":
             self.author = None
         else:
