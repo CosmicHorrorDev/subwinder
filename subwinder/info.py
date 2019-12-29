@@ -5,7 +5,7 @@ from subwinder.constants import _TIME_FORMAT
 from subwinder.utils import auto_repr
 
 
-# Just build the right info object from the "MovieKind"
+# Build the right info object from the "MovieKind"
 def build_media_info(data, dirname=None, filename=None):
     MEDIA_MAP = {
         "movie": MovieInfo,
@@ -75,9 +75,7 @@ class TvSeriesInfo(MediaInfo):
 
 @auto_repr
 class EpisodeInfo(TvSeriesInfo):
-    def __init__(
-        self, name, year, imdbid, season, episode, dirname, filename
-    ):
+    def __init__(self, name, year, imdbid, season, episode, dirname, filename):
         super().__init__(name, year, imdbid, dirname, filename)
         self.season = season
         self.episode = episode
@@ -104,6 +102,7 @@ class EpisodeInfo(TvSeriesInfo):
         )
 
 
+# TODO: include the full language in here ass well?
 @auto_repr
 class SubtitlesInfo:
     def __init__(self, data):

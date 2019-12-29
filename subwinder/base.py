@@ -1,27 +1,3 @@
-# Endpoints
-# * [IY] search_subtitles param  SearchToMail - Have this be a param on above
-# * [E?] search_movie      CheckMovieHash - Useful for getting movie info from
-#                              hash
-# * [I?] param of ^^       CheckMovieHash2 - May be used in place of ^^
-# * [??] pending           InsertMovieHash - Needs a lot of info, may not be
-#                              supported
-# * [IN] pending           TryUploadSubtitles - Also needs a lot of info, may
-#                              not be supported
-# * [EN] pending           UploadSubtitles - Same story as ^^
-# * [E?] pending           ReportWrongImdbMovie - uses movie information for
-#                              changing imdb info, look into
-# * [??] pending           InsertMovie
-# * [EY] vote              SubtitlesVote - Uses idsubtitle
-# * [E?] request           AddRequest - uses imdbid
-# * [E?] set_subscribe_url SetSubscribeUrl - Just give url
-# * [E?] subscribe         SubscribeToHash - Give the moviehash (should check
-#                              for movie hash?)
-# * [E?] param of vv       QuickSuggest - Just querystring and language
-# * [E?] suggest_movie     SuggestMovie - ^^
-# * [E?] param of srch_mv? GuessMovieFromString - Just needs the title string,
-#                              is slow though
-
-
 # Hide from user:
 # * Any of the hashes and sizes needed
 # * Token
@@ -39,7 +15,6 @@
 # * vote_subtitles should be limited 1 to 10
 
 # TODO: switch to the json api
-# TODO: Email the devs about what idsubtitlefile is even used for, related ^^
 
 import time
 from datetime import datetime
@@ -63,6 +38,7 @@ _API_ERROR_MAP = {
     "408": SubWinderError,
     "410": SubWinderError,
     "411": SubAuthError,
+    # TODO: is this an upload error?
     "412": SubWinderError,
     "413": SubWinderError,
     "414": SubAuthError,
@@ -70,13 +46,9 @@ _API_ERROR_MAP = {
     "416": SubUploadError,
     "429": SubServerError,
     "503": SubServerError,
-    "506": SubWinderError,
+    "506": SubServerError,
+    "520": SubServerError,
 }
-
-
-# TODO: include some way to check download limit for this account
-#       Info is just included in ServerInfo
-# TODO: would be nice to see headers info, but can't
 
 
 class SubWinder:
@@ -104,8 +76,8 @@ class SubWinder:
                 # Use the token if it's defined
                 resp = getattr(self._client, method)(self._token, *params)
 
-            # All requests are supposed to return a status
-            # But of course ServerInfo doesn't for no reason
+            # All requests are supposed to return a status but of course
+            # ServerInfo doesn't for no reason
             if method == "ServerInfo":
                 return resp
 
@@ -120,6 +92,7 @@ class SubWinder:
 
             # Retry if 429 or 503, otherwise handle appropriately
             # FIXME: 503 fails the request so it won't be passed in this way
+            #        instead catch the error and manually set a status
             if status_code not in ("429", "503"):
                 break
 
@@ -150,11 +123,4 @@ class SubWinder:
 
     def server_info(self):
         # FIXME: return this info in a nicer way?
-        # TODO: should we support this method at all?
         return self._request("ServerInfo")
-
-    # TODO: is this even useful?
-    #       not likely externally at least
-    def search_movies(self, video_paths, limit=1):
-        # FIXME: Implement this
-        raise NotImplementedError

@@ -5,6 +5,7 @@ from subwinder.utils import auto_repr
 
 
 # TODO: to store filepath or not to store filepath, that is the question
+#       see how this gets used first
 @auto_repr
 class Subtitles:
     def __init__(self, hash):
