@@ -1,13 +1,3 @@
-# TODO: try to switch movie to media in places where it could be a movie or
-#       episode
-# TODO: not really an easy way to re-get a subtitle result, best option without
-#       the lib user saving info is to do another search on the movie and
-#       matching the subhash again, but that's not very flexible or nice so ask
-#       the devs if there is a nicer way
-# TODO: handle selecting result from checkmoviehash like search result, where
-#       a custom ranking function can be used, if not provided use the default
-#       results
-
 import os
 
 from subwinder import utils

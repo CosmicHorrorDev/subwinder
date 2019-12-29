@@ -1,7 +1,7 @@
+import os
+
 import subwinder.hashers
 from tests.constants import TEST_DIR
-
-import os
 
 
 def test_special_hash():
