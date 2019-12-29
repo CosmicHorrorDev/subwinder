@@ -18,7 +18,13 @@ from subwinder.exceptions import (
     SubDownloadError,
     SubLangError,
 )
-from subwinder.info import build_media_info, Comment, FullUserInfo
+from subwinder.info import (
+    build_media_info,
+    Comment,
+    EpisodeInfo,
+    FullUserInfo,
+    MovieInfo,
+)
 from subwinder.media import Movie
 from subwinder.results import SearchResult
 
@@ -48,6 +54,31 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
             max_downloads = int(result[DOWN_KEY])
 
     return best_result
+
+
+def _build_search_query(query, lang):
+    # All queries take a language
+    internal_query = {"sublanguageid": _LANG_2_TO_3[lang]}
+
+    # Handle all the different formats for seaching for subtitles
+    if isinstance(query, Movie):
+        # Search by `Movie`s hash and size
+        internal_query["moviehash"] = query.hash
+        internal_query["moviebytesize"] = str(query.size)
+    elif isinstance(query, (MovieInfo, EpisodeInfo)):
+        # All `MediaInfo` classes provide an `imdbid`
+        internal_query["imdbid"] = query.imdbid
+
+        # `EpisodeInfo` also needs a `season` and `episode`
+        if isinstance(query, EpisodeInfo):
+            internal_query["season"] = query.season
+            internal_query["episode"] = query.episode
+    else:
+        raise ValueError(
+            f"`_build_search_query` does not take type of {query}"
+        )
+
+    return internal_query
 
 
 class AuthSubWinder(SubWinder):
@@ -242,8 +273,15 @@ class AuthSubWinder(SubWinder):
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
     ):
-        # Verify that all the languages are correct before doing any requests
-        for _, lang_2 in queries:
+        # Verify that all the queries are correct before doing any requests
+        VALID_CLASSES = (Movie, MovieInfo, EpisodeInfo)
+        for query, lang_2 in queries:
+            if not isinstance(query, VALID_CLASSES):
+                raise ValueError(
+                    f"`search_subtitles` takes one of {VALID_CLASSES}, but it"
+                    f" was given {query}"
+                )
+
             if lang_2 not in _LANG_2:
                 # TODO: may want to include the long names as well to make it
                 #       easier for people to find the correct lang_2
@@ -265,17 +303,7 @@ class AuthSubWinder(SubWinder):
     def _search_subtitles(
         self, queries, ranking_function=_default_ranking, **rank_params
     ):
-        internal_queries = []
-        for movie, lang in queries:
-            # Search by movie's hash and size
-            internal_queries.append(
-                {
-                    "sublanguageid": _LANG_2_TO_3[lang],
-                    "moviehash": movie.hash,
-                    "moviebytesize": str(movie.size),
-                }
-            )
-
+        internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
