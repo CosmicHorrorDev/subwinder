@@ -5,15 +5,17 @@ import json
 import os
 from unittest.mock import call, patch
 
-from subwinder.auth import _default_ranking, AuthSubWinder
+from subwinder.auth import _build_search_query, _default_ranking, AuthSubWinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
     Comment,
+    EpisodeInfo,
     MovieInfo,
     SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
 )
+from subwinder.media import Movie
 from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
 
@@ -48,6 +50,39 @@ def test__default_ranking():
 
     for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:
         assert _default_ranking(*args, **kwargs) == ideal_result
+
+
+# TODO: mock out the language conversion once getting the languages from the
+#       api is implemented
+def test__build_search_query():
+    # Setup the queries to the intended responses
+    PARAM_TO_IDEAL_RESULT = [
+        (
+            (Movie("0123456789abcdef", 123456), "en"),
+            {
+                "sublanguageid": "eng",
+                "moviehash": "0123456789abcdef",
+                "moviebytesize": "123456",
+            },
+        ),
+        (
+            (MovieInfo(None, None, "Movie imdbid", None, None), "fr"),
+            {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
+        ),
+        (
+            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de",),
+            {
+                "sublanguageid": "ger",
+                "imdbid": "EI imdbid",
+                "season": 1,
+                "episode": 2,
+            },
+        ),
+    ]
+
+    # `assert` that all of the queries get the intended responses
+    for args, ideal_result in PARAM_TO_IDEAL_RESULT:
+        assert _build_search_query(*args) == ideal_result
 
 
 # TODO: assert that _request isn't called for bad params?
