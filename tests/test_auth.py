@@ -10,6 +10,10 @@ from subwinder.info import TvSeriesInfo, MovieInfo
 from tests.constants import SAMPLES_DIR
 
 
+def _dummy_auth_subwinder():
+    return AuthSubWinder.__new__(AuthSubWinder)
+
+
 def test__default_ranking():
     DUMMY_RESULTS = [
         {"SubBad": "1", "SubFormat": "ASS", "SubDownloadsCnt": "600"},
@@ -112,5 +116,12 @@ def test_guess_media():
     mocked.assert_has_calls(CALLS)
 
 
-def _dummy_auth_subwinder():
-    return AuthSubWinder.__new__(AuthSubWinder)
+def test_ping():
+    asw = _dummy_auth_subwinder()
+
+    IDEAL_RESP = {"status": "200 OK", "seconds": 0.055}
+
+    with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
+        asw.ping()
+
+    mocked.assert_called_with("NoOperation")
