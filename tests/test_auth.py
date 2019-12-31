@@ -4,10 +4,38 @@ import json
 import os
 from unittest.mock import call, patch
 
-from subwinder.auth import AuthSubWinder
+from subwinder.auth import _default_ranking, AuthSubWinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import TvSeriesInfo, MovieInfo
 from tests.constants import SAMPLES_DIR
+
+
+def test_default_ranking():
+    DUMMY_RESULTS = [
+        {"SubBad": "1", "SubFormat": "ASS", "SubDownloadsCnt": "600"},
+        {"SubBad": "0", "SubFormat": "Srt", "SubDownloadsCnt": "500"},
+    ]
+
+    # Format is (<args>, <kwargs>, <result>)
+    PARAM_TO_IDEAL_RESULT = [
+        # Empty results means nothing matched the query
+        (([], 0), {}, None),
+        # Exludes `DUMMY_RESULTS[0]` because it's _bad_
+        ((DUMMY_RESULTS, 0), {}, DUMMY_RESULTS[1]),
+        # Prefers `DUMMY_RESULTS[0]` because there's more downloads
+        ((DUMMY_RESULTS, 0), {"exclude_bad": False}, DUMMY_RESULTS[0]),
+        # Ecludes `DUMMY_RESULTS[0]` because of format
+        ((DUMMY_RESULTS, 0), {"sub_exts": ["SRT"]}, DUMMY_RESULTS[1]),
+        # What happens when nothing matches the parameters?
+        (
+            (DUMMY_RESULTS, 0),
+            {"exclude_bad": True, "sub_exts": ["ass"]},
+            None,
+        ),
+    ]
+
+    for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:
+        assert _default_ranking(*args, **kwargs) == ideal_result
 
 
 def test_authsubwinder_init():
