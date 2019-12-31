@@ -5,6 +5,7 @@ from subwinder.utils import auto_repr
 
 
 # TODO: to store filepath or not to store filepath, that is the question
+#       see how this gets used first
 @auto_repr
 class Subtitles:
     def __init__(self, hash):
@@ -24,9 +25,9 @@ class Movie:
         self.size = size
 
         if filepath is None:
-            self.file_dir, self.file_name = None, None
+            self.dirname, self.filename = None, None
         else:
-            self.file_dir, self.file_name = os.path.split(filepath)
+            self.dirname, self.filename = os.path.split(filepath)
 
     @classmethod
     def from_file(cls, filepath):
@@ -35,8 +36,8 @@ class Movie:
 
         return cls(hash, size, filepath)
 
-    def set_file_name(self, file_name):
-        self.file_name = file_name
+    def set_filename(self, filename):
+        self.filename = filename
 
-    def set_file_dir(self, file_dir):
-        self.file_dir = file_dir
+    def set_dirname(self, dirname):
+        self.dirname = dirname

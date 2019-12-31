@@ -1,23 +1,19 @@
-# TODO: try to switch movie to media in places where it could be a movie or
-#       episode
-# TODO: not really an easy way to re-get a subtitle result, best option without
-#       the lib user saving info is to do another search on the movie and
-#       matching the subhash again, but that's not very flexible or nice so ask
-#       the devs if there is a nicer way
-# TODO: handle selecting result from checkmoviehash like search result, where
-#       a custom ranking function can be used, if not provided use the default
-#       results
-
 import os
 
 from subwinder import utils
 from subwinder.base import SubWinder
 from subwinder.constants import _LANG_2, _LANG_2_TO_3
-from subwinder.info import build_media_info, Comment, FullUserInfo
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
     SubLangError,
+)
+from subwinder.info import (
+    build_media_info,
+    Comment,
+    EpisodeInfo,
+    FullUserInfo,
+    MovieInfo,
 )
 from subwinder.media import Movie
 from subwinder.results import SearchResult
@@ -50,6 +46,31 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
     return best_result
 
 
+def _build_search_query(query, lang):
+    # All queries take a language
+    internal_query = {"sublanguageid": _LANG_2_TO_3[lang]}
+
+    # Handle all the different formats for seaching for subtitles
+    if isinstance(query, Movie):
+        # Search by `Movie`s hash and size
+        internal_query["moviehash"] = query.hash
+        internal_query["moviebytesize"] = str(query.size)
+    elif isinstance(query, (MovieInfo, EpisodeInfo)):
+        # All `MediaInfo` classes provide an `imdbid`
+        internal_query["imdbid"] = query.imdbid
+
+        # `EpisodeInfo` also needs a `season` and `episode`
+        if isinstance(query, EpisodeInfo):
+            internal_query["season"] = query.season
+            internal_query["episode"] = query.episode
+    else:
+        raise ValueError(
+            f"`_build_search_query` does not take type of {query}"
+        )
+
+    return internal_query
+
+
 class AuthSubWinder(SubWinder):
     def __init__(self, username=None, password=None, useragent=None):
         # Try to get any info from env vars if not passed in
@@ -73,7 +94,7 @@ class AuthSubWinder(SubWinder):
             raise SubAuthError(
                 "missing `useragent`, set when initializing `AuthSubWinder` or"
                 " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
-                "be sepcified for your app according to instructions given at"
+                " be sepcified for your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"
             )
@@ -121,17 +142,17 @@ class AuthSubWinder(SubWinder):
             subtitles = download.subtitles
 
             # Make sure there is enough context to save subtitles
-            if media.file_dir is None and download_dir is None:
+            if media.dirname is None and download_dir is None:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `file_dir`"
+                    "Insufficient context. Need to set either the `dirname`"
                     f" in {download} or `download_dir` in `download_subtitles`"
                 )
 
             # Same as ^^
             # FIXME: technically "{{media_name}}" would be a false positive
-            if media.file_name is None and "{media_name}" in name_format:
+            if media.filename is None and "{media_name}" in name_format:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `file_name`"
+                    "Insufficient context. Need to set either the `filename`"
                     f" in {download} or avoid using '{{media_name}}' in"
                     " `name_format`"
                 )
@@ -139,13 +160,13 @@ class AuthSubWinder(SubWinder):
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
             if download_dir is None:
-                dir_path = media.file_dir
+                dir_path = media.dirname
             else:
                 dir_path = download_dir
 
             # Format the `filename` according to the `name_format` passed in
-            media_name, _ = os.path.splitext(media.file_name)
-            upload_filename = subtitles.media_filename
+            media_name, _ = os.path.splitext(media.filename)
+            upload_filename = subtitles.filename
             upload_name, _ = os.path.splitext(upload_filename)
 
             filename = name_format.format(
@@ -229,10 +250,9 @@ class AuthSubWinder(SubWinder):
 
         return results
 
+    # TODO: switch this to do a ranking function like in `search_subtitles`?
     def _guess_media(self, queries):
         data = self._request("GuessMovieFromString", queries)["data"]
-
-        # TODO: is there a better return type for this?
         return [build_media_info(data[q]["BestGuess"]) for q in queries]
 
     def report_movie(self, search_result):
@@ -243,8 +263,15 @@ class AuthSubWinder(SubWinder):
     def search_subtitles(
         self, queries, *, ranking_function=_default_ranking, **rank_params
     ):
-        # Verify that all the languages are correct before doing any requests
-        for _, lang_2 in queries:
+        # Verify that all the queries are correct before doing any requests
+        VALID_CLASSES = (Movie, MovieInfo, EpisodeInfo)
+        for query, lang_2 in queries:
+            if not isinstance(query, VALID_CLASSES):
+                raise ValueError(
+                    f"`search_subtitles` takes one of {VALID_CLASSES}, but it"
+                    f" was given {query}"
+                )
+
             if lang_2 not in _LANG_2:
                 # TODO: may want to include the long names as well to make it
                 #       easier for people to find the correct lang_2
@@ -266,17 +293,7 @@ class AuthSubWinder(SubWinder):
     def _search_subtitles(
         self, queries, ranking_function=_default_ranking, **rank_params
     ):
-        internal_queries = []
-        for movie, lang in queries:
-            # Search by movie's hash and size
-            internal_queries.append(
-                {
-                    "sublanguageid": _LANG_2_TO_3[lang],
-                    "moviehash": movie.hash,
-                    "moviebytesize": str(movie.size),
-                }
-            )
-
+        internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
@@ -295,7 +312,7 @@ class AuthSubWinder(SubWinder):
                 if type(query) == Movie:
                     # Movie could have the original file information tied to it
                     search_results.append(
-                        SearchResult(result, query.file_dir, query.file_name)
+                        SearchResult(result, query.dirname, query.filename)
                     )
                 else:
                     search_results.append(SearchResult(result))

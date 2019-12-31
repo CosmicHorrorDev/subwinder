@@ -19,7 +19,7 @@ class SubtitlesResult:
 
 @auto_repr
 class SearchResult:
-    def __init__(self, data, file_dir=None, file_name=None):
+    def __init__(self, data, dirname=None, filename=None):
         # TODO: why is `get` used here, is there a situation where there's no
         #       "UserID"
         if data.get("UserID") == "0":
@@ -27,6 +27,6 @@ class SearchResult:
         else:
             self.author = UserInfo(data.get("UserID"), data["UserNickName"])
 
-        self.media = build_media_info(data, file_dir, file_name)
+        self.media = build_media_info(data, dirname, filename)
         self.subtitles = SubtitlesInfo(data)
-        self.date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+        self.upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)

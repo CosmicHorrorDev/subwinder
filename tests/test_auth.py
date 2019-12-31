@@ -1,13 +1,13 @@
-from subwinder.auth import AuthSubWinder
-from subwinder.exceptions import SubAuthError
-from subwinder.info import TvSeriesInfo, MovieInfo
-from tests.constants import SAMPLES_DIR
+import pytest
 
 import json
 import os
 from unittest.mock import call, patch
 
-import pytest
+from subwinder.auth import AuthSubWinder
+from subwinder.exceptions import SubAuthError
+from subwinder.info import TvSeriesInfo, MovieInfo
+from tests.constants import SAMPLES_DIR
 
 
 def test_authsubwinder_init():
@@ -37,7 +37,7 @@ def test_guess_media():
     # The calls are split due to batching
     CALLS = [
         call("GuessMovieFromString", QUERIES[:3]),
-        call("GuessMovieFromString", QUERIES[3:],),
+        call("GuessMovieFromString", QUERIES[3:]),
     ]
     IDEAL_RESULT = [
         TvSeriesInfo("Heroes", 2006, "0813715", None, None),
