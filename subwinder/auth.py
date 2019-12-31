@@ -116,6 +116,7 @@ class AuthSubWinder(SubWinder):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]
 
+    # FIXME: reset token to `None` after logout?
     def _logout(self):
         self._request("LogOut")
 

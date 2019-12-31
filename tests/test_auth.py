@@ -38,6 +38,8 @@ def test__default_ranking():
         assert _default_ranking(*args, **kwargs) == ideal_result
 
 
+# TODO: assert that _request isn't called for bad params?
+# TODO: test correct case as well (assert token as well)
 def test_authsubwinder_init():
     bad_params = [
         # Missing both username and password
@@ -59,12 +61,24 @@ def test__login():
     IDEAL_RESP = {"status": "200 OK", "token": "<token>"}
 
     with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
-        asw.__init__("<username>", "<password>", "<useragent>")
+        asw._login("<username>", "<password>", "<useragent>")
 
     mocked.assert_called_with(
         "LogIn", "<username>", "<password>", "en", "<useragent>"
     )
-    assert asw._token == "<token>"
+
+
+def test__logout():
+    asw = _dummy_auth_subwinder()
+    # asw._token = "<token>"
+
+    IDEAL_RESP = {"status": "200 OK", "seconds": 0.055}
+
+    with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
+        asw._logout()
+
+    mocked.assert_called_with("LogOut")
+    # assert asw._token is None
 
 
 def test_guess_media():
@@ -99,7 +113,4 @@ def test_guess_media():
 
 
 def _dummy_auth_subwinder():
-    asw = AuthSubWinder.__new__(AuthSubWinder)
-    asw._token = "<token>"
-
-    return asw
+    return AuthSubWinder.__new__(AuthSubWinder)
