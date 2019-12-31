@@ -21,14 +21,6 @@ def build_media_info(data, dirname=None, filename=None):
     raise Exception(f"Undefined MovieKind {data['MovieKind']}")
 
 
-@auto_repr
-class Comment:
-    def __init__(self, data):
-        self.author = UserInfo(data["UserID"], data["UserNickName"])
-        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["Comment"]
-
-
 @dataclass
 class UserInfo:
     id: str
@@ -46,6 +38,20 @@ class FullUserInfo(UserInfo):
         preferred_languages = data["UserPreferedLanguages"].split(",")
         self.preferred_languages = [p_l for p_l in preferred_languages if p_l]
         self.web_language = data["UserWebLanguage"]
+
+
+# TODO: switch this over to the `from_data` style? Would make setting up the
+#       test easier
+@dataclass
+class Comment:
+    author: UserInfo
+    created: datetime
+    comment_str: str
+
+    def __init__(self, data):
+        self.author = UserInfo(data["UserID"], data["UserNickName"])
+        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
+        self.comment_str = data["Comment"]
 
 
 @dataclass

@@ -213,7 +213,6 @@ class AuthSubWinder(SubWinder):
             with open(fpath, "w") as f:
                 f.write(subtitles)
 
-    # TODO: does this need to be batched
     def get_comments(self, search_results):
         subtitle_ids = [s.subtitles.id for s in search_results]
         data = self._request("GetComments", subtitle_ids)["data"]

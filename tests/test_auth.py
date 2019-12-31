@@ -1,12 +1,20 @@
 import pytest
 
+import datetime
 import json
 import os
 from unittest.mock import call, patch
 
 from subwinder.auth import _default_ranking, AuthSubWinder
 from subwinder.exceptions import SubAuthError
-from subwinder.info import TvSeriesInfo, MovieInfo
+from subwinder.info import (
+    Comment,
+    MovieInfo,
+    SubtitlesInfo,
+    TvSeriesInfo,
+    UserInfo,
+)
+from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
 
 
@@ -83,6 +91,42 @@ def test__logout():
 
     mocked.assert_called_with("LogOut")
     # assert asw._token is None
+
+
+def test_get_comments():
+    asw = _dummy_auth_subwinder()
+
+    # Build up the Empty `SearchResult`s and add the `subtitles.id`
+    queries = [
+        SearchResult.__new__(SearchResult),
+        SearchResult.__new__(SearchResult),
+    ]
+    queries[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[0].subtitles.id = "3387112"
+    queries[1].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[1].subtitles.id = "3385570"
+
+    ideal_result = [
+        [Comment.__new__(Comment)],
+        [Comment.__new__(Comment), Comment.__new__(Comment)],
+    ]
+    ideal_result[0][0].author = UserInfo("192696", "neo_rtr")
+    ideal_result[0][0].created = datetime.datetime(2008, 12, 14, 17, 20, 42)
+    ideal_result[0][0].comment_str = "Greate Work. thank you"
+    ideal_result[1][0].author = UserInfo("745565", "pee-jay_cz")
+    ideal_result[1][0].created = datetime.datetime(2008, 12, 12, 15, 21, 48)
+    ideal_result[1][0].comment_str = "Thank you."
+    ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
+    ideal_result[1][1].created = datetime.datetime(2008, 12, 12, 15, 51, 1)
+    ideal_result[1][1].comment_str = "You're welcome :)"
+    with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
+        SAMPLE_RESP = json.load(f)
+
+    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
+        comments = asw.get_comments(queries)
+
+    assert comments == ideal_result
+    mocked.assert_called_with("GetComments", ["3387112", "3385570"])
 
 
 def test_guess_media():
