@@ -25,6 +25,18 @@ def _dummy_auth_subwinder():
     return AuthSubWinder.__new__(AuthSubWinder)
 
 
+def _standard_asw_mock(
+    method, mocked_method, method_args, response, expected_call, ideal_result
+):
+    asw = _dummy_auth_subwinder()
+
+    with patch.object(asw, mocked_method, return_value=response) as mocked:
+        result = getattr(asw, method)(*method_args)
+
+    mocked.assert_called_with(*expected_call)
+    assert result == ideal_result
+
+
 def test__default_ranking():
     DUMMY_RESULTS = [
         {"SubBad": "1", "SubFormat": "ASS", "SubDownloadsCnt": "600"},
@@ -104,41 +116,30 @@ def test_authsubwinder__init__():
 
 
 def test__login():
-    asw = _dummy_auth_subwinder()
+    QUERIES = ("<username>", "<password>", "<useragent>")
+    RESP = {"status": "200 OK", "token": "<token>"}
+    CALL = ("LogIn", "<username>", "<password>", "en", "<useragent>")
 
-    IDEAL_RESP = {"status": "200 OK", "token": "<token>"}
-
-    with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
-        asw._login("<username>", "<password>", "<useragent>")
-
-    mocked.assert_called_with(
-        "LogIn", "<username>", "<password>", "en", "<useragent>"
-    )
+    _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
 
 def test__logout():
-    asw = _dummy_auth_subwinder()
-    # asw._token = "<token>"
+    QUERIES = ()
+    RESP = {"status": "200 OK", "seconds": 0.055}
+    CALL = ("LogOut",)
 
-    IDEAL_RESP = {"status": "200 OK", "seconds": 0.055}
-
-    with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
-        asw._logout()
-
-    mocked.assert_called_with("LogOut")
-    # assert asw._token is None
+    _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
 def test_check_subtitles():
-    asw = _dummy_auth_subwinder()
-
-    QUERIES = [
-        Subtitles("a9672c89bc3f5438f820f06bab708067"),
-        Subtitles("0ca1f1e42cfb58c1345e149f98ac3aec"),
-        Subtitles("11111111111111111111111111111111"),
-    ]
-    IDEAL_RESULT = ["1", "3", None]
-    SAMPLE_RESP = {
+    QUERIES = (
+        [
+            Subtitles("a9672c89bc3f5438f820f06bab708067"),
+            Subtitles("0ca1f1e42cfb58c1345e149f98ac3aec"),
+            Subtitles("11111111111111111111111111111111"),
+        ],
+    )
+    RESP = {
         "status": "200 OK",
         "data": {
             "a9672c89bc3f5438f820f06bab708067": "1",
@@ -147,11 +148,7 @@ def test_check_subtitles():
         },
         "seconds": "0.009",
     }
-
-    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
-        ids = asw.check_subtitles(QUERIES)
-
-    mocked.called_with(
+    CALL = (
         "CheckSubHash",
         [
             "a9672c89bc3f5438f820f06bab708067",
@@ -159,22 +156,27 @@ def test_check_subtitles():
             "11111111111111111111111111111111",
         ],
     )
-    assert ids == IDEAL_RESULT
+    IDEAL_RESULT = ["1", "3", None]
+
+    _standard_asw_mock(
+        "check_subtitles", "_request", QUERIES, RESP, CALL, IDEAL_RESULT
+    )
 
 
 def test_get_comments():
-    asw = _dummy_auth_subwinder()
-
     # Build up the Empty `SearchResult`s and add the `subtitles.id`
-    queries = [
-        SearchResult.__new__(SearchResult),
-        SearchResult.__new__(SearchResult),
-    ]
-    queries[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    queries[0].subtitles.id = "3387112"
-    queries[1].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    queries[1].subtitles.id = "3385570"
-
+    queries = (
+        [
+            SearchResult.__new__(SearchResult),
+            SearchResult.__new__(SearchResult),
+        ],
+    )
+    queries[0][0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[0][0].subtitles.id = "3387112"
+    queries[0][1].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[0][1].subtitles.id = "3385570"
+    with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
+        RESP = json.load(f)
     ideal_result = [
         [Comment.__new__(Comment)],
         [Comment.__new__(Comment), Comment.__new__(Comment)],
@@ -188,14 +190,11 @@ def test_get_comments():
     ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
     ideal_result[1][1].created = datetime.datetime(2008, 12, 12, 15, 51, 1)
     ideal_result[1][1].comment_str = "You're welcome :)"
-    with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
-        SAMPLE_RESP = json.load(f)
+    CALL = ("GetComments", ["3387112", "3385570"])
 
-    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
-        comments = asw.get_comments(queries)
-
-    assert comments == ideal_result
-    mocked.assert_called_with("GetComments", ["3387112", "3385570"])
+    _standard_asw_mock(
+        "get_comments", "_request", queries, RESP, CALL, ideal_result
+    )
 
 
 # TODO: split up testing `guess_media` and `_guess_media`
@@ -231,20 +230,14 @@ def test_guess_media():
 
 
 def test_ping():
-    asw = _dummy_auth_subwinder()
+    RESP = {"status": "200 OK", "seconds": "0.055"}
+    CALL = ("NoOperation",)
 
-    IDEAL_RESP = {"status": "200 OK", "seconds": 0.055}
-
-    with patch.object(asw, "_request", return_value=IDEAL_RESP) as mocked:
-        asw.ping()
-
-    mocked.assert_called_with("NoOperation")
+    _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
 
 
 def test_user_info():
-    asw = _dummy_auth_subwinder()
-
-    SAMPLE_RESP = {
+    RESP = {
         "status": "200 OK",
         "data": {
             "IDUser": "6",
@@ -257,6 +250,7 @@ def test_user_info():
         },
         "seconds": "0.241",
     }
+    CALL = ("GetUserInfo",)
     # TODO: switching this out to `from_data` would make it simpler
     ideal_result = FullUserInfo.__new__(FullUserInfo)
     ideal_result.id = "6"
@@ -267,8 +261,4 @@ def test_user_info():
     ideal_result.preferred_languages = ["cze", "eng", "slo", "tha"]
     ideal_result.web_language = "en"
 
-    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
-        user_info = asw.user_info()
-
-    assert user_info == ideal_result
-    mocked.assert_called_with("GetUserInfo")
+    _standard_asw_mock("user_info", "_request", (), RESP, CALL, ideal_result)
