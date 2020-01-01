@@ -10,6 +10,7 @@ from subwinder.exceptions import SubAuthError
 from subwinder.info import (
     Comment,
     EpisodeInfo,
+    FullUserInfo,
     MovieInfo,
     SubtitlesInfo,
     TvSeriesInfo,
@@ -204,3 +205,36 @@ def test_ping():
         asw.ping()
 
     mocked.assert_called_with("NoOperation")
+
+
+def test_user_info():
+    asw = _dummy_auth_subwinder()
+
+    SAMPLE_RESP = {
+        "status": "200 OK",
+        "data": {
+            "IDUser": "6",
+            "UserNickName": "os",
+            "UserRank": "super admin",
+            "UploadCnt": "296",
+            "UserPreferedLanguages": "cze,eng,slo,tha",
+            "DownloadCnt": "1215",
+            "UserWebLanguage": "en",
+        },
+        "seconds": "0.241",
+    }
+    # TODO: switching this out to `from_data` would make it simpler
+    ideal_result = FullUserInfo.__new__(FullUserInfo)
+    ideal_result.id = "6"
+    ideal_result.nickname = "os"
+    ideal_result.rank = "super admin"
+    ideal_result.uploads = 296
+    ideal_result.downloads = 1215
+    ideal_result.preferred_languages = ["cze", "eng", "slo", "tha"]
+    ideal_result.web_language = "en"
+
+    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
+        user_info = asw.user_info()
+
+    assert user_info == ideal_result
+    mocked.assert_called_with("GetUserInfo")
