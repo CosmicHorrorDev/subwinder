@@ -16,7 +16,7 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
-from subwinder.media import Movie
+from subwinder.media import Movie, Subtitles
 from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
 
@@ -88,7 +88,7 @@ def test__build_search_query():
 
 # TODO: assert that _request isn't called for bad params?
 # TODO: test correct case as well (assert token as well)
-def test_authsubwinder_init():
+def test_authsubwinder__init__():
     bad_params = [
         # Missing both username and password
         ["<useragent"],
@@ -129,6 +129,39 @@ def test__logout():
     # assert asw._token is None
 
 
+def test_check_subtitles():
+    asw = _dummy_auth_subwinder()
+
+    QUERIES = [
+        Subtitles("a9672c89bc3f5438f820f06bab708067"),
+        Subtitles("0ca1f1e42cfb58c1345e149f98ac3aec"),
+        Subtitles("11111111111111111111111111111111"),
+    ]
+    IDEAL_RESULT = ["1", "3", None]
+    SAMPLE_RESP = {
+        "status": "200 OK",
+        "data": {
+            "a9672c89bc3f5438f820f06bab708067": "1",
+            "0ca1f1e42cfb58c1345e149f98ac3aec": "3",
+            "11111111111111111111111111111111": "0",
+        },
+        "seconds": "0.009",
+    }
+
+    with patch.object(asw, "_request", return_value=SAMPLE_RESP) as mocked:
+        ids = asw.check_subtitles(QUERIES)
+
+    mocked.called_with(
+        "CheckSubHash",
+        [
+            "a9672c89bc3f5438f820f06bab708067",
+            "0ca1f1e42cfb58c1345e149f98ac3aec",
+            "11111111111111111111111111111111",
+        ],
+    )
+    assert ids == IDEAL_RESULT
+
+
 def test_get_comments():
     asw = _dummy_auth_subwinder()
 
@@ -165,6 +198,7 @@ def test_get_comments():
     mocked.assert_called_with("GetComments", ["3387112", "3385570"])
 
 
+# TODO: split up testing `guess_media` and `_guess_media`
 def test_guess_media():
     asw = _dummy_auth_subwinder()
 
