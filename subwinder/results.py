@@ -11,7 +11,6 @@ from subwinder.utils import auto_repr
 
 
 # TODO: Yeahhhhhh, this class is only holding one thing, may not be worth it
-@auto_repr
 @dataclass
 class SubtitlesResult:
     file_id: int

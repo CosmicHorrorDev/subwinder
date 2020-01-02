@@ -3,6 +3,7 @@ import pytest
 import datetime
 import json
 import os
+from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
 from subwinder.auth import _build_search_query, _default_ranking, AuthSubWinder
@@ -161,6 +162,67 @@ def test_check_subtitles():
     _standard_asw_mock(
         "check_subtitles", "_request", QUERIES, RESP, CALL, IDEAL_RESULT
     )
+
+
+# TODO: test this for batching
+def test_download_subtitles():
+    download_path = os.path.join("movie dir", "sub filename.sub ext")
+    queries = ((SearchResult.__new__(SearchResult),),)
+    queries[0][0].media = MovieInfo("Insurgent", 2015, "2908446", None, None)
+    queries[0][0].media.dirname = "movie dir"
+    queries[0][0].media.filename = "movie filename"
+    queries[0][0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[0][0].subtitles.filename = "sub filename.sub ext"
+    queries[0][0].subtitles.lang_2 = "sub lang 2"
+    queries[0][0].subtitles.lang_3 = "sub lang 3"
+    queries[0][0].subtitles.ext = "sub ext"
+    RESP = None
+    # Need to get the download path here
+    CALL = (*queries, [download_path])
+    IDEAL = ["movie dir/sub filename.sub ext"]
+
+    _standard_asw_mock(
+        "download_subtitles", "_download_subtitles", queries, RESP, CALL, IDEAL
+    )
+
+
+def test__download_subtitles():
+    asw = _dummy_auth_subwinder()
+
+    dummy_search_result = SearchResult.__new__(SearchResult)
+    dummy_search_result.subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    dummy_search_result.subtitles.encoding = "UTF-8"
+    dummy_search_result.subtitles.file_id = "1954677189"
+    RESP = {
+        "status": "200 OK",
+        "data": [
+            {
+                "idsubtitlefile": "1954677189",
+                "data": (
+                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N"
+                    "/Yu1JuTV9wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSM"
+                    "Fps5/4WhRKSPvwBzf2OXZqAAAA"
+                ),
+            },
+        ],
+        "seconds": "0.397",
+    }
+    IDEAL_CONTENTS = (
+        "Hello there, I'm that good ole compressed and encoded subtitle"
+        " information that you so dearly want to save"
+    )
+
+    with TemporaryDirectory() as temp_dir:
+        sub_path = os.path.join(temp_dir, "test download.txt")
+
+        with patch.object(asw, "_request", return_value=RESP) as mocked:
+            asw._download_subtitles([dummy_search_result], [sub_path])
+
+        mocked.assert_called_with("DownloadSubtitles", ["1954677189"])
+
+        # Check the contents for the correct result
+        with open(sub_path) as f:
+            assert f.read() == IDEAL_CONTENTS
 
 
 def test_get_comments():
