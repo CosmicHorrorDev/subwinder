@@ -321,8 +321,34 @@ def test_report_movie():
 #     pass
 
 
-# def test_suggest_media():
-#     pass
+def test_suggest_media():
+    QUERY = ("matrix",)
+    CALL = ("SuggestMovie", "matrix")
+    RESP = {
+        "status": "200 OK",
+        "data": {
+            "matrix": [
+                {
+                    "MovieName": "The Matrix",
+                    "MovieYear": "1999",
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0133093",
+                },
+                {
+                    "MovieName": "The Matrix Reloaded",
+                    "MovieYear": "2003",
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0234215",
+                },
+            ]
+        },
+    }
+    IDEAL = [
+        MovieInfo("The Matrix", 1999, "0133093", None, None),
+        MovieInfo("The Matrix Reloaded", 2003, "0234215", None, None),
+    ]
+
+    _standard_asw_mock("suggest_media", "_request", QUERY, RESP, CALL, IDEAL)
 
 
 def test_user_info():
