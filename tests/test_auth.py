@@ -132,6 +132,11 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
+# TODO: not implemented yet, add after `add_comment` works
+# def test_add_comment():
+#     pass
+
+
 def test_check_subtitles():
     QUERIES = (
         [
@@ -296,6 +301,28 @@ def test_ping():
     CALL = ("NoOperation",)
 
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
+
+
+def test_report_movie():
+    query = (SearchResult.__new__(SearchResult),)
+    query[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    query[0].subtitles.sub_to_movie_id = "739"
+    CALL = ("ReportWrongMovieHash", "739")
+    RESP = {"status": "200 OK", "seconds": "0.115"}
+
+    _standard_asw_mock("report_movie", "_request", query, RESP, CALL, None)
+
+
+# def test_search_subtitles():
+#     pass
+
+
+# def test__search_subtitles():
+#     pass
+
+
+# def test_suggest_media():
+#     pass
 
 
 def test_user_info():

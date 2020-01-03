@@ -16,6 +16,8 @@ class SubtitlesResult:
     file_id: int
 
 
+# TODO: Some of this data is set to 0 when search was done with imdbid or query
+#       (IDSubMovieFile, MovieHash, MovieByteSize, MovieTimeMS will be "0")
 @auto_repr
 class SearchResult:
     def __init__(self, data, dirname=None, filename=None):
