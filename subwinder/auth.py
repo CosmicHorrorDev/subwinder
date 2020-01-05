@@ -242,6 +242,7 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
+    # TODO: Ensure that `queries` is of type list or tuple
     def guess_media(self, queries):
         BATCH_SIZE = 3
         results = []
@@ -291,7 +292,7 @@ class AuthSubWinder(SubWinder):
         return results
 
     def _search_subtitles(
-        self, queries, ranking_function=_default_ranking, **rank_params
+        self, queries, ranking_function, **rank_params
     ):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]

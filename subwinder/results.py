@@ -3,11 +3,11 @@ from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
 from subwinder.info import (
+    build_media_info,
+    MediaInfo,
     SubtitlesInfo,
     UserInfo,
-    build_media_info,
 )
-from subwinder.utils import auto_repr
 
 
 # TODO: Yeahhhhhh, this class is only holding one thing, may not be worth it
@@ -18,8 +18,13 @@ class SubtitlesResult:
 
 # TODO: Some of this data is set to 0 when search was done with imdbid or query
 #       (IDSubMovieFile, MovieHash, MovieByteSize, MovieTimeMS will be "0")
-@auto_repr
+@dataclass
 class SearchResult:
+    author: UserInfo
+    media: MediaInfo
+    subtitles: SubtitlesInfo
+    upload_date: datetime
+
     def __init__(self, data, dirname=None, filename=None):
         # TODO: why is `get` used here, is there a situation where there's no
         #       "UserID"

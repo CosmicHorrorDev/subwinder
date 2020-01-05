@@ -1,6 +1,6 @@
 import pytest
 
-import datetime
+from datetime import datetime
 import json
 import os
 from tempfile import TemporaryDirectory
@@ -84,7 +84,7 @@ def test__build_search_query():
             {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
         ),
         (
-            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de",),
+            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de"),
             {
                 "sublanguageid": "ger",
                 "imdbid": "EI imdbid",
@@ -249,13 +249,13 @@ def test_get_comments():
         [Comment.__new__(Comment), Comment.__new__(Comment)],
     ]
     ideal_result[0][0].author = UserInfo("192696", "neo_rtr")
-    ideal_result[0][0].created = datetime.datetime(2008, 12, 14, 17, 20, 42)
+    ideal_result[0][0].created = datetime(2008, 12, 14, 17, 20, 42)
     ideal_result[0][0].comment_str = "Greate Work. thank you"
     ideal_result[1][0].author = UserInfo("745565", "pee-jay_cz")
-    ideal_result[1][0].created = datetime.datetime(2008, 12, 12, 15, 21, 48)
+    ideal_result[1][0].created = datetime(2008, 12, 12, 15, 21, 48)
     ideal_result[1][0].comment_str = "Thank you."
     ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
-    ideal_result[1][1].created = datetime.datetime(2008, 12, 12, 15, 51, 1)
+    ideal_result[1][1].created = datetime(2008, 12, 12, 15, 51, 1)
     ideal_result[1][1].comment_str = "You're welcome :)"
     CALL = ("GetComments", ["3387112", "3385570"])
 
@@ -313,12 +313,71 @@ def test_report_movie():
     _standard_asw_mock("report_movie", "_request", query, RESP, CALL, None)
 
 
-# def test_search_subtitles():
-#     pass
+def test_search_subtitles():
+    QUERIES = (
+        (
+            (Movie.__new__(Movie), "en"),
+            (MovieInfo.__new__(MovieInfo), "fr"),
+            (EpisodeInfo.__new__(EpisodeInfo), "de"),
+        ),
+    )
+    CALL = (*QUERIES, _default_ranking)
+    RESP = [
+        SearchResult.__new__(SearchResult),
+        SearchResult.__new__(SearchResult),
+        SearchResult.__new__(SearchResult),
+    ]
+    IDEAL = RESP
+
+    _standard_asw_mock(
+        "search_subtitles", "_search_subtitles", QUERIES, RESP, CALL, IDEAL
+    )
 
 
-# def test__search_subtitles():
-#     pass
+def test__search_subtitles():
+    queries = (
+        (
+            (Movie("18379ac9af039390", 366876694), "en"),
+        ),
+        _default_ranking,
+    )
+    CALL = (
+        "SearchSubtitles",
+        [
+            {
+                "sublanguageid": "eng",
+                "moviehash": "18379ac9af039390",
+                "moviebytesize": "366876694",
+            },
+        ],
+    )
+    with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
+        RESP = json.load(f)
+
+    ideal = [
+        SearchResult.__new__(SearchResult),
+    ]
+    ideal[0].author = UserInfo("1332962", "elderman")
+    ideal[0].media = EpisodeInfo(
+        '"Fringe" Alone in the World', 2011, "1998676", 4, 3, None, None
+    )
+    ideal[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    ideal[0].subtitles.size = 58024
+    ideal[0].subtitles.downloads = 57765
+    ideal[0].subtitles.num_comments = 0
+    ideal[0].subtitles.rating = 0.0
+    ideal[0].subtitles.id = "4251071"
+    ideal[0].subtitles.file_id = "1952941557"
+    ideal[0].subtitles.filename = "Fringe.S04E03.HDTV.XviD-LOL.srt"
+    ideal[0].subtitles.lang_2 = "en"
+    ideal[0].subtitles.lang_3 = "eng"
+    ideal[0].subtitles.ext = "srt"
+    ideal[0].subtitles.encoding = "UTF-8"
+    ideal[0].upload_date = datetime(2011, 10, 8, 7, 36, 1)
+
+    _standard_asw_mock(
+        "_search_subtitles", "_request", queries, RESP, CALL, ideal
+    )
 
 
 def test_suggest_media():
