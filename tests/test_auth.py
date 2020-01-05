@@ -1,8 +1,9 @@
 import pytest
 
-import datetime
+from datetime import datetime
 import json
 import os
+from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
 from subwinder.auth import _build_search_query, _default_ranking, AuthSubWinder
@@ -83,7 +84,7 @@ def test__build_search_query():
             {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
         ),
         (
-            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de",),
+            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de"),
             {
                 "sublanguageid": "ger",
                 "imdbid": "EI imdbid",
@@ -131,6 +132,11 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
+# TODO: not implemented yet, add after `add_comment` works
+# def test_add_comment():
+#     pass
+
+
 def test_check_subtitles():
     QUERIES = (
         [
@@ -163,6 +169,67 @@ def test_check_subtitles():
     )
 
 
+# TODO: test this for batching
+def test_download_subtitles():
+    download_path = os.path.join("movie dir", "sub filename.sub ext")
+    queries = ((SearchResult.__new__(SearchResult),),)
+    queries[0][0].media = MovieInfo("Insurgent", 2015, "2908446", None, None)
+    queries[0][0].media.dirname = "movie dir"
+    queries[0][0].media.filename = "movie filename"
+    queries[0][0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    queries[0][0].subtitles.filename = "sub filename.sub ext"
+    queries[0][0].subtitles.lang_2 = "sub lang 2"
+    queries[0][0].subtitles.lang_3 = "sub lang 3"
+    queries[0][0].subtitles.ext = "sub ext"
+    RESP = None
+    # Need to get the download path here
+    CALL = (*queries, [download_path])
+    IDEAL = ["movie dir/sub filename.sub ext"]
+
+    _standard_asw_mock(
+        "download_subtitles", "_download_subtitles", queries, RESP, CALL, IDEAL
+    )
+
+
+def test__download_subtitles():
+    asw = _dummy_auth_subwinder()
+
+    dummy_search_result = SearchResult.__new__(SearchResult)
+    dummy_search_result.subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    dummy_search_result.subtitles.encoding = "UTF-8"
+    dummy_search_result.subtitles.file_id = "1954677189"
+    RESP = {
+        "status": "200 OK",
+        "data": [
+            {
+                "idsubtitlefile": "1954677189",
+                "data": (
+                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N"
+                    "/Yu1JuTV9wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSM"
+                    "Fps5/4WhRKSPvwBzf2OXZqAAAA"
+                ),
+            },
+        ],
+        "seconds": "0.397",
+    }
+    IDEAL_CONTENTS = (
+        "Hello there, I'm that good ole compressed and encoded subtitle"
+        " information that you so dearly want to save"
+    )
+
+    with TemporaryDirectory() as temp_dir:
+        sub_path = os.path.join(temp_dir, "test download.txt")
+
+        with patch.object(asw, "_request", return_value=RESP) as mocked:
+            asw._download_subtitles([dummy_search_result], [sub_path])
+
+        mocked.assert_called_with("DownloadSubtitles", ["1954677189"])
+
+        # Check the contents for the correct result
+        with open(sub_path) as f:
+            assert f.read() == IDEAL_CONTENTS
+
+
 def test_get_comments():
     # Build up the Empty `SearchResult`s and add the `subtitles.id`
     queries = (
@@ -182,13 +249,13 @@ def test_get_comments():
         [Comment.__new__(Comment), Comment.__new__(Comment)],
     ]
     ideal_result[0][0].author = UserInfo("192696", "neo_rtr")
-    ideal_result[0][0].created = datetime.datetime(2008, 12, 14, 17, 20, 42)
+    ideal_result[0][0].created = datetime(2008, 12, 14, 17, 20, 42)
     ideal_result[0][0].comment_str = "Greate Work. thank you"
     ideal_result[1][0].author = UserInfo("745565", "pee-jay_cz")
-    ideal_result[1][0].created = datetime.datetime(2008, 12, 12, 15, 21, 48)
+    ideal_result[1][0].created = datetime(2008, 12, 12, 15, 21, 48)
     ideal_result[1][0].comment_str = "Thank you."
     ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
-    ideal_result[1][1].created = datetime.datetime(2008, 12, 12, 15, 51, 1)
+    ideal_result[1][1].created = datetime(2008, 12, 12, 15, 51, 1)
     ideal_result[1][1].comment_str = "You're welcome :)"
     CALL = ("GetComments", ["3387112", "3385570"])
 
@@ -234,6 +301,113 @@ def test_ping():
     CALL = ("NoOperation",)
 
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
+
+
+def test_report_movie():
+    query = (SearchResult.__new__(SearchResult),)
+    query[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    query[0].subtitles.sub_to_movie_id = "739"
+    CALL = ("ReportWrongMovieHash", "739")
+    RESP = {"status": "200 OK", "seconds": "0.115"}
+
+    _standard_asw_mock("report_movie", "_request", query, RESP, CALL, None)
+
+
+def test_search_subtitles():
+    QUERIES = (
+        (
+            (Movie.__new__(Movie), "en"),
+            (MovieInfo.__new__(MovieInfo), "fr"),
+            (EpisodeInfo.__new__(EpisodeInfo), "de"),
+        ),
+    )
+    CALL = (*QUERIES, _default_ranking)
+    RESP = [
+        SearchResult.__new__(SearchResult),
+        SearchResult.__new__(SearchResult),
+        SearchResult.__new__(SearchResult),
+    ]
+    IDEAL = RESP
+
+    _standard_asw_mock(
+        "search_subtitles", "_search_subtitles", QUERIES, RESP, CALL, IDEAL
+    )
+
+
+def test__search_subtitles():
+    queries = (
+        (
+            (Movie("18379ac9af039390", 366876694), "en"),
+        ),
+        _default_ranking,
+    )
+    CALL = (
+        "SearchSubtitles",
+        [
+            {
+                "sublanguageid": "eng",
+                "moviehash": "18379ac9af039390",
+                "moviebytesize": "366876694",
+            },
+        ],
+    )
+    with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
+        RESP = json.load(f)
+
+    ideal = [
+        SearchResult.__new__(SearchResult),
+    ]
+    ideal[0].author = UserInfo("1332962", "elderman")
+    ideal[0].media = EpisodeInfo(
+        '"Fringe" Alone in the World', 2011, "1998676", 4, 3, None, None
+    )
+    ideal[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    ideal[0].subtitles.size = 58024
+    ideal[0].subtitles.downloads = 57765
+    ideal[0].subtitles.num_comments = 0
+    ideal[0].subtitles.rating = 0.0
+    ideal[0].subtitles.id = "4251071"
+    ideal[0].subtitles.file_id = "1952941557"
+    ideal[0].subtitles.filename = "Fringe.S04E03.HDTV.XviD-LOL.srt"
+    ideal[0].subtitles.lang_2 = "en"
+    ideal[0].subtitles.lang_3 = "eng"
+    ideal[0].subtitles.ext = "srt"
+    ideal[0].subtitles.encoding = "UTF-8"
+    ideal[0].upload_date = datetime(2011, 10, 8, 7, 36, 1)
+
+    _standard_asw_mock(
+        "_search_subtitles", "_request", queries, RESP, CALL, ideal
+    )
+
+
+def test_suggest_media():
+    QUERY = ("matrix",)
+    CALL = ("SuggestMovie", "matrix")
+    RESP = {
+        "status": "200 OK",
+        "data": {
+            "matrix": [
+                {
+                    "MovieName": "The Matrix",
+                    "MovieYear": "1999",
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0133093",
+                },
+                {
+                    "MovieName": "The Matrix Reloaded",
+                    "MovieYear": "2003",
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0234215",
+                },
+            ]
+        },
+    }
+    IDEAL = [
+        MovieInfo("The Matrix", 1999, "0133093", None, None),
+        MovieInfo("The Matrix Reloaded", 2003, "0234215", None, None),
+    ]
+
+    _standard_asw_mock("suggest_media", "_request", QUERY, RESP, CALL, IDEAL)
 
 
 def test_user_info():

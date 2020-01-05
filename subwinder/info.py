@@ -66,7 +66,10 @@ class MediaInfo:
     def from_data(cls, data, dirname, filename):
         name = data["MovieName"]
         year = int(data["MovieYear"])
-        imdbid = data.get("IDMovieImdb") or data["IDMovieIMDB"]
+        # For some reason opensubtitles sometimes returns this as an integer
+        # Example: best guess when using `guess_media` for "the expanse" has
+        #          `type(data["IDMovieIMDB"]) == int`
+        imdbid = str(data.get("IDMovieImdb") or data["IDMovieIMDB"])
 
         return cls(name, year, imdbid, dirname, filename)
 
@@ -108,8 +111,8 @@ class EpisodeInfo(TvSeriesInfo):
         )
 
 
-# TODO: include the full language in here ass well?
-@auto_repr
+# TODO: include the full language in here as well?
+@dataclass
 class SubtitlesInfo:
     def __init__(self, data):
         self.size = int(data["SubSize"])
