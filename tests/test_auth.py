@@ -40,8 +40,8 @@ def _standard_asw_mock(
 
 def test__default_ranking():
     DUMMY_RESULTS = [
-        {"SubBad": "1", "SubFormat": "ASS", "SubDownloadsCnt": "600"},
-        {"SubBad": "0", "SubFormat": "Srt", "SubDownloadsCnt": "500"},
+        {"SubBad": "1", "SubFormat": "ASS", "Score": 105.0},
+        {"SubBad": "0", "SubFormat": "Srt", "Score": 100.0},
     ]
 
     # Format is (<args>, <kwargs>, <result>)

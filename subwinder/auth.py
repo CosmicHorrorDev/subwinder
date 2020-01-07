@@ -19,11 +19,11 @@ from subwinder.media import Movie
 from subwinder.results import SearchResult
 
 
-# FIXME: rank by highest score?
 def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
     best_result = None
-    max_downloads = None
-    DOWN_KEY = "SubDownloadsCnt"
+    max_score = None
+    # max_downloads = None
+    # DOWN_KEY = "SubDownloadsCnt"
 
     # Force list of `sub_exts` to be lowercase
     if sub_exts is not None:
@@ -39,9 +39,11 @@ def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
             if result["SubFormat"].lower() not in sub_exts:
                 continue
 
-        if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
+        # if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
+        if max_score is None or result["Score"] > max_score:
             best_result = result
-            max_downloads = int(result[DOWN_KEY])
+            max_score = result["Score"]
+            # max_downloads = int(result[DOWN_KEY])
 
     return best_result
 
