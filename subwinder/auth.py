@@ -16,36 +16,8 @@ from subwinder.info import (
     MovieInfo,
 )
 from subwinder.media import Media
+from subwinder.ranking import _rank_search_subtitles
 from subwinder.results import SearchResult
-
-
-def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
-    best_result = None
-    max_score = None
-    # max_downloads = None
-    # DOWN_KEY = "SubDownloadsCnt"
-
-    # Force list of `sub_exts` to be lowercase
-    if sub_exts is not None:
-        sub_exts = [sub_ext.lower() for sub_ext in sub_exts]
-
-    for result in results:
-        # Skip if someone listed sub as bad and `exclude_bad` is `True`
-        if exclude_bad and result["SubBad"] != "0":
-            continue
-
-        # Skip incorrect `sub_ext`s if provided
-        if sub_exts is not None:
-            if result["SubFormat"].lower() not in sub_exts:
-                continue
-
-        # if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
-        if max_score is None or result["Score"] > max_score:
-            best_result = result
-            max_score = result["Score"]
-            # max_downloads = int(result[DOWN_KEY])
-
-    return best_result
 
 
 def _build_search_query(query, lang):
@@ -277,7 +249,7 @@ class AuthSubWinder(SubWinder):
         )
 
     def search_subtitles(
-        self, queries, *, ranking_function=_default_ranking, **rank_params
+        self, queries, *, ranking_func=_rank_search_subtitles, **rank_params
     ):
         # Verify that all the queries are correct before doing any requests
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
@@ -301,13 +273,13 @@ class AuthSubWinder(SubWinder):
         results = []
         for i in range(0, len(queries), BATCH_SIZE):
             results += self._search_subtitles(
-                queries[i : i + BATCH_SIZE], ranking_function, **rank_params
+                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
             )
 
         return results
 
     def _search_subtitles(
-        self, queries, ranking_function, **rank_params
+        self, queries, ranking_func, **rank_params
     ):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
@@ -320,7 +292,7 @@ class AuthSubWinder(SubWinder):
 
         search_results = []
         for group, (query, _) in zip(groups, queries):
-            result = ranking_function(group, query, **rank_params)
+            result = ranking_func(group, query, **rank_params)
 
             if result is None:
                 search_results.append(None)
