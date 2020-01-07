@@ -337,10 +337,12 @@ class AuthSubWinder(SubWinder):
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
-        # FIXME: something returning no results returns an empty list, causing
-        #        this to fail
-        raw_movies = data[query]
 
+        # Returns an empty list for no results
+        if not data:
+            return data
+
+        raw_movies = data[query]
         return [build_media_info(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
