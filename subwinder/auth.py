@@ -251,8 +251,14 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
-    # TODO: Ensure that `queries` is of type list or tuple
     def guess_media(self, queries):
+        VALID_CLASSES = (list, tuple)
+        if not isinstance(queries, VALID_CLASSES):
+            raise ValueError(
+                f"`guess_media` expects `queries` of type {VALID_CLASSES}, but"
+                f" saw type {type(queries)} instead"
+            )
+
         BATCH_SIZE = 3
         results = []
         for i in range(0, len(queries), BATCH_SIZE):
