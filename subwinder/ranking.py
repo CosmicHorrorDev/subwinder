@@ -1,5 +1,11 @@
+
+
+def _rank_guess_media(results, query):
+    return results["BestGuess"]
+
+
 def _rank_search_subtitles(
-    results, query_index, exclude_bad=True, sub_exts=None
+    results, query, exclude_bad=True, sub_exts=None
 ):
     best_result = None
     max_score = None

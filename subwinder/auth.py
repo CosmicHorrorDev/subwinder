@@ -16,7 +16,7 @@ from subwinder.info import (
     MovieInfo,
 )
 from subwinder.media import Media
-from subwinder.ranking import _rank_search_subtitles
+from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 from subwinder.results import SearchResult
 
 
@@ -223,7 +223,9 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
-    def guess_media(self, queries):
+    def guess_media(
+        self, queries, ranking_func=_rank_guess_media, **rank_params
+    ):
         VALID_CLASSES = (list, tuple)
         if not isinstance(queries, VALID_CLASSES):
             raise ValueError(
@@ -234,14 +236,25 @@ class AuthSubWinder(SubWinder):
         BATCH_SIZE = 3
         results = []
         for i in range(0, len(queries), BATCH_SIZE):
-            results += self._guess_media(queries[i : i + BATCH_SIZE])
+            results += self._guess_media(
+                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
+            )
 
         return results
 
-    # TODO: switch this to do a ranking function like in `search_subtitles`?
-    def _guess_media(self, queries):
+    def _guess_media(self, queries, ranking_func, **rank_params):
         data = self._request("GuessMovieFromString", queries)["data"]
-        return [build_media_info(data[q]["BestGuess"]) for q in queries]
+
+        results = []
+        for query in queries:
+            result = ranking_func(data[query], query)
+
+            if result is None:
+                results.append(None)
+            else:
+                results.append(build_media_info(result))
+
+        return results
 
     def report_movie(self, search_result):
         self._request(
@@ -278,9 +291,7 @@ class AuthSubWinder(SubWinder):
 
         return results
 
-    def _search_subtitles(
-        self, queries, ranking_func, **rank_params
-    ):
+    def _search_subtitles(self, queries, ranking_func, **rank_params):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
