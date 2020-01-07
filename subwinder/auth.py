@@ -15,35 +15,9 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
 )
-from subwinder.media import Movie
+from subwinder.media import Media
+from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 from subwinder.results import SearchResult
-
-
-# FIXME: rank by highest score?
-def _default_ranking(results, query_index, exclude_bad=True, sub_exts=None):
-    best_result = None
-    max_downloads = None
-    DOWN_KEY = "SubDownloadsCnt"
-
-    # Force list of `sub_exts` to be lowercase
-    if sub_exts is not None:
-        sub_exts = [sub_ext.lower() for sub_ext in sub_exts]
-
-    for result in results:
-        # Skip if someone listed sub as bad and `exclude_bad` is `True`
-        if exclude_bad and result["SubBad"] != "0":
-            continue
-
-        # Skip incorrect `sub_ext`s if provided
-        if sub_exts is not None:
-            if result["SubFormat"].lower() not in sub_exts:
-                continue
-
-        if max_downloads is None or int(result[DOWN_KEY]) > max_downloads:
-            best_result = result
-            max_downloads = int(result[DOWN_KEY])
-
-    return best_result
 
 
 def _build_search_query(query, lang):
@@ -51,8 +25,8 @@ def _build_search_query(query, lang):
     internal_query = {"sublanguageid": _LANG_2_TO_3[lang]}
 
     # Handle all the different formats for seaching for subtitles
-    if isinstance(query, Movie):
-        # Search by `Movie`s hash and size
+    if type(query) == Media:
+        # Search by `Media`s hash and size
         internal_query["moviehash"] = query.hash
         internal_query["moviebytesize"] = str(query.size)
     elif isinstance(query, (MovieInfo, EpisodeInfo)):
@@ -116,9 +90,9 @@ class AuthSubWinder(SubWinder):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]
 
-    # FIXME: reset token to `None` after logout?
     def _logout(self):
         self._request("LogOut")
+        self._token = None
 
     # TODO: unless I'm missing an endpoint option this isn't useful externally
     #       can be used internally though
@@ -149,9 +123,16 @@ class AuthSubWinder(SubWinder):
                     f" in {download} or `download_dir` in `download_subtitles`"
                 )
 
-            # Same as ^^
-            # FIXME: technically "{{media_name}}" would be a false positive
-            if media.filename is None and "{media_name}" in name_format:
+            # Hacky way to tell if `media_name` is used in `name_format`
+            try_format = name_format.format(
+                media_name="",
+                lang_2="{lang_2}",
+                lang_3="{lang_3}",
+                ext="{ext}",
+                upload_name="{upload_name}",
+                upload_filename="{upload_filename}",
+            )
+            if media.filename is None and try_format != name_format:
                 raise SubDownloadError(
                     "Insufficient context. Need to set either the `filename`"
                     f" in {download} or avoid using '{{media_name}}' in"
@@ -183,7 +164,6 @@ class AuthSubWinder(SubWinder):
 
         # Download the subtitles in batches of 20, per api spec
         BATCH_SIZE = 20
-        # TODO: should I just `zip` `downloads` and `download_paths`?
         for i in range(0, len(downloads), BATCH_SIZE):
             download_chunk = downloads[i : i + BATCH_SIZE]
             paths_chunk = download_paths[i : i + BATCH_SIZE]
@@ -242,19 +222,38 @@ class AuthSubWinder(SubWinder):
     def ping(self):
         self._request("NoOperation")
 
-    # TODO: Ensure that `queries` is of type list or tuple
-    def guess_media(self, queries):
+    def guess_media(
+        self, queries, ranking_func=_rank_guess_media, **rank_params
+    ):
+        VALID_CLASSES = (list, tuple)
+        if not isinstance(queries, VALID_CLASSES):
+            raise ValueError(
+                f"`guess_media` expects `queries` of type {VALID_CLASSES}, but"
+                f" saw type {type(queries)} instead"
+            )
+
         BATCH_SIZE = 3
         results = []
         for i in range(0, len(queries), BATCH_SIZE):
-            results += self._guess_media(queries[i : i + BATCH_SIZE])
+            results += self._guess_media(
+                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
+            )
 
         return results
 
-    # TODO: switch this to do a ranking function like in `search_subtitles`?
-    def _guess_media(self, queries):
+    def _guess_media(self, queries, ranking_func, **rank_params):
         data = self._request("GuessMovieFromString", queries)["data"]
-        return [build_media_info(data[q]["BestGuess"]) for q in queries]
+
+        results = []
+        for query in queries:
+            result = ranking_func(data[query], query)
+
+            if result is None:
+                results.append(None)
+            else:
+                results.append(build_media_info(result))
+
+        return results
 
     def report_movie(self, search_result):
         self._request(
@@ -262,10 +261,10 @@ class AuthSubWinder(SubWinder):
         )
 
     def search_subtitles(
-        self, queries, *, ranking_function=_default_ranking, **rank_params
+        self, queries, *, ranking_func=_rank_search_subtitles, **rank_params
     ):
         # Verify that all the queries are correct before doing any requests
-        VALID_CLASSES = (Movie, MovieInfo, EpisodeInfo)
+        VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query, lang_2 in queries:
             if not isinstance(query, VALID_CLASSES):
                 raise ValueError(
@@ -286,14 +285,12 @@ class AuthSubWinder(SubWinder):
         results = []
         for i in range(0, len(queries), BATCH_SIZE):
             results += self._search_subtitles(
-                queries[i : i + BATCH_SIZE], ranking_function, **rank_params
+                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
             )
 
         return results
 
-    def _search_subtitles(
-        self, queries, ranking_function, **rank_params
-    ):
+    def _search_subtitles(self, queries, ranking_func, **rank_params):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
@@ -305,13 +302,13 @@ class AuthSubWinder(SubWinder):
 
         search_results = []
         for group, (query, _) in zip(groups, queries):
-            result = ranking_function(group, query, **rank_params)
+            result = ranking_func(group, query, **rank_params)
 
             if result is None:
                 search_results.append(None)
             else:
-                if type(query) == Movie:
-                    # Movie could have the original file information tied to it
+                if type(query) == Media:
+                    # Media could have the original file information tied to it
                     search_results.append(
                         SearchResult(result, query.dirname, query.filename)
                     )
@@ -322,13 +319,14 @@ class AuthSubWinder(SubWinder):
 
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
-        # FIXME: something returning no results returns an empty list, causing
-        #        this to fail
-        raw_movies = data[query]
 
+        # Returns an empty list for no results
+        if not data:
+            return data
+
+        raw_movies = data[query]
         return [build_media_info(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
-        # TODO: magically get the subtitle id from the result
         raise NotImplementedError
         self._request("AddComment", subtitle_id, comment_str, bad)

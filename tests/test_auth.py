@@ -6,7 +6,7 @@ import os
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
-from subwinder.auth import _build_search_query, _default_ranking, AuthSubWinder
+from subwinder.auth import _build_search_query, AuthSubWinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
     Comment,
@@ -17,7 +17,8 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
-from subwinder.media import Movie, Subtitles
+from subwinder.media import Media, Subtitles
+from subwinder.ranking import _rank_search_subtitles
 from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
 
@@ -38,41 +39,13 @@ def _standard_asw_mock(
     assert result == ideal_result
 
 
-def test__default_ranking():
-    DUMMY_RESULTS = [
-        {"SubBad": "1", "SubFormat": "ASS", "SubDownloadsCnt": "600"},
-        {"SubBad": "0", "SubFormat": "Srt", "SubDownloadsCnt": "500"},
-    ]
-
-    # Format is (<args>, <kwargs>, <result>)
-    PARAM_TO_IDEAL_RESULT = [
-        # Empty results means nothing matched the query
-        (([], 0), {}, None),
-        # Exludes `DUMMY_RESULTS[0]` because it's _bad_
-        ((DUMMY_RESULTS, 0), {}, DUMMY_RESULTS[1]),
-        # Prefers `DUMMY_RESULTS[0]` because there's more downloads
-        ((DUMMY_RESULTS, 0), {"exclude_bad": False}, DUMMY_RESULTS[0]),
-        # Ecludes `DUMMY_RESULTS[0]` because of format
-        ((DUMMY_RESULTS, 0), {"sub_exts": ["SRT"]}, DUMMY_RESULTS[1]),
-        # What happens when nothing matches the parameters?
-        (
-            (DUMMY_RESULTS, 0),
-            {"exclude_bad": True, "sub_exts": ["ass"]},
-            None,
-        ),
-    ]
-
-    for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:
-        assert _default_ranking(*args, **kwargs) == ideal_result
-
-
 # TODO: mock out the language conversion once getting the languages from the
 #       api is implemented
 def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
         (
-            (Movie("0123456789abcdef", 123456), "en"),
+            (Media("0123456789abcdef", 123456), "en"),
             {
                 "sublanguageid": "eng",
                 "moviehash": "0123456789abcdef",
@@ -316,12 +289,12 @@ def test_report_movie():
 def test_search_subtitles():
     QUERIES = (
         (
-            (Movie.__new__(Movie), "en"),
+            (Media.__new__(Media), "en"),
             (MovieInfo.__new__(MovieInfo), "fr"),
             (EpisodeInfo.__new__(EpisodeInfo), "de"),
         ),
     )
-    CALL = (*QUERIES, _default_ranking)
+    CALL = (*QUERIES, _rank_search_subtitles)
     RESP = [
         SearchResult.__new__(SearchResult),
         SearchResult.__new__(SearchResult),
@@ -337,9 +310,9 @@ def test_search_subtitles():
 def test__search_subtitles():
     queries = (
         (
-            (Movie("18379ac9af039390", 366876694), "en"),
+            (Media("18379ac9af039390", 366876694), "en"),
         ),
-        _default_ranking,
+        _rank_search_subtitles,
     )
     CALL = (
         "SearchSubtitles",

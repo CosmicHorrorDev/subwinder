@@ -10,14 +10,6 @@ from subwinder.info import (
 )
 
 
-# TODO: Yeahhhhhh, this class is only holding one thing, may not be worth it
-@dataclass
-class SubtitlesResult:
-    file_id: int
-
-
-# TODO: Some of this data is set to 0 when search was done with imdbid or query
-#       (IDSubMovieFile, MovieHash, MovieByteSize, MovieTimeMS will be "0")
 @dataclass
 class SearchResult:
     author: UserInfo
@@ -26,9 +18,7 @@ class SearchResult:
     upload_date: datetime
 
     def __init__(self, data, dirname=None, filename=None):
-        # TODO: why is `get` used here, is there a situation where there's no
-        #       "UserID"
-        if data.get("UserID") == "0":
+        if data["UserID"] == "0":
             self.author = None
         else:
             self.author = UserInfo(data.get("UserID"), data["UserNickName"])

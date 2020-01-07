@@ -1,12 +1,12 @@
+from dataclasses import dataclass
 import os
 
 from subwinder import hashers
-from subwinder.utils import auto_repr
 
 
 # TODO: to store filepath or not to store filepath, that is the question
 #       see how this gets used first
-@auto_repr
+@dataclass
 class Subtitles:
     def __init__(self, hash):
         self.hash = hash
@@ -18,8 +18,8 @@ class Subtitles:
         return cls(hash)
 
 
-@auto_repr
-class Movie:
+@dataclass
+class Media:
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
         self.size = size
