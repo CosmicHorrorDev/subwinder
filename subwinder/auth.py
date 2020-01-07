@@ -164,7 +164,6 @@ class AuthSubWinder(SubWinder):
 
         # Download the subtitles in batches of 20, per api spec
         BATCH_SIZE = 20
-        # TODO: should I just `zip` `downloads` and `download_paths`?
         for i in range(0, len(downloads), BATCH_SIZE):
             download_chunk = downloads[i : i + BATCH_SIZE]
             paths_chunk = download_paths[i : i + BATCH_SIZE]
@@ -329,6 +328,5 @@ class AuthSubWinder(SubWinder):
         return [build_media_info(r_m) for r_m in raw_movies]
 
     def add_comment(self, subtitle_id, comment_str, bad=False):
-        # TODO: magically get the subtitle id from the result
         raise NotImplementedError
         self._request("AddComment", subtitle_id, comment_str, bad)
