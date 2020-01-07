@@ -119,6 +119,7 @@ class AuthSubWinder(SubWinder):
     # FIXME: reset token to `None` after logout?
     def _logout(self):
         self._request("LogOut")
+        self._token = None
 
     # TODO: unless I'm missing an endpoint option this isn't useful externally
     #       can be used internally though
