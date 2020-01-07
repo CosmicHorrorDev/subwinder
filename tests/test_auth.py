@@ -17,7 +17,7 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
-from subwinder.media import Movie, Subtitles
+from subwinder.media import Media, Subtitles
 from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
 
@@ -72,7 +72,7 @@ def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
         (
-            (Movie("0123456789abcdef", 123456), "en"),
+            (Media("0123456789abcdef", 123456), "en"),
             {
                 "sublanguageid": "eng",
                 "moviehash": "0123456789abcdef",
@@ -316,7 +316,7 @@ def test_report_movie():
 def test_search_subtitles():
     QUERIES = (
         (
-            (Movie.__new__(Movie), "en"),
+            (Media.__new__(Media), "en"),
             (MovieInfo.__new__(MovieInfo), "fr"),
             (EpisodeInfo.__new__(EpisodeInfo), "de"),
         ),
@@ -337,7 +337,7 @@ def test_search_subtitles():
 def test__search_subtitles():
     queries = (
         (
-            (Movie("18379ac9af039390", 366876694), "en"),
+            (Media("18379ac9af039390", 366876694), "en"),
         ),
         _default_ranking,
     )

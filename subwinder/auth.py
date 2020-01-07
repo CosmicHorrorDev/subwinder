@@ -15,7 +15,7 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
 )
-from subwinder.media import Movie
+from subwinder.media import Media
 from subwinder.results import SearchResult
 
 
@@ -53,8 +53,8 @@ def _build_search_query(query, lang):
     internal_query = {"sublanguageid": _LANG_2_TO_3[lang]}
 
     # Handle all the different formats for seaching for subtitles
-    if isinstance(query, Movie):
-        # Search by `Movie`s hash and size
+    if type(query) == Media:
+        # Search by `Media`s hash and size
         internal_query["moviehash"] = query.hash
         internal_query["moviebytesize"] = str(query.size)
     elif isinstance(query, (MovieInfo, EpisodeInfo)):
@@ -280,7 +280,7 @@ class AuthSubWinder(SubWinder):
         self, queries, *, ranking_function=_default_ranking, **rank_params
     ):
         # Verify that all the queries are correct before doing any requests
-        VALID_CLASSES = (Movie, MovieInfo, EpisodeInfo)
+        VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query, lang_2 in queries:
             if not isinstance(query, VALID_CLASSES):
                 raise ValueError(
@@ -325,8 +325,8 @@ class AuthSubWinder(SubWinder):
             if result is None:
                 search_results.append(None)
             else:
-                if type(query) == Movie:
-                    # Movie could have the original file information tied to it
+                if type(query) == Media:
+                    # Media could have the original file information tied to it
                     search_results.append(
                         SearchResult(result, query.dirname, query.filename)
                     )

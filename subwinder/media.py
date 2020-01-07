@@ -19,7 +19,7 @@ class Subtitles:
 
 
 @auto_repr
-class Movie:
+class Media:
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
         self.size = size
