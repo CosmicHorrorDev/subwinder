@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
-from subwinder.utils import auto_repr
 
 
 # Build the right info object from the "MovieKind"
@@ -27,7 +26,7 @@ class UserInfo:
     nickname: str
 
 
-@auto_repr
+@dataclass
 class FullUserInfo(UserInfo):
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
@@ -82,7 +81,7 @@ class TvSeriesInfo(MediaInfo):
     pass
 
 
-@auto_repr
+@dataclass
 class EpisodeInfo(TvSeriesInfo):
     def __init__(self, name, year, imdbid, season, episode, dirname, filename):
         super().__init__(name, year, imdbid, dirname, filename)
