@@ -116,7 +116,6 @@ class AuthSubWinder(SubWinder):
         resp = self._request("LogIn", username, password, "en", useragent)
         return resp["token"]
 
-    # FIXME: reset token to `None` after logout?
     def _logout(self):
         self._request("LogOut")
         self._token = None
@@ -150,9 +149,16 @@ class AuthSubWinder(SubWinder):
                     f" in {download} or `download_dir` in `download_subtitles`"
                 )
 
-            # Same as ^^
-            # FIXME: technically "{{media_name}}" would be a false positive
-            if media.filename is None and "{media_name}" in name_format:
+            # Hacky way to tell if `media_name` is used in `name_format`
+            try_format = name_format.format(
+                media_name="",
+                lang_2="{lang_2}",
+                lang_3="{lang_3}",
+                ext="{ext}",
+                upload_name="{upload_name}",
+                upload_filename="{upload_filename}",
+            )
+            if media.filename is None and try_format != name_format:
                 raise SubDownloadError(
                     "Insufficient context. Need to set either the `filename`"
                     f" in {download} or avoid using '{{media_name}}' in"
