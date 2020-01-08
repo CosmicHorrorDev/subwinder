@@ -26,13 +26,13 @@ class _LangConverter:
     easy way to convert between any of the forms.
     """
     def __init__(self):
-        self.last_updated = None
+        self._last_updated = None
 
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh
         # unless update is `force`d
-        if not force and self.last_updated is not None:
-            if (datetime.now() - self.last_updated).total_seconds() < 3600:
+        if not force and self._last_updated is not None:
+            if (datetime.now() - self._last_updated).total_seconds() < 3600:
                 return
 
         # Get language list from api
@@ -49,7 +49,7 @@ class _LangConverter:
             self._langs.append((lang_2, lang_3, lang_name))
 
         # Refresh updated time
-        self.last_updated = datetime.now()
+        self._last_updated = datetime.now()
 
     def convert(self, lang, from_format, to_format):
         # This isn't the most efficient way to convert formats, but there's
