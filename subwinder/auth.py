@@ -2,7 +2,6 @@ import os
 
 from subwinder import utils
 from subwinder.base import SubWinder
-from subwinder.constants import _LANG_2, _LANG_2_TO_3
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -15,6 +14,7 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
 )
+from subwinder.lang import lang_2s, LangFormat
 from subwinder.media import Media
 from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 from subwinder.results import SearchResult
@@ -22,7 +22,9 @@ from subwinder.results import SearchResult
 
 def _build_search_query(query, lang):
     # All queries take a language
-    internal_query = {"sublanguageid": _LANG_2_TO_3[lang]}
+    internal_query = {
+        "sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)
+    }
 
     # Handle all the different formats for seaching for subtitles
     if type(query) == Media:
@@ -272,11 +274,12 @@ class AuthSubWinder(SubWinder):
                     f" was given {query}"
                 )
 
-            if lang_2 not in _LANG_2:
+            if lang_2 not in lang_2s.list():
                 # TODO: may want to include the long names as well to make it
                 #       easier for people to find the correct lang_2
                 raise SubLangError(
-                    f"'{lang_2}' not found in valid lang list: {_LANG_2}"
+                    f"'{lang_2}' not found in valid lang list:"
+                    f" {lang_2s.list()}"
                 )
 
         # This can return 500 items, but one query could return multiple so
