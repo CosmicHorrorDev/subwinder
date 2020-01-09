@@ -20,7 +20,7 @@ import time
 from datetime import datetime
 from xmlrpc.client import ServerProxy, Transport
 
-from subwinder.constants import _API_BASE, _LANG_2, _REPO_URL
+from subwinder.constants import _API_BASE, _REPO_URL
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -76,9 +76,9 @@ class SubWinder:
                 # Use the token if it's defined
                 resp = getattr(self._client, method)(self._token, *params)
 
-            # All requests are supposed to return a status but of course
-            # ServerInfo doesn't for no reason
-            if method == "ServerInfo":
+            # All requests return a status except for GetSubLanguages and
+            # ServerInfo
+            if method in ("GetSubLanguages", "ServerInfo"):
                 return resp
 
             if "status" not in resp:
@@ -118,8 +118,8 @@ class SubWinder:
                 f"\nResp: {status_code}: {status_msg}"
             )
 
-    def get_languages(self):
-        return _LANG_2
+    def _get_languages(self):
+        return self._request("GetSubLanguages")["data"]
 
     def server_info(self):
         # FIXME: return this info in a nicer way?

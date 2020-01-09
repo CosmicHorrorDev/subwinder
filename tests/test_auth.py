@@ -17,10 +17,20 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
+from subwinder.lang import _converter
 from subwinder.media import Media, Subtitles
 from subwinder.ranking import _rank_search_subtitles
 from subwinder.results import SearchResult
 from tests.constants import SAMPLES_DIR
+
+
+# Fake already updated langs to prevent API requests
+_converter._langs = [
+    ("en", "eng", "English"),
+    ("de", "ger", "German"),
+    ("fr", "fre", "French"),
+]
+_converter._last_updated = datetime.now()
 
 
 def _dummy_auth_subwinder():
