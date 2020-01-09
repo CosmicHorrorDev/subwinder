@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
+from subwinder.lang import LangFormat, lang_3s
 
 
 # Build the right info object from the "MovieKind"
@@ -26,6 +27,8 @@ class UserInfo:
     nickname: str
 
 
+# TODO: switch this over to the `from_data` style? Would make setting up the
+#       test easier
 @dataclass
 class FullUserInfo(UserInfo):
     def __init__(self, data):
@@ -33,9 +36,15 @@ class FullUserInfo(UserInfo):
         self.rank = data["UserRank"]
         self.uploads = int(data["UploadCnt"])
         self.downloads = int(data["DownloadCnt"])
-        # FIXME: this is in lang_3 instead of lang_2, convert
-        preferred_languages = data["UserPreferedLanguages"].split(",")
-        self.preferred_languages = [p_l for p_l in preferred_languages if p_l]
+
+        # Get all of the languages in 2 char lang
+        langs = []
+        for lang in data["UserPreferedLanguages"].split():
+            # Ignore empty string in case of no preferred languages
+            if lang:
+                langs.append(lang_3s.convert(lang, LangFormat.LANG_2))
+        self.preferred_languages = langs
+
         self.web_language = data["UserWebLanguage"]
 
 

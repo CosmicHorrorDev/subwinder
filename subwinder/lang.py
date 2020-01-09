@@ -3,6 +3,7 @@
 from datetime import datetime
 from enum import Enum
 
+# TODO: would be nice to get rid of this to allow lang to be imported into base
 from subwinder.base import SubWinder
 from subwinder.exceptions import SubLangError
 
