@@ -401,7 +401,7 @@ def test_user_info():
             "UserNickName": "os",
             "UserRank": "super admin",
             "UploadCnt": "296",
-            "UserPreferedLanguages": "cze,eng,slo,tha",
+            "UserPreferedLanguages": "ger,eng,fre",
             "DownloadCnt": "1215",
             "UserWebLanguage": "en",
         },
@@ -415,7 +415,7 @@ def test_user_info():
     ideal_result.rank = "super admin"
     ideal_result.uploads = 296
     ideal_result.downloads = 1215
-    ideal_result.preferred_languages = ["cze", "eng", "slo", "tha"]
+    ideal_result.preferred_languages = ["de", "en", "fr"]
     ideal_result.web_language = "en"
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, ideal_result)

@@ -39,7 +39,7 @@ class FullUserInfo(UserInfo):
 
         # Get all of the languages in 2 char lang
         langs = []
-        for lang in data["UserPreferedLanguages"].split():
+        for lang in data["UserPreferedLanguages"].split(","):
             # Ignore empty string in case of no preferred languages
             if lang:
                 langs.append(lang_3s.convert(lang, LangFormat.LANG_2))
