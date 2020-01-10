@@ -3,9 +3,8 @@
 from datetime import datetime
 from enum import Enum
 
-# TODO: would be nice to get rid of this to allow lang to be imported into base
-from subwinder.base import SubWinder
 from subwinder.exceptions import SubLangError
+from subwinder.request import _request
 
 
 _LANG_2_KEY = "ISO639"
@@ -29,6 +28,9 @@ class _LangConverter:
     def __init__(self):
         self._last_updated = None
 
+    def _fetch(self):
+        return _request("GetSubLanguages", None)["data"]
+
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh
         # unless update is `force`d
@@ -37,8 +39,7 @@ class _LangConverter:
                 return
 
         # Get language list from api
-        sw = SubWinder()
-        lang_sets = sw._get_languages()
+        lang_sets = self._fetch()
 
         # Store `langs` in common format
         self._langs = []

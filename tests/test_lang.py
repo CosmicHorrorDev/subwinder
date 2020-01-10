@@ -1,7 +1,6 @@
 from datetime import timedelta
 from unittest.mock import call, patch
 
-from subwinder.base import SubWinder
 from subwinder.lang import (
     _LangConverter,
     LangFormat,
@@ -11,6 +10,8 @@ from subwinder.lang import (
     lang_longs,
 )
 
+
+# Snippet of the GetSubLanguages response
 RESP = [
     {"ISO639": "de", "SubLanguageID": "ger", "LanguageName": "German"},
     {"ISO639": "en", "SubLanguageID": "eng", "LanguageName": "English"},
@@ -22,9 +23,7 @@ def test_LangConverter():
     converter = _LangConverter()
     assert converter._last_updated is None
 
-    with patch.object(
-        SubWinder, "_get_languages", return_value=RESP
-    ) as mocked:
+    with patch.object(converter, "_fetch", return_value=RESP) as mocked:
         # After first update converter shouldn't request again for an hour
         converter._update()
 
@@ -52,12 +51,11 @@ def test_LangConverter():
 
 
 def test_globals():
-    # Reset converter if needed
+    # Reset converter if needed (this is due to testing in test_auth)
     _converter._last_updated = None
+    _converter.langs = None
 
-    with patch.object(
-        SubWinder, "_get_languages", return_value=RESP
-    ) as mocked:
+    with patch.object(_converter, "_fetch", return_value=RESP) as mocked:
         # Check all the conversions
         assert "eng" == lang_2s.convert("en", LangFormat.LANG_3)
         assert "English" == lang_3s.convert("eng", LangFormat.LANG_LONG)
