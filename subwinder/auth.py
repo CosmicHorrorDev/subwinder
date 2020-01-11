@@ -274,12 +274,12 @@ class AuthSubWinder(SubWinder):
                     f" was given {query}"
                 )
 
-            if lang_2 not in lang_2s.list():
+            if lang_2 not in list(lang_2s):
                 # TODO: may want to include the long names as well to make it
                 #       easier for people to find the correct lang_2
                 raise SubLangError(
                     f"'{lang_2}' not found in valid lang list:"
-                    f" {lang_2s.list()}"
+                    f" {list(lang_2s)}"
                 )
 
         # This can return 500 items, but one query could return multiple so

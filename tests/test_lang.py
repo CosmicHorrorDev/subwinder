@@ -62,9 +62,14 @@ def test_globals():
         assert "en" == lang_longs.convert("English", LangFormat.LANG_2)
 
         # Check all the listings
-        assert ["de", "en", "fr"] == lang_2s.list()
-        assert ["ger", "eng", "fre"] == lang_3s.list()
-        assert ["German", "English", "French"] == lang_longs.list()
+        assert ["de", "en", "fr"] == list(lang_2s)
+        assert ["ger", "eng", "fre"] == list(lang_3s)
+        assert ["German", "English", "French"] == list(lang_longs)
+
+        # Check `__contains__`
+        assert "de" in lang_2s
+        assert "eng" in lang_3s
+        assert "French" in lang_longs
 
         # `_get_languages` should only be called once
         mocked.assert_called_once_with()
