@@ -1,7 +1,6 @@
 from datetime import timedelta
 from unittest.mock import call, patch
 
-from subwinder.base import SubWinder
 from subwinder.lang import (
     _LangConverter,
     LangFormat,
@@ -11,6 +10,8 @@ from subwinder.lang import (
     lang_longs,
 )
 
+
+# Snippet of the GetSubLanguages response
 RESP = [
     {"ISO639": "de", "SubLanguageID": "ger", "LanguageName": "German"},
     {"ISO639": "en", "SubLanguageID": "eng", "LanguageName": "English"},
@@ -22,9 +23,7 @@ def test_LangConverter():
     converter = _LangConverter()
     assert converter._last_updated is None
 
-    with patch.object(
-        SubWinder, "_get_languages", return_value=RESP
-    ) as mocked:
+    with patch.object(converter, "_fetch", return_value=RESP) as mocked:
         # After first update converter shouldn't request again for an hour
         converter._update()
 
@@ -52,21 +51,25 @@ def test_LangConverter():
 
 
 def test_globals():
-    # Reset converter if needed
+    # Reset converter if needed (this is due to testing in test_auth)
     _converter._last_updated = None
+    _converter.langs = None
 
-    with patch.object(
-        SubWinder, "_get_languages", return_value=RESP
-    ) as mocked:
+    with patch.object(_converter, "_fetch", return_value=RESP) as mocked:
         # Check all the conversions
         assert "eng" == lang_2s.convert("en", LangFormat.LANG_3)
         assert "English" == lang_3s.convert("eng", LangFormat.LANG_LONG)
         assert "en" == lang_longs.convert("English", LangFormat.LANG_2)
 
         # Check all the listings
-        assert ["de", "en", "fr"] == lang_2s.list()
-        assert ["ger", "eng", "fre"] == lang_3s.list()
-        assert ["German", "English", "French"] == lang_longs.list()
+        assert ["de", "en", "fr"] == list(lang_2s)
+        assert ["ger", "eng", "fre"] == list(lang_3s)
+        assert ["German", "English", "French"] == list(lang_longs)
+
+        # Check `__contains__`
+        assert "de" in lang_2s
+        assert "eng" in lang_3s
+        assert "French" in lang_longs
 
         # `_get_languages` should only be called once
         mocked.assert_called_once_with()

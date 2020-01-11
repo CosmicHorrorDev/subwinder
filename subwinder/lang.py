@@ -1,10 +1,11 @@
 # Note: this whole file uses enough global variables to make my skin crawl,
 #       but I can't really think of a nicer way of exposing everything
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from subwinder.base import SubWinder
 from subwinder.exceptions import SubLangError
+from subwinder.request import _request
 
 
 _LANG_2_KEY = "ISO639"
@@ -28,6 +29,9 @@ class _LangConverter:
     def __init__(self):
         self._last_updated = None
 
+    def _fetch(self):
+        return _request("GetSubLanguages", None)["data"]
+
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh
         # unless update is `force`d
@@ -36,8 +40,7 @@ class _LangConverter:
                 return
 
         # Get language list from api
-        sw = SubWinder()
-        lang_sets = sw._get_languages()
+        lang_sets = self._fetch()
 
         # Store `langs` in common format
         self._langs = []
@@ -85,15 +88,24 @@ class _LangConverter:
 _converter = _LangConverter()
 
 
+@dataclass
 class _Lang:
-    def __init__(self, lang_format):
-        self._format = lang_format
+    _format: LangFormat
+
+    def __contains__(self, lang):
+        return lang in _converter.list(self._format)
+
+    def __getitem__(self, i):
+        return list(self)[i]
+
+    def __iter__(self):
+        return iter(_converter.list(self._format))
+
+    def __len__(self):
+        return len(_converter.list(self._format))
 
     def convert(self, lang, to_format):
         return _converter.convert(lang, self._format, to_format)
-
-    def list(self):
-        return _converter.list(self._format)
 
 
 lang_2s = _Lang(LangFormat.LANG_2)
