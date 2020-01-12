@@ -1,11 +1,10 @@
-import pytest
-
-from subwinder.ranking import _rank_search_subtitles
+from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 
 
-@pytest.mark.skip()
 def test__rank_guess_media():
-    pass
+    DUMMY_RESULT = {"BestGuess": "Best result!"}
+
+    assert _rank_guess_media(DUMMY_RESULT, None) == "Best result!"
 
 
 def test__rank_search_subtitles():
