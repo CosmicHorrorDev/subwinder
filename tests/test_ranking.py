@@ -1,4 +1,11 @@
+import pytest
+
 from subwinder.ranking import _rank_search_subtitles
+
+
+@pytest.mark.skip()
+def test__rank_guess_media():
+    pass
 
 
 def test__rank_search_subtitles():

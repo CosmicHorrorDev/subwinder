@@ -49,8 +49,6 @@ def _standard_asw_mock(
     assert result == ideal_result
 
 
-# TODO: mock out the language conversion once getting the languages from the
-#       api is implemented
 def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
@@ -99,6 +97,11 @@ def test_authsubwinder__init__():
             AuthSubWinder(*params)
 
 
+@pytest.mark.skip()
+def test_with():
+    pass
+
+
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
@@ -115,9 +118,9 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
-# TODO: not implemented yet, add after `add_comment` works
-# def test_add_comment():
-#     pass
+@pytest.mark.skip(reason="Method not implemented yet")
+def test_add_comment():
+    pass
 
 
 def test_check_subtitles():
@@ -247,7 +250,6 @@ def test_get_comments():
     )
 
 
-# TODO: split up testing `guess_media` and `_guess_media`
 def test_guess_media():
     asw = _dummy_auth_subwinder()
 
@@ -277,6 +279,11 @@ def test_guess_media():
 
     assert guesses == IDEAL_RESULT
     mocked.assert_has_calls(CALLS)
+
+
+@pytest.mark.skip()
+def test__guess_media():
+    pass
 
 
 def test_ping():
