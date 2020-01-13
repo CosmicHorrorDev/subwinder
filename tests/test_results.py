@@ -11,7 +11,7 @@ from tests.constants import SAMPLES_DIR
 
 def test_SearchResult():
     with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
-        SAMPLE_RESP = json.load(f)
+        SAMPLE_RESP = json.load(f)["data"][0]
 
     # TODO: implement from_data for here
     sr = SearchResult.from_data(SAMPLE_RESP, "dir", "file")
@@ -24,7 +24,7 @@ def test_SearchResult():
         58024,
         57765,
         0,
-        7.9,
+        0.0,
         "4251071",
         "1952941557",
         "Fringe.S04E03.HDTV.XviD-LOL.srt",

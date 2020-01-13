@@ -27,7 +27,7 @@ class SearchResult:
             author = UserInfo(data.get("UserID"), data["UserNickName"])
 
         media = build_media_info(data, dirname, filename)
-        subtitles = SubtitlesInfo(data)
+        subtitles = SubtitlesInfo.from_data(data)
         upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
 
         return cls(author, media, subtitles, upload_date, dirname, filename)

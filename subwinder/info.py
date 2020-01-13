@@ -134,18 +134,17 @@ class SubtitlesInfo:
     encoding: str
 
     @classmethod
-    def from_data(self, data):
-        self.size = int(data["SubSize"])
-        self.downloads = int(data["SubDownloadsCnt"])
-        self.num_comments = int(data["SubComments"])
-
-        self.rating = float(data["SubRating"])
-
-        self.id = data["IDSubtitle"]
-        self.file_id = data["IDSubtitleFile"]
-
-        self.filename = data["SubFileName"]
-        self.lang_2 = data["ISO639"]
-        self.lang_3 = data["SubLanguageID"]
-        self.ext = data["SubFormat"].lower()
-        self.encoding = data["SubEncoding"]
+    def from_data(cls, data):
+        return cls(
+            int(data["SubSize"]),
+            int(data["SubDownloadsCnt"]),
+            int(data["SubComments"]),
+            float(data["SubRating"]),
+            data["IDSubtitle"],
+            data["IDSubtitleFile"],
+            data["SubFileName"],
+            data["ISO639"],
+            data["SubLanguageID"],
+            data["SubFormat"].lower(),
+            data["SubEncoding"],
+        )
