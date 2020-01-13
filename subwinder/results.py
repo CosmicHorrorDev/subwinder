@@ -16,13 +16,18 @@ class SearchResult:
     media: MediaInfo
     subtitles: SubtitlesInfo
     upload_date: datetime
+    dirname: str = None
+    filename: str = None
 
-    def __init__(self, data, dirname=None, filename=None):
+    @classmethod
+    def from_data(cls, data, dirname=None, filename=None):
         if data["UserID"] == "0":
-            self.author = None
+            author = None
         else:
-            self.author = UserInfo(data.get("UserID"), data["UserNickName"])
+            author = UserInfo(data.get("UserID"), data["UserNickName"])
 
-        self.media = build_media_info(data, dirname, filename)
-        self.subtitles = SubtitlesInfo(data)
-        self.upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+        media = build_media_info(data, dirname, filename)
+        subtitles = SubtitlesInfo.from_data(data)
+        upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+
+        return cls(author, media, subtitles, upload_date, dirname, filename)

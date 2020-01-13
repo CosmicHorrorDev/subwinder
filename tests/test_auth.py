@@ -65,7 +65,7 @@ def test__build_search_query():
             {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
         ),
         (
-            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de"),
+            (EpisodeInfo(None, None, "EI imdbid", None, None, 1, 2), "de"),
             {
                 "sublanguageid": "ger",
                 "imdbid": "EI imdbid",
