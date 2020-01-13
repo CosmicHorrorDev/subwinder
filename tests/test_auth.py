@@ -231,18 +231,26 @@ def test_get_comments():
     with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
         RESP = json.load(f)
     ideal_result = [
-        [Comment.__new__(Comment)],
-        [Comment.__new__(Comment), Comment.__new__(Comment)],
+        [
+            Comment(
+                UserInfo("192696", "neo_rtr"),
+                datetime(2008, 12, 14, 17, 20, 42),
+                "Greate Work. thank you",
+            )
+        ],
+        [
+            Comment(
+                UserInfo("745565", "pee-jay_cz"),
+                datetime(2008, 12, 12, 15, 21, 48),
+                "Thank you.",
+            ),
+            Comment(
+                UserInfo("754781", "Guzeppi"),
+                datetime(2008, 12, 12, 15, 51, 1),
+                "You're welcome :)",
+            ),
+        ],
     ]
-    ideal_result[0][0].author = UserInfo("192696", "neo_rtr")
-    ideal_result[0][0].created = datetime(2008, 12, 14, 17, 20, 42)
-    ideal_result[0][0].comment_str = "Greate Work. thank you"
-    ideal_result[1][0].author = UserInfo("745565", "pee-jay_cz")
-    ideal_result[1][0].created = datetime(2008, 12, 12, 15, 21, 48)
-    ideal_result[1][0].comment_str = "Thank you."
-    ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
-    ideal_result[1][1].created = datetime(2008, 12, 12, 15, 51, 1)
-    ideal_result[1][1].comment_str = "You're welcome :)"
     CALL = ("GetComments", ["3387112", "3385570"])
 
     _standard_asw_mock(
@@ -326,9 +334,7 @@ def test_search_subtitles():
 
 def test__search_subtitles():
     queries = (
-        (
-            (Media("18379ac9af039390", 366876694), "en"),
-        ),
+        ((Media("18379ac9af039390", 366876694), "en"),),
         _rank_search_subtitles,
     )
     CALL = (

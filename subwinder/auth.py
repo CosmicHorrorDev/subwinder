@@ -213,7 +213,7 @@ class AuthSubWinder(SubWinder):
             if not raw_comments:
                 comments.append([])
             else:
-                comments.append([Comment(c) for c in raw_comments])
+                comments.append([Comment.from_data(c) for c in raw_comments])
 
         return comments
 

@@ -58,10 +58,13 @@ class Comment:
     created: datetime
     comment_str: str
 
-    def __init__(self, data):
-        self.author = UserInfo(data["UserID"], data["UserNickName"])
-        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["Comment"]
+    @classmethod
+    def from_data(cls, data):
+        author = UserInfo(data["UserID"], data["UserNickName"])
+        created = datetime.strptime(data["Created"], _TIME_FORMAT)
+        comment_str = data["Comment"]
+
+        return cls(author, created, comment_str)
 
 
 @dataclass
