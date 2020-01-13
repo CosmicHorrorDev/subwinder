@@ -27,10 +27,14 @@ class UserInfo:
     nickname: str
 
 
-# TODO: switch this over to the `from_data` style? Would make setting up the
-#       test easier
 @dataclass
 class FullUserInfo(UserInfo):
+    rank: str
+    uploads: int
+    downloads: int
+    preferred_languages: list
+    web_language: str
+
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
@@ -48,8 +52,6 @@ class FullUserInfo(UserInfo):
         self.web_language = data["UserWebLanguage"]
 
 
-# TODO: switch this over to the `from_data` style? Would make setting up the
-#       test easier
 @dataclass
 class Comment:
     author: UserInfo
@@ -92,10 +94,8 @@ class TvSeriesInfo(MediaInfo):
 
 @dataclass
 class EpisodeInfo(TvSeriesInfo):
-    def __init__(self, name, year, imdbid, season, episode, dirname, filename):
-        super().__init__(name, year, imdbid, dirname, filename)
-        self.season = season
-        self.episode = episode
+    season: int
+    episode: int
 
     @classmethod
     def from_data(cls, data, dirname, filename):
@@ -119,10 +119,22 @@ class EpisodeInfo(TvSeriesInfo):
         )
 
 
-# TODO: include the full language in here as well?
 @dataclass
 class SubtitlesInfo:
-    def __init__(self, data):
+    size: int
+    downloads: int
+    num_comments: int
+    rating: float
+    id: str
+    file_id: str
+    filename: str
+    lang_2: str
+    lang_3: str
+    ext: str
+    encoding: str
+
+    @classmethod
+    def from_data(self, data):
         self.size = int(data["SubSize"])
         self.downloads = int(data["SubDownloadsCnt"])
         self.num_comments = int(data["SubComments"])
