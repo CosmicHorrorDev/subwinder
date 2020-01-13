@@ -115,10 +115,10 @@ class EpisodeInfo(TvSeriesInfo):
             tv_series.name,
             tv_series.year,
             tv_series.imdbid,
-            season,
-            episode,
             tv_series.dirname,
             tv_series.filename,
+            season,
+            episode,
         )
 
 

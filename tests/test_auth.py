@@ -9,6 +9,7 @@ from unittest.mock import call, patch
 from subwinder.auth import _build_search_query, AuthSubWinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
+    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -350,14 +351,16 @@ def test__search_subtitles():
     with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
         RESP = json.load(f)
 
-    ideal = [
-        SearchResult.__new__(SearchResult),
-    ]
-    ideal[0].author = UserInfo("1332962", "elderman")
-    ideal[0].media = EpisodeInfo(
-        '"Fringe" Alone in the World', 2011, "1998676", 4, 3, None, None
+    sr = SearchResult(
+        UserInfo("1332962", "elderman"),
+        EpisodeInfo(
+            '"Fringe" Alone in the World', 2011, "1998676", None, None, 4, 3
+        ),
+        SubtitlesInfo.__new__(SubtitlesInfo),
+        datetime(2011, 10, 8, 7, 36, 1),
     )
-    ideal[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    print(build_media_info(RESP["data"][0]))
+    ideal = [sr]
     ideal[0].subtitles.size = 58024
     ideal[0].subtitles.downloads = 57765
     ideal[0].subtitles.num_comments = 0
@@ -369,7 +372,6 @@ def test__search_subtitles():
     ideal[0].subtitles.lang_3 = "eng"
     ideal[0].subtitles.ext = "srt"
     ideal[0].subtitles.encoding = "UTF-8"
-    ideal[0].upload_date = datetime(2011, 10, 8, 7, 36, 1)
 
     _standard_asw_mock(
         "_search_subtitles", "_request", queries, RESP, CALL, ideal
