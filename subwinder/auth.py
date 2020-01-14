@@ -36,7 +36,7 @@ def _build_search_query(query, lang):
         internal_query["imdbid"] = query.imdbid
 
         # `EpisodeInfo` also needs a `season` and `episode`
-        if isinstance(query, EpisodeInfo):
+        if type(query) == EpisodeInfo:
             internal_query["season"] = query.season
             internal_query["episode"] = query.episode
     else:
@@ -213,7 +213,7 @@ class AuthSubWinder(SubWinder):
             if not raw_comments:
                 comments.append([])
             else:
-                comments.append([Comment(c) for c in raw_comments])
+                comments.append([Comment.from_data(c) for c in raw_comments])
 
         return comments
 
@@ -307,16 +307,16 @@ class AuthSubWinder(SubWinder):
         for group, (query, _) in zip(groups, queries):
             result = ranking_func(group, query, **rank_params)
 
-            if result is None:
-                search_results.append(None)
-            else:
+            # Get `SearchResult` setup if there is info for one
+            search_result = None
+            if result is not None:
+                search_result = SearchResult.from_data(result)
                 if type(query) == Media:
                     # Media could have the original file information tied to it
-                    search_results.append(
-                        SearchResult(result, query.dirname, query.filename)
-                    )
-                else:
-                    search_results.append(SearchResult(result))
+                    search_result.dirname = query.dirname
+                    search_result.filename = query.filename
+
+            search_results.append(search_result)
 
         return search_results
 

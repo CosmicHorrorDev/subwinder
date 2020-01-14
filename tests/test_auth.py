@@ -9,6 +9,7 @@ from unittest.mock import call, patch
 from subwinder.auth import _build_search_query, AuthSubWinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
+    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -49,8 +50,6 @@ def _standard_asw_mock(
     assert result == ideal_result
 
 
-# TODO: mock out the language conversion once getting the languages from the
-#       api is implemented
 def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
@@ -67,7 +66,7 @@ def test__build_search_query():
             {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
         ),
         (
-            (EpisodeInfo(None, None, "EI imdbid", 1, 2, None, None), "de"),
+            (EpisodeInfo(None, None, "EI imdbid", None, None, 1, 2), "de"),
             {
                 "sublanguageid": "ger",
                 "imdbid": "EI imdbid",
@@ -99,6 +98,11 @@ def test_authsubwinder__init__():
             AuthSubWinder(*params)
 
 
+@pytest.mark.skip()
+def test_with():
+    pass
+
+
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
@@ -115,9 +119,9 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
-# TODO: not implemented yet, add after `add_comment` works
-# def test_add_comment():
-#     pass
+@pytest.mark.skip(reason="Method not implemented yet")
+def test_add_comment():
+    pass
 
 
 def test_check_subtitles():
@@ -228,18 +232,26 @@ def test_get_comments():
     with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
         RESP = json.load(f)
     ideal_result = [
-        [Comment.__new__(Comment)],
-        [Comment.__new__(Comment), Comment.__new__(Comment)],
+        [
+            Comment(
+                UserInfo("192696", "neo_rtr"),
+                datetime(2008, 12, 14, 17, 20, 42),
+                "Greate Work. thank you",
+            )
+        ],
+        [
+            Comment(
+                UserInfo("745565", "pee-jay_cz"),
+                datetime(2008, 12, 12, 15, 21, 48),
+                "Thank you.",
+            ),
+            Comment(
+                UserInfo("754781", "Guzeppi"),
+                datetime(2008, 12, 12, 15, 51, 1),
+                "You're welcome :)",
+            ),
+        ],
     ]
-    ideal_result[0][0].author = UserInfo("192696", "neo_rtr")
-    ideal_result[0][0].created = datetime(2008, 12, 14, 17, 20, 42)
-    ideal_result[0][0].comment_str = "Greate Work. thank you"
-    ideal_result[1][0].author = UserInfo("745565", "pee-jay_cz")
-    ideal_result[1][0].created = datetime(2008, 12, 12, 15, 21, 48)
-    ideal_result[1][0].comment_str = "Thank you."
-    ideal_result[1][1].author = UserInfo("754781", "Guzeppi")
-    ideal_result[1][1].created = datetime(2008, 12, 12, 15, 51, 1)
-    ideal_result[1][1].comment_str = "You're welcome :)"
     CALL = ("GetComments", ["3387112", "3385570"])
 
     _standard_asw_mock(
@@ -247,7 +259,6 @@ def test_get_comments():
     )
 
 
-# TODO: split up testing `guess_media` and `_guess_media`
 def test_guess_media():
     asw = _dummy_auth_subwinder()
 
@@ -277,6 +288,11 @@ def test_guess_media():
 
     assert guesses == IDEAL_RESULT
     mocked.assert_has_calls(CALLS)
+
+
+@pytest.mark.skip()
+def test__guess_media():
+    pass
 
 
 def test_ping():
@@ -319,9 +335,7 @@ def test_search_subtitles():
 
 def test__search_subtitles():
     queries = (
-        (
-            (Media("18379ac9af039390", 366876694), "en"),
-        ),
+        ((Media("18379ac9af039390", 366876694), "en"),),
         _rank_search_subtitles,
     )
     CALL = (
@@ -337,14 +351,16 @@ def test__search_subtitles():
     with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
         RESP = json.load(f)
 
-    ideal = [
-        SearchResult.__new__(SearchResult),
-    ]
-    ideal[0].author = UserInfo("1332962", "elderman")
-    ideal[0].media = EpisodeInfo(
-        '"Fringe" Alone in the World', 2011, "1998676", 4, 3, None, None
+    sr = SearchResult(
+        UserInfo("1332962", "elderman"),
+        EpisodeInfo(
+            '"Fringe" Alone in the World', 2011, "1998676", None, None, 4, 3
+        ),
+        SubtitlesInfo.__new__(SubtitlesInfo),
+        datetime(2011, 10, 8, 7, 36, 1),
     )
-    ideal[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
+    print(build_media_info(RESP["data"][0]))
+    ideal = [sr]
     ideal[0].subtitles.size = 58024
     ideal[0].subtitles.downloads = 57765
     ideal[0].subtitles.num_comments = 0
@@ -356,7 +372,6 @@ def test__search_subtitles():
     ideal[0].subtitles.lang_3 = "eng"
     ideal[0].subtitles.ext = "srt"
     ideal[0].subtitles.encoding = "UTF-8"
-    ideal[0].upload_date = datetime(2011, 10, 8, 7, 36, 1)
 
     _standard_asw_mock(
         "_search_subtitles", "_request", queries, RESP, CALL, ideal

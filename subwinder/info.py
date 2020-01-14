@@ -27,10 +27,14 @@ class UserInfo:
     nickname: str
 
 
-# TODO: switch this over to the `from_data` style? Would make setting up the
-#       test easier
 @dataclass
 class FullUserInfo(UserInfo):
+    rank: str
+    uploads: int
+    downloads: int
+    preferred_languages: list
+    web_language: str
+
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
@@ -48,18 +52,19 @@ class FullUserInfo(UserInfo):
         self.web_language = data["UserWebLanguage"]
 
 
-# TODO: switch this over to the `from_data` style? Would make setting up the
-#       test easier
 @dataclass
 class Comment:
     author: UserInfo
     created: datetime
     comment_str: str
 
-    def __init__(self, data):
-        self.author = UserInfo(data["UserID"], data["UserNickName"])
-        self.created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        self.comment_str = data["Comment"]
+    @classmethod
+    def from_data(cls, data):
+        author = UserInfo(data["UserID"], data["UserNickName"])
+        created = datetime.strptime(data["Created"], _TIME_FORMAT)
+        comment_str = data["Comment"]
+
+        return cls(author, created, comment_str)
 
 
 @dataclass
@@ -92,10 +97,8 @@ class TvSeriesInfo(MediaInfo):
 
 @dataclass
 class EpisodeInfo(TvSeriesInfo):
-    def __init__(self, name, year, imdbid, season, episode, dirname, filename):
-        super().__init__(name, year, imdbid, dirname, filename)
-        self.season = season
-        self.episode = episode
+    season: int
+    episode: int
 
     @classmethod
     def from_data(cls, data, dirname, filename):
@@ -112,28 +115,39 @@ class EpisodeInfo(TvSeriesInfo):
             tv_series.name,
             tv_series.year,
             tv_series.imdbid,
-            season,
-            episode,
             tv_series.dirname,
             tv_series.filename,
+            season,
+            episode,
         )
 
 
-# TODO: include the full language in here as well?
 @dataclass
 class SubtitlesInfo:
-    def __init__(self, data):
-        self.size = int(data["SubSize"])
-        self.downloads = int(data["SubDownloadsCnt"])
-        self.num_comments = int(data["SubComments"])
+    size: int
+    downloads: int
+    num_comments: int
+    rating: float
+    id: str
+    file_id: str
+    filename: str
+    lang_2: str
+    lang_3: str
+    ext: str
+    encoding: str
 
-        self.rating = float(data["SubRating"])
-
-        self.id = data["IDSubtitle"]
-        self.file_id = data["IDSubtitleFile"]
-
-        self.filename = data["SubFileName"]
-        self.lang_2 = data["ISO639"]
-        self.lang_3 = data["SubLanguageID"]
-        self.ext = data["SubFormat"].lower()
-        self.encoding = data["SubEncoding"]
+    @classmethod
+    def from_data(cls, data):
+        return cls(
+            int(data["SubSize"]),
+            int(data["SubDownloadsCnt"]),
+            int(data["SubComments"]),
+            float(data["SubRating"]),
+            data["IDSubtitle"],
+            data["IDSubtitleFile"],
+            data["SubFileName"],
+            data["ISO639"],
+            data["SubLanguageID"],
+            data["SubFormat"].lower(),
+            data["SubEncoding"],
+        )
