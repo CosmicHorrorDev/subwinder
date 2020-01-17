@@ -35,7 +35,7 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
         print(f"{result.media.filename} Comments:")
         for comment in comments:
             date = dt.strftime(comment.date, TIME_FORMAT)
-            print(f"{date} {comment.author.nickname}: {comment.text}")
+            print(f"{date} {comment.author.name}: {comment.text}")
         print()
 
     # Step 3. Download both of the subtitles next to the original files

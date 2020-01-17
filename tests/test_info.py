@@ -40,9 +40,9 @@ def test_build_media_info():
 
 
 def test_UserInfo():
-    user = UserInfo("<id>", "<nickname>")
+    user = UserInfo("<id>", "<name>")
     assert user.id == "<id>"
-    assert user.nickname == "<nickname>"
+    assert user.name == "<name>"
 
 
 @pytest.mark.skip(reason="Test after implementing `from_data` and `from_user`")
@@ -53,13 +53,13 @@ def test_FullUserInfo():
 def test_Comment():
     DATA = {
         "UserID": "<id>",
-        "UserNickName": "<nickname>",
+        "UserNickName": "<name>",
         "Created": "2000-01-02 03:04:05",
         "Comment": "<comment>",
     }
 
     assert Comment.from_data(DATA) == Comment(
-        UserInfo("<id>", "<nickname>"),
+        UserInfo("<id>", "<name>"),
         datetime(2000, 1, 2, 3, 4, 5),
         "<comment>",
     )

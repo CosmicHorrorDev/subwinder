@@ -24,7 +24,7 @@ def build_media_info(data, dirname=None, filename=None):
 @dataclass
 class UserInfo:
     id: str
-    nickname: str
+    name: str
 
 
 @dataclass

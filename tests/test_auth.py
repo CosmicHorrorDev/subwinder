@@ -427,7 +427,7 @@ def test_user_info():
     # TODO: switching this out to `from_data` would make it simpler
     ideal_result = FullUserInfo.__new__(FullUserInfo)
     ideal_result.id = "6"
-    ideal_result.nickname = "os"
+    ideal_result.name = "os"
     ideal_result.rank = "super admin"
     ideal_result.num_uploads = 296
     ideal_result.num_downloads = 1215
