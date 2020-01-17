@@ -25,6 +25,7 @@ def test_SearchResult():
         0.0,
         "4251071",
         "1952941557",
+        "3585468",
         "Fringe.S04E03.HDTV.XviD-LOL.srt",
         "en",
         "eng",

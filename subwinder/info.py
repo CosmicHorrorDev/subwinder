@@ -130,6 +130,7 @@ class SubtitlesInfo:
     rating: float
     id: str
     file_id: str
+    sub_to_movie_id: str
     filename: str
     lang_2: str
     lang_3: str
@@ -145,6 +146,7 @@ class SubtitlesInfo:
             float(data["SubRating"]),
             data["IDSubtitle"],
             data["IDSubtitleFile"],
+            data["IDSubMovieFile"],
             data["SubFileName"],
             data["ISO639"],
             data["SubLanguageID"],
