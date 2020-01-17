@@ -6,7 +6,7 @@ An ergonomic python library for the [opensubtitles.org](https://opensubtitles.or
 
 ### Quickstart
 
-Our task is composed of 3 simple parts
+Our task is composed of 3 simple steps
 
 1. Search for English subtitles for a movie at `/path/to/movie.mkv` and French subtitles for a tv show episode at `/path/to/episode.avi`.
 2. Print out any comments that people left on the subtitles.
@@ -46,7 +46,11 @@ with AuthSubWinder("<username>", "<password>", "<useragent>") as asw:
 
 And that's it, with less than 20 sloc you can search, get comments, and download a couple subtitles!
 
-### Benefits from using `Subwinder`
+### Documentation
+
+There is pretty thorough documentation in the [repo's wiki](https://github.com/LovecraftianHorror/subwinder/wiki) that covers all the functionality currently exposed by the library. If anything in the wiki is incorrect or confusing then please [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) to address this.
+
+### Benefits from using `subwinder`
 
 * Easy to develop in
     * Use objects defined by the library, and take and return objects in a logical order to provide a clean interface
@@ -60,7 +64,8 @@ And that's it, with less than 20 sloc you can search, get comments, and download
 * Small footprint
     * No external dependencies are used currently
 
-### Caveats from using `Subwinder`
+### Caveats from using `subwinder`
 
 * Python 3.6+ is required (at this point 3.6 is already several years old)
-* Not all values from the API are exposed: however, I'm flexible on this so if you have a use for one of the missing values then please bring it up in an issue!
+* Not all values from the API are exposed: however, I'm flexible on this so if you have a use for one of the missing values then please bring it up in [an issue]()https://github.com/LovecraftianHorror/subwinder/issues!
+* Currently only English is supported for the internal API. You can still search for subtitles in other languages, but the media names and long language names will all be in English. This will be worked on after the API is in a more stable state
