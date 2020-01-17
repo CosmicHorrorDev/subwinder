@@ -19,7 +19,7 @@ def test__rank_search_subtitles():
         (([], 0), {}, None),
         # Exludes `DUMMY_RESULTS[0]` because it's _bad_
         ((DUMMY_RESULTS, 0), {}, DUMMY_RESULTS[1]),
-        # Prefers `DUMMY_RESULTS[0]` because there's more downloads
+        # Prefers `DUMMY_RESULTS[0]` because there's a higher score
         ((DUMMY_RESULTS, 0), {"exclude_bad": False}, DUMMY_RESULTS[0]),
         # Ecludes `DUMMY_RESULTS[0]` because of format
         ((DUMMY_RESULTS, 0), {"sub_exts": ["SRT"]}, DUMMY_RESULTS[1]),

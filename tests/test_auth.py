@@ -362,7 +362,7 @@ def test__search_subtitles():
     print(build_media_info(RESP["data"][0]))
     ideal = [sr]
     ideal[0].subtitles.size = 58024
-    ideal[0].subtitles.downloads = 57765
+    ideal[0].subtitles.num_downloads = 57765
     ideal[0].subtitles.num_comments = 0
     ideal[0].subtitles.rating = None
     ideal[0].subtitles.id = "4251071"
@@ -429,8 +429,8 @@ def test_user_info():
     ideal_result.id = "6"
     ideal_result.nickname = "os"
     ideal_result.rank = "super admin"
-    ideal_result.uploads = 296
-    ideal_result.downloads = 1215
+    ideal_result.num_uploads = 296
+    ideal_result.num_downloads = 1215
     ideal_result.preferred_languages = ["de", "en", "fr"]
     ideal_result.web_language = "en"
 

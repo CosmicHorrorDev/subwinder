@@ -30,16 +30,16 @@ class UserInfo:
 @dataclass
 class FullUserInfo(UserInfo):
     rank: str
-    uploads: int
-    downloads: int
+    num_uploads: int
+    num_downloads: int
     preferred_languages: list
     web_language: str
 
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
-        self.uploads = int(data["UploadCnt"])
-        self.downloads = int(data["DownloadCnt"])
+        self.num_uploads = int(data["UploadCnt"])
+        self.num_downloads = int(data["DownloadCnt"])
 
         # Get all of the languages in 2 char lang
         langs = []
@@ -125,7 +125,7 @@ class EpisodeInfo(TvSeriesInfo):
 @dataclass
 class SubtitlesInfo:
     size: int
-    downloads: int
+    num_downloads: int
     num_comments: int
     rating: float
     id: str
