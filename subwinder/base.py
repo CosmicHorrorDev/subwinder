@@ -20,7 +20,7 @@ from subwinder.lang import lang_2s, lang_3s, lang_longs
 from subwinder.request import _request
 
 
-class SubWinder:
+class Subwinder:
     _token = None
 
     def __repr__(self):

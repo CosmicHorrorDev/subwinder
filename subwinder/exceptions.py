@@ -1,26 +1,26 @@
-class SubWinderError(Exception):
+class SubwinderError(Exception):
     pass
 
 
-class SubLangError(SubWinderError):
+class SubLangError(SubwinderError):
     pass
 
 
-class SubAuthError(SubWinderError):
+class SubAuthError(SubwinderError):
     pass
 
 
-class SubUploadError(SubWinderError):
+class SubUploadError(SubwinderError):
     pass
 
 
-class SubDownloadError(SubWinderError):
+class SubDownloadError(SubwinderError):
     pass
 
 
-class SubServerError(SubWinderError):
+class SubServerError(SubwinderError):
     pass
 
 
-class SubHashError(SubWinderError):
+class SubHashError(SubwinderError):
     pass

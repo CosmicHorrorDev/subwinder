@@ -24,22 +24,22 @@ def build_media_info(data, dirname=None, filename=None):
 @dataclass
 class UserInfo:
     id: str
-    nickname: str
+    name: str
 
 
 @dataclass
 class FullUserInfo(UserInfo):
     rank: str
-    uploads: int
-    downloads: int
+    num_uploads: int
+    num_downloads: int
     preferred_languages: list
     web_language: str
 
     def __init__(self, data):
         super().__init__(data["IDUser"], data["UserNickName"])
         self.rank = data["UserRank"]
-        self.uploads = int(data["UploadCnt"])
-        self.downloads = int(data["DownloadCnt"])
+        self.num_uploads = int(data["UploadCnt"])
+        self.num_downloads = int(data["DownloadCnt"])
 
         # Get all of the languages in 2 char lang
         langs = []
@@ -55,16 +55,16 @@ class FullUserInfo(UserInfo):
 @dataclass
 class Comment:
     author: UserInfo
-    created: datetime
-    comment_str: str
+    date: datetime
+    text: str
 
     @classmethod
     def from_data(cls, data):
         author = UserInfo(data["UserID"], data["UserNickName"])
-        created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        comment_str = data["Comment"]
+        date = datetime.strptime(data["Created"], _TIME_FORMAT)
+        text = data["Comment"]
 
-        return cls(author, created, comment_str)
+        return cls(author, date, text)
 
 
 @dataclass
@@ -125,7 +125,7 @@ class EpisodeInfo(TvSeriesInfo):
 @dataclass
 class SubtitlesInfo:
     size: int
-    downloads: int
+    num_downloads: int
     num_comments: int
     rating: float
     id: str

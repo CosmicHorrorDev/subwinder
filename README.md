@@ -15,7 +15,7 @@ Our task is composed of 3 simple steps
 **Note:** This does require a free opensubtitles account.
 
 ```python
-from subwinder.auth import AuthSubWinder
+from subwinder.auth import AuthSubwinder
 from subwinder.media import Media
 
 from datetime import datetime as dt
@@ -23,7 +23,7 @@ from datetime import datetime as dt
 # Step 1. Getting our `Media` objects created and searching
 movie = Media.from_file("/path/to/movie.mkv")
 episode = Media.from_file("/path/to/episode.avi")
-with AuthSubWinder("<username>", "<password>", "<useragent>") as asw:
+with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
     results = asw.search_subtitles([(movie, "en"), (episode, "fr")])
     # We're assuming both `Media` returned a `SearchResult` for this example
     assert None not in results
@@ -34,8 +34,8 @@ with AuthSubWinder("<username>", "<password>", "<useragent>") as asw:
     for result, comments in zip(results, result_comments):
         print(f"{result.media.filename} Comments:")
         for comment in comments:
-            date = dt.strftime(comment.created, TIME_FORMAT)
-            print(f"{date} {comment.author.nickname}: {comment.comment_str}")
+            date = dt.strftime(comment.date, TIME_FORMAT)
+            print(f"{date} {comment.author.name}: {comment.text}")
         print()
 
     # Step 3. Download both of the subtitles next to the original files

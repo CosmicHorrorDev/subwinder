@@ -6,7 +6,7 @@ import os
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
-from subwinder.auth import _build_search_query, AuthSubWinder
+from subwinder.auth import _build_search_query, AuthSubwinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
     build_media_info,
@@ -35,7 +35,7 @@ _converter._last_updated = datetime.now()
 
 
 def _dummy_auth_subwinder():
-    return AuthSubWinder.__new__(AuthSubWinder)
+    return AuthSubwinder.__new__(AuthSubwinder)
 
 
 def _standard_asw_mock(
@@ -95,7 +95,7 @@ def test_authsubwinder__init__():
 
     for params in bad_params:
         with pytest.raises(SubAuthError):
-            AuthSubWinder(*params)
+            AuthSubwinder(*params)
 
 
 @pytest.mark.skip()
@@ -362,7 +362,7 @@ def test__search_subtitles():
     print(build_media_info(RESP["data"][0]))
     ideal = [sr]
     ideal[0].subtitles.size = 58024
-    ideal[0].subtitles.downloads = 57765
+    ideal[0].subtitles.num_downloads = 57765
     ideal[0].subtitles.num_comments = 0
     ideal[0].subtitles.rating = None
     ideal[0].subtitles.id = "4251071"
@@ -427,10 +427,10 @@ def test_user_info():
     # TODO: switching this out to `from_data` would make it simpler
     ideal_result = FullUserInfo.__new__(FullUserInfo)
     ideal_result.id = "6"
-    ideal_result.nickname = "os"
+    ideal_result.name = "os"
     ideal_result.rank = "super admin"
-    ideal_result.uploads = 296
-    ideal_result.downloads = 1215
+    ideal_result.num_uploads = 296
+    ideal_result.num_downloads = 1215
     ideal_result.preferred_languages = ["de", "en", "fr"]
     ideal_result.web_language = "en"
 

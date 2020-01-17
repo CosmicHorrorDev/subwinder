@@ -2,7 +2,7 @@ import pytest
 
 from datetime import datetime
 
-from subwinder.base import SubWinder
+from subwinder.base import Subwinder
 from subwinder.lang import _converter
 
 
@@ -22,7 +22,7 @@ def test__request():
 
 
 def test_get_languages():
-    sw = SubWinder()
+    sw = Subwinder()
     assert sw.get_languages() == LANGS
 
 

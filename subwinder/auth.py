@@ -1,7 +1,7 @@
 import os
 
 from subwinder import utils
-from subwinder.base import SubWinder
+from subwinder.base import Subwinder
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -47,7 +47,7 @@ def _build_search_query(query, lang):
     return internal_query
 
 
-class AuthSubWinder(SubWinder):
+class AuthSubwinder(Subwinder):
     def __init__(self, username=None, password=None, useragent=None):
         # Try to get any info from env vars if not passed in
         useragent = useragent or os.environ.get("OPEN_SUBTITLES_USERAGENT")
@@ -56,19 +56,19 @@ class AuthSubWinder(SubWinder):
 
         if username is None:
             raise SubAuthError(
-                "missing `username`, set when initializing `AuthSubWinder` or"
+                "missing `username`, set when initializing `AuthSubwinder` or"
                 " with the OPEN_SUBTITLES_USERNAME env var"
             )
 
         if password is None:
             raise SubAuthError(
-                "missing `password`, set when initializing `AuthSubWinder` or"
+                "missing `password`, set when initializing `AuthSubwinder` or"
                 " set the OPEN_SUBTITLES_PASSWORD env var"
             )
 
         if useragent is None:
             raise SubAuthError(
-                "missing `useragent`, set when initializing `AuthSubWinder` or"
+                "missing `useragent`, set when initializing `AuthSubwinder` or"
                 " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
                 " be sepcified for your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
