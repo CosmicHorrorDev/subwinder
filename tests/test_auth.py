@@ -6,7 +6,7 @@ import os
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
-from subwinder.auth import _build_search_query, AuthSubWinder
+from subwinder.auth import _build_search_query, AuthSubwinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
     build_media_info,
@@ -35,7 +35,7 @@ _converter._last_updated = datetime.now()
 
 
 def _dummy_auth_subwinder():
-    return AuthSubWinder.__new__(AuthSubWinder)
+    return AuthSubwinder.__new__(AuthSubwinder)
 
 
 def _standard_asw_mock(
@@ -95,7 +95,7 @@ def test_authsubwinder__init__():
 
     for params in bad_params:
         with pytest.raises(SubAuthError):
-            AuthSubWinder(*params)
+            AuthSubwinder(*params)
 
 
 @pytest.mark.skip()
