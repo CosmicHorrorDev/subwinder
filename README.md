@@ -67,5 +67,5 @@ There is pretty thorough documentation in the [repo's wiki](https://github.com/L
 ### Caveats from using `subwinder`
 
 * Python 3.6+ is required (at this point 3.6 is already several years old)
-* Not all values from the API are exposed: however, I'm flexible on this so if you have a use for one of the missing values then please bring it up in [an issue]()https://github.com/LovecraftianHorror/subwinder/issues!
+* Not all values from the API are exposed: however, I'm flexible on this so if you have a use for one of the missing values then please bring it up in [an issue](https://github.com/LovecraftianHorror/subwinder/issues)!
 * Currently only English is supported for the internal API. You can still search for subtitles in other languages, but the media names and long language names will all be in English. This will be worked on after the API is in a more stable state
