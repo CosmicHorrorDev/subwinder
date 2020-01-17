@@ -367,6 +367,7 @@ def test__search_subtitles():
     ideal[0].subtitles.rating = 0.0
     ideal[0].subtitles.id = "4251071"
     ideal[0].subtitles.file_id = "1952941557"
+    ideal[0].subtitles.sub_to_movie_id = "3585468"
     ideal[0].subtitles.filename = "Fringe.S04E03.HDTV.XviD-LOL.srt"
     ideal[0].subtitles.lang_2 = "en"
     ideal[0].subtitles.lang_3 = "eng"
