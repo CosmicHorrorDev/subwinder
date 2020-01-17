@@ -18,11 +18,12 @@ def test_SearchResult():
     assert sr.media == EpisodeInfo(
         '"Fringe" Alone in the World', 2011, "1998676", "dir", "file", 4, 3
     )
+
     assert sr.subtitles == SubtitlesInfo(
         58024,
         57765,
         0,
-        0.0,
+        None,
         "4251071",
         "1952941557",
         "3585468",

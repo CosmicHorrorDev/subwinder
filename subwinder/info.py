@@ -143,10 +143,14 @@ class SubtitlesInfo:
             int(data["SubSize"]),
             int(data["SubDownloadsCnt"]),
             int(data["SubComments"]),
-            float(data["SubRating"]),
+            # 0.0 is the listed rating if there are no ratings yet which
+            # seems deceptive from a glance
+            None if data["SubRating"] == "0.0" else float(data["SubRating"]),
             data["IDSubtitle"],
             data["IDSubtitleFile"],
-            data["IDSubMovieFile"],
+            # If the search was done with anything other than movie hash and
+            # size then there isn't a "IDSubMovieFile"
+            None if data["IDSubMovieFile"] == "0" else data["IDSubMovieFile"],
             data["SubFileName"],
             data["ISO639"],
             data["SubLanguageID"],
