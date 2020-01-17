@@ -55,16 +55,16 @@ class FullUserInfo(UserInfo):
 @dataclass
 class Comment:
     author: UserInfo
-    created: datetime
-    comment_str: str
+    date: datetime
+    text: str
 
     @classmethod
     def from_data(cls, data):
         author = UserInfo(data["UserID"], data["UserNickName"])
-        created = datetime.strptime(data["Created"], _TIME_FORMAT)
-        comment_str = data["Comment"]
+        date = datetime.strptime(data["Created"], _TIME_FORMAT)
+        text = data["Comment"]
 
-        return cls(author, created, comment_str)
+        return cls(author, date, text)
 
 
 @dataclass
