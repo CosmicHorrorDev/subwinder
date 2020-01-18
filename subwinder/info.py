@@ -26,6 +26,14 @@ class UserInfo:
     id: str
     name: str
 
+    @classmethod
+    def from_data(cls, data):
+        return cls(
+            # Different keys for the same data again :/
+            id=data.get("UserID") or data["IDUser"],
+            name=data["UserNickName"],
+        )
+
 
 @dataclass
 class FullUserInfo(UserInfo):
@@ -43,10 +51,11 @@ class FullUserInfo(UserInfo):
             if lang:
                 preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
+        user_info = UserInfo.from_data(data)
+
         return cls(
-            # Different keys for the same data again :/
-            id=data.get("UserID") or data["IDUser"],
-            name=data["UserNickName"],
+            id=user_info.id,
+            name=user_info.name,
             rank=data["UserRank"],
             num_uploads=int(data["UploadCnt"]),
             num_downloads=int(data["DownloadCnt"]),
@@ -63,7 +72,7 @@ class Comment:
 
     @classmethod
     def from_data(cls, data):
-        author = UserInfo(data["UserID"], data["UserNickName"])
+        author = UserInfo.from_data(data)
         date = datetime.strptime(data["Created"], _TIME_FORMAT)
         text = data["Comment"]
 
