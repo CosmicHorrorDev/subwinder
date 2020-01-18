@@ -16,8 +16,6 @@ class SearchResult:
     media: MediaInfo
     subtitles: SubtitlesInfo
     upload_date: datetime
-    dirname: str = None
-    filename: str = None
 
     @classmethod
     def from_data(cls, data, dirname=None, filename=None):
@@ -30,4 +28,4 @@ class SearchResult:
         subtitles = SubtitlesInfo.from_data(data)
         upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
 
-        return cls(author, media, subtitles, upload_date, dirname, filename)
+        return cls(author, media, subtitles, upload_date)
