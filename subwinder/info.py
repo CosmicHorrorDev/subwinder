@@ -35,21 +35,24 @@ class FullUserInfo(UserInfo):
     preferred_languages: list
     web_language: str
 
-    def __init__(self, data):
-        super().__init__(data["IDUser"], data["UserNickName"])
-        self.rank = data["UserRank"]
-        self.num_uploads = int(data["UploadCnt"])
-        self.num_downloads = int(data["DownloadCnt"])
-
-        # Get all of the languages in 2 char lang
-        langs = []
+    @classmethod
+    def from_data(cls, data):
+        preferred = []
         for lang in data["UserPreferedLanguages"].split(","):
             # Ignore empty string in case of no preferred languages
             if lang:
-                langs.append(lang_3s.convert(lang, LangFormat.LANG_2))
-        self.preferred_languages = langs
+                preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
-        self.web_language = data["UserWebLanguage"]
+        return cls(
+            # Different keys for the same data again :/
+            id=data.get("UserID") or data["IDUser"],
+            name=data["UserNickName"],
+            rank=data["UserRank"],
+            num_uploads=int(data["UploadCnt"]),
+            num_downloads=int(data["DownloadCnt"]),
+            preferred_languages=preferred,
+            web_language=data["UserWebLanguage"],
+        )
 
 
 @dataclass
