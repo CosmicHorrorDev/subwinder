@@ -9,20 +9,24 @@ from unittest.mock import call, patch
 from subwinder.auth import _build_search_query, AuthSubwinder
 from subwinder.exceptions import SubAuthError
 from subwinder.info import (
-    build_media_info,
     Comment,
-    EpisodeInfo,
-    FullUserInfo,
     MovieInfo,
-    SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
 )
 from subwinder.lang import _converter
-from subwinder.media import Media, Subtitles
+from subwinder.media import Subtitles
 from subwinder.ranking import _rank_search_subtitles
 from subwinder.results import SearchResult
-from tests.constants import SAMPLES_DIR
+from tests.constants import (
+    EPISODE_INFO1,
+    FULL_USER_INFO1,
+    MEDIA1,
+    MOVIE_INFO1,
+    SAMPLES_DIR,
+    SEARCH_RESULT1,
+    SEARCH_RESULT2,
+)
 
 
 # Fake already updated langs to prevent API requests
@@ -54,24 +58,24 @@ def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
         (
-            (Media("0123456789abcdef", 123456), "en"),
+            (MEDIA1, "en"),
             {
                 "sublanguageid": "eng",
-                "moviehash": "0123456789abcdef",
-                "moviebytesize": "123456",
+                "moviehash": str(MEDIA1.hash),
+                "moviebytesize": str(MEDIA1.size),
             },
         ),
         (
-            (MovieInfo(None, None, "Movie imdbid", None, None), "fr"),
-            {"sublanguageid": "fre", "imdbid": "Movie imdbid"},
+            (MOVIE_INFO1, "fr"),
+            {"sublanguageid": "fre", "imdbid": MOVIE_INFO1.imdbid},
         ),
         (
-            (EpisodeInfo(None, None, "EI imdbid", None, None, 1, 2), "de"),
+            (EPISODE_INFO1, "de"),
             {
                 "sublanguageid": "ger",
-                "imdbid": "EI imdbid",
-                "season": 1,
-                "episode": 2,
+                "imdbid": EPISODE_INFO1.imdbid,
+                "season": EPISODE_INFO1.season,
+                "episode": EPISODE_INFO1.episode,
             },
         ),
     ]
@@ -158,38 +162,28 @@ def test_check_subtitles():
 
 # TODO: test this for batching
 def test_download_subtitles():
-    download_path = os.path.join("movie dir", "sub filename.sub ext")
-    queries = ((SearchResult.__new__(SearchResult),),)
-    queries[0][0].media = MovieInfo("Insurgent", 2015, "2908446", None, None)
-    queries[0][0].media.dirname = "movie dir"
-    queries[0][0].media.filename = "movie filename"
-    queries[0][0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    queries[0][0].subtitles.filename = "sub filename.sub ext"
-    queries[0][0].subtitles.lang_2 = "sub lang 2"
-    queries[0][0].subtitles.lang_3 = "sub lang 3"
-    queries[0][0].subtitles.ext = "sub ext"
+    download_path = os.path.join(
+        SEARCH_RESULT1.media.dirname, SEARCH_RESULT1.subtitles.filename
+    )
+    QUERIES = ((SEARCH_RESULT1,),)
     RESP = None
     # Need to get the download path here
-    CALL = (*queries, [download_path])
-    IDEAL = ["movie dir/sub filename.sub ext"]
+    CALL = (*QUERIES, [download_path])
+    IDEAL = [download_path]
 
     _standard_asw_mock(
-        "download_subtitles", "_download_subtitles", queries, RESP, CALL, IDEAL
+        "download_subtitles", "_download_subtitles", QUERIES, RESP, CALL, IDEAL
     )
 
 
 def test__download_subtitles():
     asw = _dummy_auth_subwinder()
 
-    dummy_search_result = SearchResult.__new__(SearchResult)
-    dummy_search_result.subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    dummy_search_result.subtitles.encoding = "UTF-8"
-    dummy_search_result.subtitles.file_id = "1954677189"
     RESP = {
         "status": "200 OK",
         "data": [
             {
-                "idsubtitlefile": "1954677189",
+                "idsubtitlefile": SEARCH_RESULT1.subtitles.file_id,
                 "data": (
                     "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N"
                     "/Yu1JuTV9wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSM"
@@ -208,9 +202,11 @@ def test__download_subtitles():
         sub_path = os.path.join(temp_dir, "test download.txt")
 
         with patch.object(asw, "_request", return_value=RESP) as mocked:
-            asw._download_subtitles([dummy_search_result], [sub_path])
+            asw._download_subtitles([SEARCH_RESULT1], [sub_path])
 
-        mocked.assert_called_with("DownloadSubtitles", ["1954677189"])
+        mocked.assert_called_with(
+            "DownloadSubtitles", [SEARCH_RESULT1.subtitles.file_id]
+        )
 
         # Check the contents for the correct result
         with open(sub_path) as f:
@@ -219,16 +215,7 @@ def test__download_subtitles():
 
 def test_get_comments():
     # Build up the Empty `SearchResult`s and add the `subtitles.id`
-    queries = (
-        [
-            SearchResult.__new__(SearchResult),
-            SearchResult.__new__(SearchResult),
-        ],
-    )
-    queries[0][0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    queries[0][0].subtitles.id = "3387112"
-    queries[0][1].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    queries[0][1].subtitles.id = "3385570"
+    queries = ([SEARCH_RESULT1, SEARCH_RESULT2],)
     with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
         RESP = json.load(f)
     ideal_result = [
@@ -252,7 +239,10 @@ def test_get_comments():
             ),
         ],
     ]
-    CALL = ("GetComments", ["3387112", "3385570"])
+    CALL = (
+        "GetComments",
+        [SEARCH_RESULT1.subtitles.id, SEARCH_RESULT2.subtitles.id],
+    )
 
     _standard_asw_mock(
         "get_comments", "_request", queries, RESP, CALL, ideal_result
@@ -303,28 +293,21 @@ def test_ping():
 
 
 def test_report_movie():
-    query = (SearchResult.__new__(SearchResult),)
-    query[0].subtitles = SubtitlesInfo.__new__(SubtitlesInfo)
-    query[0].subtitles.sub_to_movie_id = "739"
-    CALL = ("ReportWrongMovieHash", "739")
+    QUERY = (SEARCH_RESULT1,)
+    CALL = ("ReportWrongMovieHash", SEARCH_RESULT1.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
-    _standard_asw_mock("report_movie", "_request", query, RESP, CALL, None)
+    _standard_asw_mock("report_movie", "_request", QUERY, RESP, CALL, None)
 
 
 def test_search_subtitles():
-    QUERIES = (
-        (
-            (Media.__new__(Media), "en"),
-            (MovieInfo.__new__(MovieInfo), "fr"),
-            (EpisodeInfo.__new__(EpisodeInfo), "de"),
-        ),
-    )
+    QUERIES = (((MEDIA1, "en"), (MOVIE_INFO1, "fr"), (EPISODE_INFO1, "de"),),)
     CALL = (*QUERIES, _rank_search_subtitles)
+    # Just testing that the correct amount of `SearchResult`s are returned
     RESP = [
-        SearchResult.__new__(SearchResult),
-        SearchResult.__new__(SearchResult),
-        SearchResult.__new__(SearchResult),
+        SEARCH_RESULT1,
+        SEARCH_RESULT1,
+        SEARCH_RESULT1,
     ]
     IDEAL = RESP
 
@@ -334,8 +317,8 @@ def test_search_subtitles():
 
 
 def test__search_subtitles():
-    queries = (
-        ((Media("18379ac9af039390", 366876694), "en"),),
+    QUERIES = (
+        ((MEDIA1, "en"),),
         _rank_search_subtitles,
     )
     CALL = (
@@ -351,31 +334,10 @@ def test__search_subtitles():
     with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
         RESP = json.load(f)
 
-    sr = SearchResult(
-        UserInfo("1332962", "elderman"),
-        EpisodeInfo(
-            '"Fringe" Alone in the World', 2011, "1998676", None, None, 4, 3
-        ),
-        SubtitlesInfo.__new__(SubtitlesInfo),
-        datetime(2011, 10, 8, 7, 36, 1),
-    )
-    print(build_media_info(RESP["data"][0]))
-    ideal = [sr]
-    ideal[0].subtitles.size = 58024
-    ideal[0].subtitles.num_downloads = 57765
-    ideal[0].subtitles.num_comments = 0
-    ideal[0].subtitles.rating = None
-    ideal[0].subtitles.id = "4251071"
-    ideal[0].subtitles.file_id = "1952941557"
-    ideal[0].subtitles.sub_to_movie_id = "3585468"
-    ideal[0].subtitles.filename = "Fringe.S04E03.HDTV.XviD-LOL.srt"
-    ideal[0].subtitles.lang_2 = "en"
-    ideal[0].subtitles.lang_3 = "eng"
-    ideal[0].subtitles.ext = "srt"
-    ideal[0].subtitles.encoding = "UTF-8"
+    IDEAL = [SEARCH_RESULT2]
 
     _standard_asw_mock(
-        "_search_subtitles", "_request", queries, RESP, CALL, ideal
+        "_search_subtitles", "_request", QUERIES, RESP, CALL, IDEAL
     )
 
 
@@ -425,13 +387,6 @@ def test_user_info():
     }
     CALL = ("GetUserInfo",)
     # TODO: switching this out to `from_data` would make it simpler
-    ideal_result = FullUserInfo.__new__(FullUserInfo)
-    ideal_result.id = "6"
-    ideal_result.name = "os"
-    ideal_result.rank = "super admin"
-    ideal_result.num_uploads = 296
-    ideal_result.num_downloads = 1215
-    ideal_result.preferred_languages = ["de", "en", "fr"]
-    ideal_result.web_language = "en"
+    IDEAL_RESULT = FULL_USER_INFO1
 
-    _standard_asw_mock("user_info", "_request", (), RESP, CALL, ideal_result)
+    _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)

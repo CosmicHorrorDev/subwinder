@@ -219,7 +219,7 @@ class AuthSubwinder(Subwinder):
 
     def user_info(self):
         data = self._request("GetUserInfo")["data"]
-        return FullUserInfo(data)
+        return FullUserInfo.from_data(data)
 
     def ping(self):
         self._request("NoOperation")

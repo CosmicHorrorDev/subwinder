@@ -26,6 +26,14 @@ class UserInfo:
     id: str
     name: str
 
+    @classmethod
+    def from_data(cls, data):
+        return cls(
+            # Different keys for the same data again :/
+            id=data.get("UserID") or data["IDUser"],
+            name=data["UserNickName"],
+        )
+
 
 @dataclass
 class FullUserInfo(UserInfo):
@@ -35,21 +43,25 @@ class FullUserInfo(UserInfo):
     preferred_languages: list
     web_language: str
 
-    def __init__(self, data):
-        super().__init__(data["IDUser"], data["UserNickName"])
-        self.rank = data["UserRank"]
-        self.num_uploads = int(data["UploadCnt"])
-        self.num_downloads = int(data["DownloadCnt"])
-
-        # Get all of the languages in 2 char lang
-        langs = []
+    @classmethod
+    def from_data(cls, data):
+        preferred = []
         for lang in data["UserPreferedLanguages"].split(","):
             # Ignore empty string in case of no preferred languages
             if lang:
-                langs.append(lang_3s.convert(lang, LangFormat.LANG_2))
-        self.preferred_languages = langs
+                preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
-        self.web_language = data["UserWebLanguage"]
+        user_info = UserInfo.from_data(data)
+
+        return cls(
+            id=user_info.id,
+            name=user_info.name,
+            rank=data["UserRank"],
+            num_uploads=int(data["UploadCnt"]),
+            num_downloads=int(data["DownloadCnt"]),
+            preferred_languages=preferred,
+            web_language=data["UserWebLanguage"],
+        )
 
 
 @dataclass
@@ -60,7 +72,7 @@ class Comment:
 
     @classmethod
     def from_data(cls, data):
-        author = UserInfo(data["UserID"], data["UserNickName"])
+        author = UserInfo.from_data(data)
         date = datetime.strptime(data["Created"], _TIME_FORMAT)
         text = data["Comment"]
 

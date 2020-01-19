@@ -9,13 +9,29 @@ from subwinder.info import (
     build_media_info,
     Comment,
     EpisodeInfo,
+    FullUserInfo,
     MediaInfo,
     MovieInfo,
     SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
 )
-from tests.constants import SAMPLES_DIR
+from subwinder.lang import _converter
+from tests.constants import (
+    EPISODE_INFO1,
+    FULL_USER_INFO1,
+    USER_INFO1,
+    SAMPLES_DIR,
+    SUBTITLES_INFO1,
+)
+
+# Fake already updated langs to prevent API requests
+_converter._langs = [
+    ("de", "ger", "German"),
+    ("en", "eng", "English"),
+    ("fr", "fre", "French"),
+]
+_converter._last_updated = datetime.now()
 
 
 def test_build_media_info():
@@ -40,14 +56,23 @@ def test_build_media_info():
 
 
 def test_UserInfo():
-    user = UserInfo("<id>", "<name>")
-    assert user.id == "<id>"
-    assert user.name == "<name>"
+    DATA = {"UserID": "1332962", "UserNickName": "elderman"}
+
+    assert UserInfo.from_data(DATA) == USER_INFO1
 
 
-@pytest.mark.skip(reason="Test after implementing `from_data` and `from_user`")
 def test_FullUserInfo():
-    pass
+    DATA = {
+        "UserID": "6",
+        "UserNickName": "os",
+        "UserRank": "super admin",
+        "UploadCnt": "296",
+        "DownloadCnt": "1215",
+        "UserPreferedLanguages": "ger,eng,fre",
+        "UserWebLanguage": "en",
+    }
+
+    assert FullUserInfo.from_data(DATA) == FULL_USER_INFO1
 
 
 def test_Comment():
@@ -59,9 +84,7 @@ def test_Comment():
     }
 
     assert Comment.from_data(DATA) == Comment(
-        UserInfo("<id>", "<name>"),
-        datetime(2000, 1, 2, 3, 4, 5),
-        "<comment>",
+        UserInfo("<id>", "<name>"), datetime(2000, 1, 2, 3, 4, 5), "<comment>",
     )
 
 
@@ -89,47 +112,33 @@ def test_TvSeriesInfo():
 
 def test_EpisodeInfo():
     DATA = {
-        "MovieName": "<name>",
-        "MovieYear": "2000",
-        "IDMovieImdb": "<imdbid>",
-        "Season": "1",
-        "Episode": "2",
+        "MovieName": '"Fringe" Alone in the World',
+        "MovieYear": "2011",
+        "IDMovieImdb": "1998676",
+        "Season": "4",
+        "Episode": "3",
     }
 
     tv_series = TvSeriesInfo.from_data(DATA, None, None)
-    episode = EpisodeInfo("<name>", 2000, "<imdbid>", None, None, 1, 2)
 
-    assert EpisodeInfo.from_data(DATA, None, None) == episode
-    assert EpisodeInfo.from_tv_series(tv_series, 1, 2) == episode
+    assert EpisodeInfo.from_data(DATA, None, None) == EPISODE_INFO1
+    assert EpisodeInfo.from_tv_series(tv_series, 4, 3) == EPISODE_INFO1
 
 
 def test_SubtitlesInfo():
     DATA = {
-        "SubSize": "1024",
-        "SubDownloadsCnt": "100",
-        "SubComments": "2",
-        "SubRating": "6.0",
-        "IDSubtitle": "<id>",
-        "IDSubtitleFile": "<id-file>",
-        "IDSubMovieFile": "<id-movie-file>",
-        "SubFileName": "<name>",
+        "SubSize": "71575",
+        "SubDownloadsCnt": "22322",
+        "SubComments": "0",
+        "SubRating": "0.0",
+        "IDSubtitle": "3387112",
+        "IDSubtitleFile": "<file-id>",
+        "IDSubMovieFile": "0",
+        "SubFileName": "sub-filename.sub-ext",
         "ISO639": "<lang-2>",
         "SubLanguageID": "<lang-3>",
-        "SubFormat": "<format>",
-        "SubEncoding": "<encoding>",
+        "SubFormat": "<ext>",
+        "SubEncoding": "UTF-8",
     }
 
-    assert SubtitlesInfo.from_data(DATA) == SubtitlesInfo(
-        1024,
-        100,
-        2,
-        6.0,
-        "<id>",
-        "<id-file>",
-        "<id-movie-file>",
-        "<name>",
-        "<lang-2>",
-        "<lang-3>",
-        "<format>",
-        "<encoding>",
-    )
+    assert SubtitlesInfo.from_data(DATA) == SUBTITLES_INFO1

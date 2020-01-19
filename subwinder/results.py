@@ -22,7 +22,7 @@ class SearchResult:
         if data["UserID"] == "0":
             author = None
         else:
-            author = UserInfo(data.get("UserID"), data["UserNickName"])
+            author = UserInfo.from_data(data)
 
         media = build_media_info(data, dirname, filename)
         subtitles = SubtitlesInfo.from_data(data)
