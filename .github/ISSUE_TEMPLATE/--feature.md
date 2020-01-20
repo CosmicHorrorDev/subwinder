@@ -1,7 +1,7 @@
 ---
 name: "Feature Request"
 about: "Is there some functionality missing that you want?"
-title: ""
+title: "Feature: "
 labels: "enhancement"
 assignees: ""
 ---

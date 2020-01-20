@@ -1,7 +1,7 @@
 ---
 name: "Bug Report"
 about: "Did you find a bug?"
-title: ""
+title: "Bug: "
 labels: "bug"
 assignees: ""
 ---

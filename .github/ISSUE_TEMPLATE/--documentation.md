@@ -1,7 +1,7 @@
 ---
 name: "Documentation"
 about: "Did you find an error or is there something confusing in the wiki?"
-title: ""
+title: "Doc: "
 labels: "documentation"
 assignees: ""
 ---
