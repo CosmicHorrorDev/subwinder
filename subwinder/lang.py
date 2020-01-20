@@ -26,6 +26,7 @@ class _LangConverter:
     this way limits unnecessary requests to the API along with setting up an
     easy way to convert between any of the forms.
     """
+
     def __init__(self):
         self._last_updated = None
 

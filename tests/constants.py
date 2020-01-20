@@ -84,8 +84,5 @@ SEARCH_RESULT1 = SearchResult(
 )
 
 SEARCH_RESULT2 = SearchResult(
-    USER_INFO1,
-    EPISODE_INFO1,
-    SUBTITLES_INFO2,
-    dt(2011, 10, 8, 7, 36, 1),
+    USER_INFO1, EPISODE_INFO1, SUBTITLES_INFO2, dt(2011, 10, 8, 7, 36, 1),
 )
