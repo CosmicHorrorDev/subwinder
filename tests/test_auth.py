@@ -17,7 +17,6 @@ from subwinder.info import (
 from subwinder.lang import _converter
 from subwinder.media import Subtitles
 from subwinder.ranking import _rank_search_subtitles
-from subwinder.results import SearchResult
 from tests.constants import (
     EPISODE_INFO1,
     FULL_USER_INFO1,
