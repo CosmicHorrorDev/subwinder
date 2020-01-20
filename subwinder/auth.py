@@ -17,7 +17,7 @@ from subwinder.info import (
 from subwinder.lang import lang_2s, LangFormat
 from subwinder.media import Media
 from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
-from subwinder.results import SearchResult
+from subwinder.results import SearchResult#flake8 will be so mad
 
 
 def _build_search_query(query, lang):
