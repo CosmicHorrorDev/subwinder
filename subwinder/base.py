@@ -16,6 +16,7 @@
 
 # TODO: switch to the json api
 
+from subwinder.info import ServerInfo
 from subwinder.lang import lang_2s, lang_3s, lang_longs
 from subwinder.request import _request
 
@@ -30,9 +31,11 @@ class Subwinder:
         # Call the `_request` function with our token
         return _request(method, self._token, *params)
 
+    def daily_download_info(self):
+        return self.server_info().daily_download_info
+
     def get_languages(self):
         return list(zip(lang_2s, lang_3s, lang_longs))
 
     def server_info(self):
-        # FIXME: return this info in a nicer way?
-        return self._request("ServerInfo")
+        return ServerInfo.from_data(self._request("ServerInfo"))

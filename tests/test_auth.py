@@ -18,6 +18,7 @@ from subwinder.lang import _converter
 from subwinder.media import Subtitles
 from subwinder.ranking import _rank_search_subtitles
 from tests.constants import (
+    DOWNLOAD_INFO,
     EPISODE_INFO1,
     FULL_USER_INFO1,
     MEDIA1,
@@ -170,9 +171,17 @@ def test_download_subtitles():
     CALL = (*QUERIES, [download_path])
     IDEAL = [download_path]
 
-    _standard_asw_mock(
-        "download_subtitles", "_download_subtitles", QUERIES, RESP, CALL, IDEAL
-    )
+    asw = _dummy_auth_subwinder()
+
+    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
+        # Mock out the call to get remaining downloads as 200
+        with patch.object(
+            asw, "daily_download_info", return_value=DOWNLOAD_INFO
+        ):
+            result = asw.download_subtitles(*QUERIES)
+
+    mocked.assert_called_with(*CALL)
+    assert result == IDEAL
 
 
 def test__download_subtitles():
