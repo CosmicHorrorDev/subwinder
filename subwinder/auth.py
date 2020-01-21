@@ -164,6 +164,15 @@ class AuthSubwinder(Subwinder):
 
             download_paths.append(os.path.join(dir_path, filename))
 
+        # Check that the user has enough downloads remaining to satisfy all
+        # `downloads`
+        daily_remaining = self.daily_download_info().remaining
+        if daily_remaining < len(downloads):
+            raise SubDownloadError(
+                f"Not enough daily downloads remaining ({daily_remaining} <"
+                f" {len(downloads)})"
+            )
+
         # Download the subtitles in batches of 20, per api spec
         BATCH_SIZE = 20
         for i in range(0, len(downloads), BATCH_SIZE):
