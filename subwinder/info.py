@@ -150,8 +150,8 @@ class DownloadInfo:
         return cls(
             ip=limits["client_ip"],
             downloaded=int(limits["client_24h_download_count"]),
-            remaining=limits["client_download_quota"],
-            limit=limits["client_24h_download_limit"],
+            remaining=int(limits["client_download_quota"]),
+            limit=int(limits["client_24h_download_limit"]),
             limit_checked_by=limits["limit_check_by"],
         )
 

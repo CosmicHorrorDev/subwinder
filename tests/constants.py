@@ -2,9 +2,11 @@ from datetime import datetime as dt
 import os
 
 from subwinder.info import (
+    DownloadInfo,
     EpisodeInfo,
     FullUserInfo,
     MovieInfo,
+    ServerInfo,
     SubtitlesInfo,
     UserInfo,
 )
@@ -85,4 +87,25 @@ SEARCH_RESULT1 = SearchResult(
 
 SEARCH_RESULT2 = SearchResult(
     USER_INFO1, EPISODE_INFO1, SUBTITLES_INFO2, dt(2011, 10, 8, 7, 36, 1),
+)
+
+DOWNLOAD_INFO = DownloadInfo(
+    ip="1.1.1.1",
+    downloaded=0,
+    remaining=200,
+    limit=200,
+    limit_checked_by="user_ip",
+)
+
+SERVER_INFO = ServerInfo(
+    application="OpenSuber v0.2",
+    users_online=5117,
+    users_logged_in=55,
+    users_online_peak=27449,
+    users_registered=1025195,
+    bots_online=3685,
+    total_subtitles_downloaded=765919208,
+    total_subtitle_files=1864277,
+    total_movies=136445,
+    daily_download_info=DOWNLOAD_INFO,
 )
