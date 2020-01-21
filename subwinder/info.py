@@ -134,6 +134,57 @@ class EpisodeInfo(TvSeriesInfo):
         )
 
 
+# TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever
+#       different?
+@dataclass
+class DownloadInfo:
+    ip: str
+    downloaded: int
+    remaining: int
+    limit: int
+    limit_checked_by: str
+
+    @classmethod
+    def from_data(cls, data):
+        limits = data["download_limits"]
+        return cls(
+            ip=limits["client_ip"],
+            downloaded=int(limits["client_24h_download_count"]),
+            remaining=limits["client_download_quota"],
+            limit=limits["client_24h_download_limit"],
+            limit_checked_by=limits["limit_check_by"],
+        )
+
+
+@dataclass
+class ServerInfo:
+    application: str
+    users_online: int
+    users_logged_in: int
+    users_online_peak: int
+    users_registered: int
+    bots_online: int
+    total_subtitles_downloaded: int
+    total_subtitle_files: int
+    total_movies: int
+    daily_download_info: DownloadInfo
+
+    @classmethod
+    def from_data(cls, data):
+        return cls(
+            application=data["application"],
+            users_online=int(data["users_online_total"]),
+            users_logged_in=int(data["users_loggedin"]),
+            users_online_peak=int(data["users_max_alltime"]),
+            users_registered=int(data["users_registered"]),
+            bots_online=int(data["users_online_program"]),
+            total_subtitles_downloaded=int(data["subs_downloads"]),
+            total_subtitle_files=int(data["subs_subtitle_files"]),
+            total_movies=int(data["movies_total"]),
+            daily_download_info=DownloadInfo.from_data(data),
+        )
+
+
 @dataclass
 class SubtitlesInfo:
     size: int
