@@ -29,6 +29,8 @@ class _LangConverter:
 
     def __init__(self):
         self._last_updated = None
+        # Separate list for each of the lang types
+        self._langs = [[], [], [], []]
 
     def _fetch(self):
         return _request("GetSubLanguages", None)["data"]
@@ -43,23 +45,19 @@ class _LangConverter:
         # Get language list from api
         lang_sets = self._fetch()
 
-        # Store `langs` in common format
-        self._langs = []
+        # Reset any of the info currently in `_lang`
+        self._langs = [[], [], [], []]
         for lang_set in lang_sets:
-            lang_2 = lang_set[_LANG_2_KEY]
-            lang_3 = lang_set[_LANG_3_KEY]
-            lang_name = lang_set[_LANG_LONG_KEY]
-
-            self._langs.append((lang_2, lang_3, lang_name))
+            self._langs[LangFormat.LANG_2.value].append(lang_set[_LANG_2_KEY])
+            self._langs[LangFormat.LANG_3.value].append(lang_set[_LANG_3_KEY])
+            self._langs[LangFormat.LANG_LONG.value].append(
+                lang_set[_LANG_LONG_KEY]
+            )
 
         # Refresh updated time
         self._last_updated = datetime.now()
 
     def convert(self, lang, from_format, to_format):
-        # This isn't the most efficient way to convert formats, but there's
-        # less than 100 languages supported so it really  shouldn't be a
-        # bottleneck. If it's a problem it can be optimized
-
         # Update `langs` listing if needed
         self._update()
 
@@ -67,22 +65,22 @@ class _LangConverter:
         if from_format == to_format:
             return lang
 
-        for lang_set in self._langs:
-            # Return converted language on match
-            if lang == lang_set[from_format.value]:
-                return lang_set[to_format.value]
+        try:
+            lang_index = self._langs[from_format.value].index(lang)
+        except ValueError:
+            # Raise the error as something that makes sense for this context
+            raise SubLangError(
+                f"Tried to convert language '{lang}', but not found in"
+                f" language list {self._langs}"
+            )
 
-        # If we got here then the `lang` isn't in the listing, raise error
-        raise SubLangError(
-            f"Tried to convert language '{lang}', but not found in language"
-            f" list {self._langs}"
-        )
+        return self._langs[to_format.value][lang_index]
 
     def list(self, lang_format):
         # Update if needed
         self._update()
 
-        return [lang_set[lang_format.value] for lang_set in self._langs]
+        return self._langs[lang_format.value]
 
 
 # `_converter` shared by all the `_Lang`s
