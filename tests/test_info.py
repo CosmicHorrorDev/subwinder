@@ -27,9 +27,9 @@ from tests.constants import (
 
 # Fake already updated langs to prevent API requests
 _converter._langs = [
-    ("de", "ger", "German"),
-    ("en", "eng", "English"),
-    ("fr", "fre", "French"),
+    ["de", "en", "fr"],
+    ["ger", "eng", "fre"],
+    ["German", "English", "French"],
 ]
 _converter._last_updated = datetime.now()
 

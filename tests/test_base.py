@@ -11,9 +11,9 @@ from tests.constants import DOWNLOAD_INFO, SAMPLES_DIR, SERVER_INFO
 
 
 LANGS = [
-    ("de", "ger", "German"),
-    ("en", "eng", "English"),
-    ("fr", "fre", "French"),
+    ["de", "en", "fr"],
+    ["ger", "eng", "fre"],
+    ["German", "English", "French"],
 ]
 # Fake already updated langs
 _converter._langs = LANGS
@@ -39,7 +39,11 @@ def test_daily_download_info():
 
 def test_get_languages():
     sw = Subwinder()
-    assert sw.get_languages() == LANGS
+    assert sw.get_languages() == [
+        ("de", "ger", "German"),
+        ("en", "eng", "English"),
+        ("fr", "fre", "French"),
+    ]
 
 
 def test_server_info():
