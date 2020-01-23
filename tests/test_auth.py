@@ -401,3 +401,20 @@ def test_user_info():
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
+
+
+def test_vote():
+    SCORE = 8
+    QUERIES = (SEARCH_RESULT1, SCORE)
+    RESP = {
+        "status": "200 OK",
+        "data": {
+            "SubRating": "8.0",
+            "SubSumVotes": "1",
+            "IDSubtitle": SEARCH_RESULT1.subtitles.id,
+        },
+        "seconds": "0.075",
+    }
+    CALL = ("SubtitlesVote", SEARCH_RESULT1.subtitles.id, SCORE)
+
+    _standard_asw_mock("vote", "_request", QUERIES, RESP, CALL, None)
