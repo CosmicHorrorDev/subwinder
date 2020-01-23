@@ -39,6 +39,9 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
         print()
 
     # Step 3. Download both of the subtitles next to the original files
+    # We're assuming we have enough remaining downloads for these, if not then
+    # a `SubDownloadError` will be raised
+    assert asw.daily_download_info().remaining >= len(results)
     download_paths = asw.download_subtitles(
         results, name_format="{media_name}.{lang_3}.{ext}"
     )
