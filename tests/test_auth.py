@@ -123,9 +123,12 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
-@pytest.mark.skip(reason="Method not implemented yet")
 def test_add_comment():
-    pass
+    QUERIES = (SEARCH_RESULT1, "bad comment", True)
+    RESP = {"status": "200 OK", "seconds": "0.228"}
+    CALL = ("AddComment", SEARCH_RESULT1.subtitles.id, "bad comment", True)
+
+    _standard_asw_mock("add_comment", "_request", QUERIES, RESP, CALL, None)
 
 
 def test_check_subtitles():
