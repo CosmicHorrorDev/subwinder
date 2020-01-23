@@ -349,3 +349,7 @@ class AuthSubwinder(Subwinder):
         )
         subtitle_id = search_result.subtitles.id
         self._request("SubtitlesVote", subtitle_id, score)
+
+    def auto_update(self, program_name):
+        # Not sure if I should return this information in a better format
+        return self._request("AutoUpdate", program_name)

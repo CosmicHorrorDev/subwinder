@@ -131,6 +131,29 @@ def test_add_comment():
     _standard_asw_mock("add_comment", "_request", QUERIES, RESP, CALL, None)
 
 
+def test_auto_update():
+    PROGRAM_NAME = "SubDownloader"
+    QUERIES = (PROGRAM_NAME,)
+    RESP = {
+        "version": "1.2.3",
+        "url_windows": (
+            "http://forja.rediris.es/frs/download.php/123/"
+            "subdownloader1.2.3.exe"
+        ),
+        "url_linux": (
+            "http://forja.rediris.es/frs/download.php/124/"
+            "SubDownloader1.2.3.src.zip"
+        ),
+        "comments": (
+            "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed"
+        ),
+        "status": "200 OK",
+    }
+    CALL = ("AutoUpdate", PROGRAM_NAME)
+
+    _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
+
+
 def test_check_subtitles():
     QUERIES = (
         [
