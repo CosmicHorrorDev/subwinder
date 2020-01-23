@@ -283,7 +283,7 @@ class AuthSubwinder(Subwinder):
                     f" was given {query}"
                 )
 
-            if lang_2 not in list(lang_2s):
+            if lang_2 not in lang_2s:
                 # TODO: may want to include the long names as well to make it
                 #       easier for people to find the correct lang_2
                 raise SubLangError(
