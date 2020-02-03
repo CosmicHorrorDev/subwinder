@@ -119,9 +119,9 @@ def test_EpisodeInfo():
         "Episode": "3",
     }
 
-    tv_series = TvSeriesInfo.from_data(DATA, None, None)
+    tv_series = TvSeriesInfo.from_data(DATA, "/path/to", "file.mkv")
 
-    assert EpisodeInfo.from_data(DATA, None, None) == EPISODE_INFO1
+    assert EpisodeInfo.from_data(DATA, "/path/to", "file.mkv") == EPISODE_INFO1
     assert EpisodeInfo.from_tv_series(tv_series, 4, 3) == EPISODE_INFO1
 
 

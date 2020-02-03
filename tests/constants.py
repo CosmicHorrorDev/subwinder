@@ -17,7 +17,7 @@ from subwinder.results import SearchResult
 TEST_DIR = os.path.dirname(__file__)
 SAMPLES_DIR = os.path.join(TEST_DIR, "sample_responses")
 
-MEDIA1 = Media("18379ac9af039390", 366876694)
+MEDIA1 = Media("18379ac9af039390", 366876694, "/path/to/file.mkv")
 USER_INFO1 = UserInfo("1332962", "elderman")
 
 FULL_USER_INFO1 = FullUserInfo(
@@ -42,8 +42,8 @@ EPISODE_INFO1 = EpisodeInfo(
     name='"Fringe" Alone in the World',
     year=2011,
     imdbid="1998676",
-    dirname=None,
-    filename=None,
+    dirname="/path/to",
+    filename="file.mkv",
     season=4,
     episode=3,
 )
