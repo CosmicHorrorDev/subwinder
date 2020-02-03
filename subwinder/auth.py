@@ -322,8 +322,8 @@ class AuthSubwinder(Subwinder):
                 search_result = SearchResult.from_data(result)
                 if type(query) == Media:
                     # Media could have the original file information tied to it
-                    search_result.dirname = query.dirname
-                    search_result.filename = query.filename
+                    search_result.media.dirname = query.dirname
+                    search_result.media.filename = query.filename
 
             search_results.append(search_result)
 
