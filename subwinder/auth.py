@@ -344,9 +344,9 @@ class AuthSubwinder(Subwinder):
         self._request("AddComment", subtitle_id, comment_str, bad)
 
     def vote(self, search_result, score):
-        assert 1 <= score <= 10, (
-            f"Subtitle Vote must be between 1 and 10, given {score}"
-        )
+        assert (
+            1 <= score <= 10
+        ), f"Subtitle Vote must be between 1 and 10, given {score}"
         subtitle_id = search_result.subtitles.id
         self._request("SubtitlesVote", subtitle_id, score)
 
