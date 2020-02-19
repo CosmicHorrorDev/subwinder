@@ -123,9 +123,35 @@ def test__logout():
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
 
-@pytest.mark.skip(reason="Method not implemented yet")
 def test_add_comment():
-    pass
+    QUERIES = (SEARCH_RESULT1, "bad comment", True)
+    RESP = {"status": "200 OK", "seconds": "0.228"}
+    CALL = ("AddComment", SEARCH_RESULT1.subtitles.id, "bad comment", True)
+
+    _standard_asw_mock("add_comment", "_request", QUERIES, RESP, CALL, None)
+
+
+def test_auto_update():
+    PROGRAM_NAME = "SubDownloader"
+    QUERIES = (PROGRAM_NAME,)
+    RESP = {
+        "version": "1.2.3",
+        "url_windows": (
+            "http://forja.rediris.es/frs/download.php/123/"
+            "subdownloader1.2.3.exe"
+        ),
+        "url_linux": (
+            "http://forja.rediris.es/frs/download.php/124/"
+            "SubDownloader1.2.3.src.zip"
+        ),
+        "comments": (
+            "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed"
+        ),
+        "status": "200 OK",
+    }
+    CALL = ("AutoUpdate", PROGRAM_NAME)
+
+    _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
 
 
 def test_check_subtitles():
@@ -398,3 +424,46 @@ def test_user_info():
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
+
+
+def test_vote():
+    SCORE = 8
+    QUERIES = (SEARCH_RESULT1, SCORE)
+    RESP = {
+        "status": "200 OK",
+        "data": {
+            "SubRating": "8.0",
+            "SubSumVotes": "1",
+            "IDSubtitle": SEARCH_RESULT1.subtitles.id,
+        },
+        "seconds": "0.075",
+    }
+    CALL = ("SubtitlesVote", SEARCH_RESULT1.subtitles.id, SCORE)
+
+    _standard_asw_mock("vote", "_request", QUERIES, RESP, CALL, None)
+
+
+def test_preview_subtitles():
+    QUERIES = ([SEARCH_RESULT1, SEARCH_RESULT2],)
+    CALL = (
+        [SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],
+    )
+    RESP = ["preview 1", "preview 2"]
+    IDEAL = RESP
+
+    _standard_asw_mock(
+        "preview_subtitles", "_preview_subtitles", QUERIES, RESP, CALL, IDEAL
+    )
+
+
+def test__preview_subtitles():
+    QUERIES = (["1951976245"],)
+    CALL = ("PreviewSubtitles", QUERIES[0])
+    with open(os.path.join(SAMPLES_DIR, "preview_subtitles.json")) as f:
+        RESP = json.load(f)
+
+    IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]
+
+    _standard_asw_mock(
+        "_preview_subtitles", "_request", QUERIES, RESP, CALL, IDEAL
+    )

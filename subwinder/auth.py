@@ -339,6 +339,41 @@ class AuthSubwinder(Subwinder):
         raw_movies = data[query]
         return [build_media_info(r_m) for r_m in raw_movies]
 
-    def add_comment(self, subtitle_id, comment_str, bad=False):
-        raise NotImplementedError
+    def add_comment(self, search_result, comment_str, bad=False):
+        subtitle_id = search_result.subtitles.id
         self._request("AddComment", subtitle_id, comment_str, bad)
+
+    def vote(self, search_result, score):
+        assert 1 <= score <= 10, (
+            f"Subtitle Vote must be between 1 and 10, given {score}"
+        )
+        subtitle_id = search_result.subtitles.id
+        self._request("SubtitlesVote", subtitle_id, score)
+
+    def auto_update(self, program_name):
+        # Not sure if I should return this information in a better format
+        return self._request("AutoUpdate", program_name)
+
+    def preview_subtitles(self, queries):
+        ids = [q.subtitles.file_id for q in queries]
+
+        BATCH_SIZE = 20
+        previews = []
+        for i in range(0, len(ids), BATCH_SIZE):
+            ids = ids[i : i + BATCH_SIZE]
+            previews += self._preview_subtitles(ids)
+
+        return previews
+
+    def _preview_subtitles(self, ids):
+        data = self._request("PreviewSubtitles", ids)["data"]
+
+        # Unpack our data
+        previews = []
+        for preview in data:
+            encoding = preview["encoding"]
+            contents = preview["contents"]
+
+            previews.append(utils.extract(contents, encoding))
+
+        return previews

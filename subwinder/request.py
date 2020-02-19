@@ -46,7 +46,7 @@ def _request(method, token, *params):
     start = datetime.now()
 
     while (datetime.now() - start).total_seconds() <= TIMEOUT:
-        if method in ("GetSubLanguages", "LogIn", "ServerInfo"):
+        if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
             # Flexible way to call method while reducing error handling
             resp = getattr(_client, method)(*params)
         else:
