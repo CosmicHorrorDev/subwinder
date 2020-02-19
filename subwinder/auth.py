@@ -353,3 +353,27 @@ class AuthSubwinder(Subwinder):
     def auto_update(self, program_name):
         # Not sure if I should return this information in a better format
         return self._request("AutoUpdate", program_name)
+
+    def preview_subtitles(self, queries):
+        ids = [q.subtitles.file_id for q in queries]
+
+        BATCH_SIZE = 20
+        previews = []
+        for i in range(0, len(ids), BATCH_SIZE):
+            ids = ids[i : i + BATCH_SIZE]
+            previews += self._preview_subtitles(ids)
+
+        return previews
+
+    def _preview_subtitles(self, ids):
+        data = self._request("PreviewSubtitles", ids)["data"]
+
+        # Unpack our data
+        previews = []
+        for preview in data:
+            encoding = preview["encoding"]
+            contents = preview["contents"]
+
+            previews.append(utils.extract(contents, encoding))
+
+        return previews

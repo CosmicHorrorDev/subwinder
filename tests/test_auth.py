@@ -441,3 +441,29 @@ def test_vote():
     CALL = ("SubtitlesVote", SEARCH_RESULT1.subtitles.id, SCORE)
 
     _standard_asw_mock("vote", "_request", QUERIES, RESP, CALL, None)
+
+
+def test_preview_subtitles():
+    QUERIES = ([SEARCH_RESULT1, SEARCH_RESULT2],)
+    CALL = (
+        [SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],
+    )
+    RESP = ["preview 1", "preview 2"]
+    IDEAL = RESP
+
+    _standard_asw_mock(
+        "preview_subtitles", "_preview_subtitles", QUERIES, RESP, CALL, IDEAL
+    )
+
+
+def test__preview_subtitles():
+    QUERIES = (["1951976245"],)
+    CALL = ("PreviewSubtitles", QUERIES[0])
+    with open(os.path.join(SAMPLES_DIR, "preview_subtitles.json")) as f:
+        RESP = json.load(f)
+
+    IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]
+
+    _standard_asw_mock(
+        "_preview_subtitles", "_request", QUERIES, RESP, CALL, IDEAL
+    )
