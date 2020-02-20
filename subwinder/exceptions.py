@@ -24,3 +24,7 @@ class SubServerError(SubwinderError):
 
 class SubHashError(SubwinderError):
     pass
+
+
+class SubLibError(SubwinderError):
+    pass

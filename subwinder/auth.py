@@ -14,7 +14,7 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
 )
-from subwinder.lang import lang_2s, LangFormat
+from subwinder.lang import lang_2s, lang_longs, LangFormat
 from subwinder.media import Media
 from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 from subwinder.results import SearchResult
@@ -41,12 +41,13 @@ def _build_search_query(query, lang):
             internal_query["episode"] = query.episode
     else:
         raise ValueError(
-            f"`_build_search_query` does not take type of {query}"
+            f"`_build_search_query` does not take type of '{type(query)}'"
         )
 
     return internal_query
 
 
+# TODO: add a batching function
 class AuthSubwinder(Subwinder):
     def __init__(self, username=None, password=None, useragent=None):
         # Try to get any info from env vars if not passed in
@@ -70,7 +71,7 @@ class AuthSubwinder(Subwinder):
             raise SubAuthError(
                 "missing `useragent`, set when initializing `AuthSubwinder` or"
                 " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
-                " be sepcified for your app according to instructions given at"
+                " be specified for your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"
             )
@@ -136,9 +137,8 @@ class AuthSubwinder(Subwinder):
             )
             if media.filename is None and try_format != name_format:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `filename`"
-                    f" in {download} or avoid using '{{media_name}}' in"
-                    " `name_format`"
+                    "Insufficient context. Need to set the `filename`"
+                    f" in {download}"
                 )
 
             # Store the subtitle file next to the original media unless
@@ -239,8 +239,8 @@ class AuthSubwinder(Subwinder):
         VALID_CLASSES = (list, tuple)
         if not isinstance(queries, VALID_CLASSES):
             raise ValueError(
-                f"`guess_media` expects `queries` of type {VALID_CLASSES}, but"
-                f" saw type {type(queries)} instead"
+                "`guess_media` expects `queries` to be of type included in"
+                f" {VALID_CLASSES}, but got type '{type(queries)}'"
             )
 
         BATCH_SIZE = 3
@@ -279,16 +279,17 @@ class AuthSubwinder(Subwinder):
         for query, lang_2 in queries:
             if not isinstance(query, VALID_CLASSES):
                 raise ValueError(
-                    f"`search_subtitles` takes one of {VALID_CLASSES}, but it"
-                    f" was given {query}"
+                    "`search_subtitles` expects `queries` to contain objects"
+                    f" of {VALID_CLASSES}, but got type '{type(query)}'"
                 )
 
             if lang_2 not in lang_2s:
-                # TODO: may want to include the long names as well to make it
-                #       easier for people to find the correct lang_2
+                # Show both the 2-char and long name if invalid lang is given
+                lang_map = [f"{k} -> {v}" for k, v in zip(lang_2s, lang_longs)]
+                lang_map = "\n".join(lang_map)
+
                 raise SubLangError(
-                    f"'{lang_2}' not found in valid lang list:"
-                    f" {list(lang_2s)}"
+                    f"'{lang_2}' not found in valid lang list:\n{lang_map}"
                 )
 
         # This can return 500 items, but one query could return multiple so

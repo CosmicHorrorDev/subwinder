@@ -6,7 +6,7 @@ from subwinder.constants import _API_BASE, _REPO_URL
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
-    SubwinderError,
+    SubLibError,
     SubServerError,
     SubUploadError,
 )
@@ -17,12 +17,11 @@ _API_ERROR_MAP = {
     "401": SubAuthError,
     "402": SubUploadError,
     "407": SubDownloadError,
-    "408": SubwinderError,
-    "410": SubwinderError,
+    "408": SubLibError,
+    "410": SubLibError,
     "411": SubAuthError,
-    # TODO: is this an upload error?
-    "412": SubwinderError,
-    "413": SubwinderError,
+    "412": SubUploadError,
+    "413": SubLibError,
     "414": SubAuthError,
     "415": SubAuthError,
     "416": SubUploadError,
@@ -59,9 +58,9 @@ def _request(method, token, *params):
             return resp
 
         if "status" not in resp:
-            raise SubwinderError(
+            raise SubLibError(
                 f'"{method}" should return a status and didn\'t, consider'
-                f" raising an issue at {_REPO_URL}"
+                f" raising an issue at {_REPO_URL} to address this"
             )
 
         status_code = resp["status"][:3]
@@ -89,8 +88,8 @@ def _request(method, token, *params):
     elif status_code in _API_ERROR_MAP:
         raise _API_ERROR_MAP[status_code](status_msg)
     else:
-        raise SubwinderError(
+        raise SubLibError(
             "the API returned an unhandled response, consider raising an"
             f" issue to address this at {_REPO_URL}"
-            f"\nResp: {status_code}: {status_msg}"
+            f"\nResponse status: '{resp['status']}'"
         )

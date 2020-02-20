@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from subwinder.constants import _TIME_FORMAT
+from subwinder.exceptions import SubLibError
 from subwinder.lang import LangFormat, lang_3s
 
 
@@ -17,8 +18,7 @@ def build_media_info(data, dirname=None, filename=None):
     if kind in MEDIA_MAP:
         return MEDIA_MAP[kind].from_data(data, dirname, filename)
 
-    # TODO: switch to a sub based error
-    raise Exception(f"Undefined MovieKind {data['MovieKind']}")
+    raise SubLibError(f"Undefined MovieKind: '{data['MovieKind']}'")
 
 
 @dataclass

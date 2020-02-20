@@ -58,7 +58,7 @@ class _LangConverter:
         self._last_updated = datetime.now()
 
     def convert(self, lang, from_format, to_format):
-        # Update `langs` listing if needed
+        # Update `_langs` listing if needed
         self._update()
 
         # Hopefully no one tries to convert this way, but included just in case
@@ -68,10 +68,9 @@ class _LangConverter:
         try:
             lang_index = self._langs[from_format.value].index(lang)
         except ValueError:
-            # Raise the error as something that makes sense for this context
             raise SubLangError(
                 f"Tried to convert language '{lang}', but not found in"
-                f" language list {self._langs}"
+                f" language list: {self._langs[from_format.value]}"
             )
 
         return self._langs[to_format.value][lang_index]
