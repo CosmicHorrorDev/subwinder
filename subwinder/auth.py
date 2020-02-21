@@ -244,7 +244,11 @@ class AuthSubwinder(Subwinder):
         self._request("NoOperation")
 
     def guess_media(
-        self, queries, ranking_func=_rank_guess_media, **rank_params
+        self,
+        queries,
+        ranking_func=_rank_guess_media,
+        *rank_args,
+        **rank_kwargs,
     ):
         VALID_CLASSES = (list, tuple)
         if not isinstance(queries, VALID_CLASSES):
@@ -255,10 +259,15 @@ class AuthSubwinder(Subwinder):
 
         # Batch to 3 per api spec
         return _batch(
-            self._guess_media, 3, [queries], ranking_func, **rank_params
+            self._guess_media,
+            3,
+            [queries],
+            ranking_func,
+            *rank_args,
+            **rank_kwargs,
         )
 
-    def _guess_media(self, queries, ranking_func, **rank_params):
+    def _guess_media(self, queries, ranking_func, *rank_args, **rank_kwargs):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         results = []
@@ -278,7 +287,11 @@ class AuthSubwinder(Subwinder):
         )
 
     def search_subtitles(
-        self, queries, *, ranking_func=_rank_search_subtitles, **rank_params
+        self,
+        queries,
+        ranking_func=_rank_search_subtitles,
+        *rank_args,
+        **rank_kwargs,
     ):
         # Verify that all the queries are correct before doing any requests
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
@@ -301,10 +314,17 @@ class AuthSubwinder(Subwinder):
         # This can return 500 items, but one query could return multiple so
         # 20 is being used in hope that there are plenty of results for each
         return _batch(
-            self._search_subtitles, 20, [queries], ranking_func, **rank_params
+            self._search_subtitles,
+            20,
+            [queries],
+            ranking_func,
+            *rank_args,
+            **rank_kwargs,
         )
 
-    def _search_subtitles(self, queries, ranking_func, **rank_params):
+    def _search_subtitles(
+        self, queries, ranking_func, *rank_args, **rank_kwargs
+    ):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
@@ -316,7 +336,7 @@ class AuthSubwinder(Subwinder):
 
         search_results = []
         for group, (query, _) in zip(groups, queries):
-            result = ranking_func(group, query, **rank_params)
+            result = ranking_func(group, query, *rank_args, **rank_kwargs)
 
             # Get `SearchResult` setup if there is info for one
             search_result = None
