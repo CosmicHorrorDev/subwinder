@@ -14,6 +14,8 @@ Our task is composed of 3 simple steps
 
 **Note:** This does require a free opensubtitles account.
 
+**Note:** The user agent is specific to the program using the API. You can look [here](https://trac.opensubtitles.org/projects/opensubtitles/wiki/DevReadFirst) under "How to request a new user agent" to see about what user agent you can set for development, or how to get an official user agent for your program.
+
 ```python
 from subwinder.auth import AuthSubwinder
 from subwinder.media import Media
@@ -30,24 +32,24 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
 
     # Step 2. Print any comments for both of our `SearchResult`s
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-    result_comments = asw.get_comments(results)
-    for result, comments in zip(results, result_comments):
+    results_comments = asw.get_comments(results)
+    for result, result_comments in zip(results, results_comments):
         print(f"{result.media.filename} Comments:")
-        for comment in comments:
+        for comment in result_comments:
             date = dt.strftime(comment.date, TIME_FORMAT)
             print(f"{date} {comment.author.name}: {comment.text}")
         print()
 
     # Step 3. Download both of the subtitles next to the original files
     # We're assuming we have enough remaining downloads for these, if not then
-    # a `SubDownloadError` will be raised
+    # a `SubDownloadError` will be raised by `.download_subtitles(...)`
     assert asw.daily_download_info().remaining >= len(results)
     download_paths = asw.download_subtitles(
         results, name_format="{media_name}.{lang_3}.{ext}"
     )
 ```
 
-And that's it, with less than 20 sloc you can search, get comments, and download a couple subtitles!
+And that's it, with ~20 sloc you can search, get comments, and download a couple subtitles!
 
 ### Documentation
 
@@ -65,10 +67,14 @@ There is pretty thorough documentation in the [repo's wiki](https://github.com/L
     * If something will fail, try to detect it and raise an `Exception` as early as possible
     * Automatically retry requests using an exponential back-off to deal with rate-limiting
 * Small footprint
-    * No external dependencies are used currently
+    * No external dependencies are required
 
 ### Caveats from using `subwinder`
 
 * Python 3.7+ is required (at this point 3.7 is already several years old)
 * Not all values from the API are exposed: however, I'm flexible on this so if you have a use for one of the missing values then please bring it up in [an issue](https://github.com/LovecraftianHorror/subwinder/issues)!
 * Currently only English is supported for the internal API. You can still search for subtitles in other languages, but the media names and long language names will all be in English. This will be worked on after the API is in a more stable state
+
+### License
+
+`subwinder` is licensed under AGPL v3 which should be included with the library. If not then you can find an online copy [here](https://www.gnu.org/licenses/agpl-3.0.en.html).
