@@ -47,7 +47,21 @@ def _build_search_query(query, lang):
     return internal_query
 
 
-# TODO: add a batching function
+def _batch(function, batch_size, iterables, *args, **kwargs):
+    results = []
+    for i in range(0, len(iterables[0]), batch_size):
+        chunked = []
+        for iterable in iterables:
+            chunked.append(iterable[i : i + batch_size])
+
+        result = function(*chunked, *args, **kwargs)
+        print(result)
+        if result is not None:
+            results += result
+
+    return results
+
+
 class AuthSubwinder(Subwinder):
     def __init__(self, username=None, password=None, useragent=None):
         # Try to get any info from env vars if not passed in
@@ -174,11 +188,7 @@ class AuthSubwinder(Subwinder):
             )
 
         # Download the subtitles in batches of 20, per api spec
-        BATCH_SIZE = 20
-        for i in range(0, len(downloads), BATCH_SIZE):
-            download_chunk = downloads[i : i + BATCH_SIZE]
-            paths_chunk = download_paths[i : i + BATCH_SIZE]
-            self._download_subtitles(download_chunk, paths_chunk)
+        _batch(self._download_subtitles, 20, [downloads, download_paths])
 
         # Return the list of paths where subtitle files were saved
         return download_paths
@@ -243,14 +253,10 @@ class AuthSubwinder(Subwinder):
                 f" {VALID_CLASSES}, but got type '{type(queries)}'"
             )
 
-        BATCH_SIZE = 3
-        results = []
-        for i in range(0, len(queries), BATCH_SIZE):
-            results += self._guess_media(
-                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
-            )
-
-        return results
+        # Batch to 3 per api spec
+        return _batch(
+            self._guess_media, 3, [queries], ranking_func, **rank_params
+        )
 
     def _guess_media(self, queries, ranking_func, **rank_params):
         data = self._request("GuessMovieFromString", queries)["data"]
@@ -294,14 +300,9 @@ class AuthSubwinder(Subwinder):
 
         # This can return 500 items, but one query could return multiple so
         # 20 is being used in hope that there are plenty of results for each
-        BATCH_SIZE = 20
-        results = []
-        for i in range(0, len(queries), BATCH_SIZE):
-            results += self._search_subtitles(
-                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
-            )
-
-        return results
+        return _batch(
+            self._search_subtitles, 20, [queries], ranking_func, **rank_params
+        )
 
     def _search_subtitles(self, queries, ranking_func, **rank_params):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
@@ -358,13 +359,8 @@ class AuthSubwinder(Subwinder):
     def preview_subtitles(self, queries):
         ids = [q.subtitles.file_id for q in queries]
 
-        BATCH_SIZE = 20
-        previews = []
-        for i in range(0, len(ids), BATCH_SIZE):
-            ids = ids[i : i + BATCH_SIZE]
-            previews += self._preview_subtitles(ids)
-
-        return previews
+        # Batch to 20 per api spec
+        return _batch(self._preview_subtitles, 20, [ids])
 
     def _preview_subtitles(self, ids):
         data = self._request("PreviewSubtitles", ids)["data"]
