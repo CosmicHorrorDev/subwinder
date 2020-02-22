@@ -25,7 +25,5 @@ def test_md5_hash():
     }
 
     for file, ideal_hash in hashes.items():
-        hash = subwinder.hashers.md5_hash(
-            os.path.join(TEST_DIR, "hash_files", file)
-        )
+        hash = subwinder.hashers.md5_hash(os.path.join(TEST_DIR, "hash_files", file))
         assert hash == ideal_hash

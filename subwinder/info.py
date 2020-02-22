@@ -134,8 +134,7 @@ class EpisodeInfo(TvSeriesInfo):
         )
 
 
-# TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever
-#       different?
+# TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever different?
 @dataclass
 class DownloadInfo:
     ip: str
@@ -206,13 +205,13 @@ class SubtitlesInfo:
             int(data["SubSize"]),
             int(data["SubDownloadsCnt"]),
             int(data["SubComments"]),
-            # 0.0 is the listed rating if there are no ratings yet which
-            # seems deceptive from a glance
+            # 0.0 is the listed rating if there are no ratings yet which seems deceptive
+            # at a glance
             None if data["SubRating"] == "0.0" else float(data["SubRating"]),
             data["IDSubtitle"],
             data["IDSubtitleFile"],
-            # If the search was done with anything other than movie hash and
-            # size then there isn't a "IDSubMovieFile"
+            # If the search was done with anything other than movie hash and size then
+            # there isn't a "IDSubMovieFile"
             None if data["IDSubMovieFile"] == "0" else data["IDSubMovieFile"],
             data["SubFileName"],
             data["ISO639"],

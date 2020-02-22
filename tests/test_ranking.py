@@ -24,11 +24,7 @@ def test__rank_search_subtitles():
         # Ecludes `DUMMY_RESULTS[0]` because of format
         ((DUMMY_RESULTS, 0), {"sub_exts": ["SRT"]}, DUMMY_RESULTS[1]),
         # What happens when nothing matches the parameters?
-        (
-            (DUMMY_RESULTS, 0),
-            {"exclude_bad": True, "sub_exts": ["ass"]},
-            None,
-        ),
+        ((DUMMY_RESULTS, 0), {"exclude_bad": True, "sub_exts": ["ass"]}, None,),
     ]
 
     for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:

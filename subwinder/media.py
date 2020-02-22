@@ -4,8 +4,7 @@ import os
 from subwinder import hashers
 
 
-# TODO: to store filepath or not to store filepath, that is the question
-#       see how this gets used first
+# TODO: need to list members on this
 @dataclass
 class Subtitles:
     def __init__(self, hash):
@@ -13,11 +12,10 @@ class Subtitles:
 
     @classmethod
     def from_file(cls, filepath):
-        hash = hashers.md5_hash(filepath)
-
-        return cls(hash)
+        return cls(hashers.md5_hash(filepath))
 
 
+# TODO: need to list members on this
 @dataclass
 class Media:
     def __init__(self, hash, size, filepath=None):

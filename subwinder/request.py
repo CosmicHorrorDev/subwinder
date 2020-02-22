@@ -34,9 +34,8 @@ _API_ERROR_MAP = {
 _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
 
 
-# FIXME: Handle xmlrpc.client.ProtocolError, 503 and 506 are raised as
-#        protocol errors, change to allow for this
-#        Also occurs for 520 which isn't listed
+# FIXME: Handle xmlrpc.client.ProtocolError, 503, 506, and 520  are raised as protocol
+#        errors. Catch and manually change status
 # TODO: give a way to let lib user to set `TIMEOUT`?
 def _request(method, token, *params):
     TIMEOUT = 15
@@ -44,7 +43,7 @@ def _request(method, token, *params):
     current_delay = 1.5
     start = datetime.now()
 
-    while (datetime.now() - start).total_seconds() <= TIMEOUT:
+    while True:
         if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
             # Flexible way to call method while reducing error handling
             resp = getattr(_client, method)(*params)
@@ -52,34 +51,32 @@ def _request(method, token, *params):
             # Use the token if it's defined
             resp = getattr(_client, method)(token, *params)
 
-        # All requests return a status except for GetSubLanguages and
-        # ServerInfo
+        # All requests return a status except for GetSubLanguages and ServerInfo
         if method in ("GetSubLanguages", "ServerInfo"):
             return resp
 
         if "status" not in resp:
             raise SubLibError(
-                f'"{method}" should return a status and didn\'t, consider'
-                f" raising an issue at {_REPO_URL} to address this"
+                f'"{method}" should return a status and didn\'t, consider raising an'
+                f" issue at {_REPO_URL} to address this"
             )
 
         status_code = resp["status"][:3]
         status_msg = resp["status"][4:]
 
         # Retry if 429 or 503, otherwise handle appropriately
-        # FIXME: 503 fails the request so it won't be passed in this way
-        #        instead catch the error and manually set a status
+        # FIXME: 503 fails the request so it won't be passed in this way instead catch
+        #        the error and manually set a status
         if status_code not in ("429", "503"):
             break
 
         # Server under heavy load, wait and retry
         remaining_time = TIMEOUT - (datetime.now() - start).total_seconds()
-        if remaining_time > current_delay:
-            time.sleep(current_delay)
-        else:
+        if remaining_time <= current_delay:
             # Not enough time to try again so go ahead and `break`
             break
 
+        time.sleep(current_delay)
         current_delay *= DELAY_FACTOR
 
     # Handle the response
@@ -89,7 +86,6 @@ def _request(method, token, *params):
         raise _API_ERROR_MAP[status_code](status_msg)
     else:
         raise SubLibError(
-            "the API returned an unhandled response, consider raising an"
-            f" issue to address this at {_REPO_URL}"
-            f"\nResponse status: '{resp['status']}'"
+            "the API returned an unhandled response, consider raising an issue to"
+            f" address this at {_REPO_URL}\nResponse status: '{resp['status']}'"
         )

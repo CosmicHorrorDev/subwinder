@@ -1,5 +1,5 @@
-# Note: this whole file uses enough global variables to make my skin crawl,
-#       but I can't really think of a nicer way of exposing everything
+# Note: this whole file uses enough global variables to make my skin crawl, but I can't
+# really think of a nicer way of exposing everything
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -21,10 +21,10 @@ class LangFormat(Enum):
 
 class _LangConverter:
     """
-    This class is used as a common converter to cache the language response
-    from the API and handle converting between the separate forms. Caching in
-    this way limits unnecessary requests to the API along with setting up an
-    easy way to convert between any of the forms.
+    This class is used as a common converter to cache the language response from the API
+    and handle converting between the separate forms. Caching in this way limits
+    unnecessary requests to the API along with setting up an easy way to convert between
+    any of the forms.
     """
 
     def __init__(self):
@@ -36,8 +36,8 @@ class _LangConverter:
         return _request("GetSubLanguages", None)["data"]
 
     def _update(self, force=False):
-        # Language list should refresh every hour, return early if still fresh
-        # unless update is `force`d
+        # Language list should refresh every hour, return early if still fresh unless
+        # update is `force`d
         if not force and self._last_updated is not None:
             if (datetime.now() - self._last_updated).total_seconds() < 3600:
                 return
@@ -50,9 +50,7 @@ class _LangConverter:
         for lang_set in lang_sets:
             self._langs[LangFormat.LANG_2.value].append(lang_set[_LANG_2_KEY])
             self._langs[LangFormat.LANG_3.value].append(lang_set[_LANG_3_KEY])
-            self._langs[LangFormat.LANG_LONG.value].append(
-                lang_set[_LANG_LONG_KEY]
-            )
+            self._langs[LangFormat.LANG_LONG.value].append(lang_set[_LANG_LONG_KEY])
 
         # Refresh updated time
         self._last_updated = datetime.now()
@@ -69,8 +67,8 @@ class _LangConverter:
             lang_index = self._langs[from_format.value].index(lang)
         except ValueError:
             raise SubLangError(
-                f"Tried to convert language '{lang}', but not found in"
-                f" language list: {self._langs[from_format.value]}"
+                f"Tried to convert language '{lang}', but not found in language list:"
+                f" {self._langs[from_format.value]}"
             )
 
         return self._langs[to_format.value][lang_index]

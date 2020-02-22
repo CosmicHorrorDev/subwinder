@@ -16,9 +16,7 @@ def special_hash(filepath):
         filehash = filesize
 
         if filesize < FILE_MIN_SIZE:
-            raise SubHashError(
-                f"Filesize is below minimum of {FILE_MIN_SIZE} bytes"
-            )
+            raise SubHashError(f"Filesize is below minimum of {FILE_MIN_SIZE} bytes")
 
         for i in range(2):
             # Seek to 64KiB before the end on second pass

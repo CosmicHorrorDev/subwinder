@@ -9,5 +9,4 @@ def test_SearchResult():
     with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
-    sr = SearchResult.from_data(SAMPLE_RESP, "/path/to", "file.mkv")
-    assert sr == SEARCH_RESULT2
+    assert SEARCH_RESULT2 == SearchResult.from_data(SAMPLE_RESP, "/path/to", "file.mkv")

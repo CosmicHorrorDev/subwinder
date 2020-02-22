@@ -5,9 +5,7 @@ from tests.constants import TEST_DIR
 
 
 def test_Subtitles():
-    subs = Subtitles.from_file(
-        os.path.join(TEST_DIR, "hash_files", "random_1")
-    )
+    subs = Subtitles.from_file(os.path.join(TEST_DIR, "hash_files", "random_1"))
 
     assert subs.hash == "52b16cb071a2da214782380a0100003b"
 

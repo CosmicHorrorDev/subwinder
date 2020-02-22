@@ -19,11 +19,7 @@ class SearchResult:
 
     @classmethod
     def from_data(cls, data, dirname=None, filename=None):
-        if data["UserID"] == "0":
-            author = None
-        else:
-            author = UserInfo.from_data(data)
-
+        author = None if data["UserID"] == "0" else UserInfo.from_data(data)
         media = build_media_info(data, dirname, filename)
         subtitles = SubtitlesInfo.from_data(data)
         upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
