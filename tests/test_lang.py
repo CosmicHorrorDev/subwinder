@@ -29,17 +29,13 @@ def test_LangConverter():
 
         # These will not call `_get_languages`
         converter._update()
-        assert "eng" == converter.convert(
-            "en", LangFormat.LANG_2, LangFormat.LANG_3
-        )
+        assert "eng" == converter.convert("en", LangFormat.LANG_2, LangFormat.LANG_3)
         assert "English" == converter.convert(
             "eng", LangFormat.LANG_3, LangFormat.LANG_LONG
         )
         assert ["de", "en", "fr"] == converter.list(LangFormat.LANG_2)
         assert ["ger", "eng", "fre"] == converter.list(LangFormat.LANG_3)
-        assert ["German", "English", "French"] == converter.list(
-            LangFormat.LANG_LONG
-        )
+        assert ["German", "English", "French"] == converter.list(LangFormat.LANG_LONG)
 
         # `_get_languages` should only be called once
         mocked.assert_called_once_with()

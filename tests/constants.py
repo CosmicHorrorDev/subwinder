@@ -90,11 +90,7 @@ SEARCH_RESULT2 = SearchResult(
 )
 
 DOWNLOAD_INFO = DownloadInfo(
-    ip="1.1.1.1",
-    downloaded=0,
-    remaining=200,
-    limit=200,
-    limit_checked_by="user_ip",
+    ip="1.1.1.1", downloaded=0, remaining=200, limit=200, limit_checked_by="user_ip",
 )
 
 SERVER_INFO = ServerInfo(

@@ -4,22 +4,25 @@ import os
 from subwinder import hashers
 
 
-# TODO: to store filepath or not to store filepath, that is the question
-#       see how this gets used first
 @dataclass
 class Subtitles:
+    hash: str
+
     def __init__(self, hash):
         self.hash = hash
 
     @classmethod
     def from_file(cls, filepath):
-        hash = hashers.md5_hash(filepath)
-
-        return cls(hash)
+        return cls(hashers.md5_hash(filepath))
 
 
 @dataclass
 class Media:
+    hash: str
+    size: int
+    dirname: str
+    filename: str
+
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
         self.size = size

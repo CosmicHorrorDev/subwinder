@@ -65,10 +65,7 @@ def test__build_search_query():
                 "moviebytesize": str(MEDIA1.size),
             },
         ),
-        (
-            (MOVIE_INFO1, "fr"),
-            {"sublanguageid": "fre", "imdbid": MOVIE_INFO1.imdbid},
-        ),
+        ((MOVIE_INFO1, "fr"), {"sublanguageid": "fre", "imdbid": MOVIE_INFO1.imdbid},),
         (
             (EPISODE_INFO1, "de"),
             {
@@ -137,16 +134,12 @@ def test_auto_update():
     RESP = {
         "version": "1.2.3",
         "url_windows": (
-            "http://forja.rediris.es/frs/download.php/123/"
-            "subdownloader1.2.3.exe"
+            "http://forja.rediris.es/frs/download.php/123/subdownloader1.2.3.exe"
         ),
         "url_linux": (
-            "http://forja.rediris.es/frs/download.php/124/"
-            "SubDownloader1.2.3.src.zip"
+            "http://forja.rediris.es/frs/download.php/124/SubDownloader1.2.3.src.zip"
         ),
-        "comments": (
-            "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed"
-        ),
+        "comments": "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed",
         "status": "200 OK",
     }
     CALL = ("AutoUpdate", PROGRAM_NAME)
@@ -181,9 +174,7 @@ def test_check_subtitles():
     )
     IDEAL_RESULT = ["1", "3", None]
 
-    _standard_asw_mock(
-        "check_subtitles", "_request", QUERIES, RESP, CALL, IDEAL_RESULT
-    )
+    _standard_asw_mock("check_subtitles", "_request", QUERIES, RESP, CALL, IDEAL_RESULT)
 
 
 # TODO: test this for batching
@@ -201,9 +192,7 @@ def test_download_subtitles():
 
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
-        with patch.object(
-            asw, "daily_download_info", return_value=DOWNLOAD_INFO
-        ):
+        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             result = asw.download_subtitles(*QUERIES)
 
     mocked.assert_called_with(*CALL)
@@ -219,17 +208,17 @@ def test__download_subtitles():
             {
                 "idsubtitlefile": SEARCH_RESULT1.subtitles.file_id,
                 "data": (
-                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N"
-                    "/Yu1JuTV9wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSM"
-                    "Fps5/4WhRKSPvwBzf2OXZqAAAA"
+                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N/Yu1JuTV9"
+                    "wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSMFps5/4WhRKSPvwBzf2"
+                    "OXZqAAAA"
                 ),
             },
         ],
         "seconds": "0.397",
     }
     IDEAL_CONTENTS = (
-        "Hello there, I'm that good ole compressed and encoded subtitle"
-        " information that you so dearly want to save"
+        "Hello there, I'm that good ole compressed and encoded subtitle information"
+        " that you so dearly want to save"
     )
 
     with TemporaryDirectory() as temp_dir:
@@ -248,7 +237,7 @@ def test__download_subtitles():
 
 
 def test_get_comments():
-    # Build up the Empty `SearchResult`s and add the `subtitles.id`
+    # Build up the empty `SearchResult`s and add the `subtitles.id`
     queries = ([SEARCH_RESULT1, SEARCH_RESULT2],)
     with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
         RESP = json.load(f)
@@ -278,9 +267,7 @@ def test_get_comments():
         [SEARCH_RESULT1.subtitles.id, SEARCH_RESULT2.subtitles.id],
     )
 
-    _standard_asw_mock(
-        "get_comments", "_request", queries, RESP, CALL, ideal_result
-    )
+    _standard_asw_mock("get_comments", "_request", queries, RESP, CALL, ideal_result)
 
 
 def test_guess_media():
@@ -370,9 +357,7 @@ def test__search_subtitles():
 
     IDEAL = [SEARCH_RESULT2]
 
-    _standard_asw_mock(
-        "_search_subtitles", "_request", QUERIES, RESP, CALL, IDEAL
-    )
+    _standard_asw_mock("_search_subtitles", "_request", QUERIES, RESP, CALL, IDEAL)
 
 
 def test_suggest_media():
@@ -420,7 +405,6 @@ def test_user_info():
         "seconds": "0.241",
     }
     CALL = ("GetUserInfo",)
-    # TODO: switching this out to `from_data` would make it simpler
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
@@ -445,9 +429,7 @@ def test_vote():
 
 def test_preview_subtitles():
     QUERIES = ([SEARCH_RESULT1, SEARCH_RESULT2],)
-    CALL = (
-        [SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],
-    )
+    CALL = ([SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],)
     RESP = ["preview 1", "preview 2"]
     IDEAL = RESP
 
@@ -464,6 +446,4 @@ def test__preview_subtitles():
 
     IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]
 
-    _standard_asw_mock(
-        "_preview_subtitles", "_request", QUERIES, RESP, CALL, IDEAL
-    )
+    _standard_asw_mock("_preview_subtitles", "_request", QUERIES, RESP, CALL, IDEAL)

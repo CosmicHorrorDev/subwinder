@@ -14,7 +14,7 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
 )
-from subwinder.lang import lang_2s, LangFormat
+from subwinder.lang import lang_2s, lang_longs, LangFormat
 from subwinder.media import Media
 from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
 from subwinder.results import SearchResult
@@ -22,9 +22,7 @@ from subwinder.results import SearchResult
 
 def _build_search_query(query, lang):
     # All queries take a language
-    internal_query = {
-        "sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)
-    }
+    internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
 
     # Handle all the different formats for seaching for subtitles
     if type(query) == Media:
@@ -40,11 +38,23 @@ def _build_search_query(query, lang):
             internal_query["season"] = query.season
             internal_query["episode"] = query.episode
     else:
-        raise ValueError(
-            f"`_build_search_query` does not take type of {query}"
-        )
+        raise ValueError(f"`_build_search_query` does not take type of '{type(query)}'")
 
     return internal_query
+
+
+def _batch(function, batch_size, iterables, *args, **kwargs):
+    results = []
+    for i in range(0, len(iterables[0]), batch_size):
+        chunked = []
+        for iterable in iterables:
+            chunked.append(iterable[i : i + batch_size])
+
+        result = function(*chunked, *args, **kwargs)
+        if result is not None:
+            results += result
+
+    return results
 
 
 class AuthSubwinder(Subwinder):
@@ -56,21 +66,21 @@ class AuthSubwinder(Subwinder):
 
         if username is None:
             raise SubAuthError(
-                "missing `username`, set when initializing `AuthSubwinder` or"
-                " with the OPEN_SUBTITLES_USERNAME env var"
+                "missing `username`, set when initializing `AuthSubwinder` or with the"
+                " OPEN_SUBTITLES_USERNAME env var"
             )
 
         if password is None:
             raise SubAuthError(
-                "missing `password`, set when initializing `AuthSubwinder` or"
-                " set the OPEN_SUBTITLES_PASSWORD env var"
+                "missing `password`, set when initializing `AuthSubwinder` or set the"
+                " OPEN_SUBTITLES_PASSWORD env var"
             )
 
         if useragent is None:
             raise SubAuthError(
-                "missing `useragent`, set when initializing `AuthSubwinder` or"
-                " set the OPEN_SUBTITLES_USERAGENT env var. `useragent` must"
-                " be sepcified for your app according to instructions given at"
+                "missing `useragent`, set when initializing `AuthSubwinder` or set the"
+                " OPEN_SUBTITLES_USERAGENT env var. `useragent` must be specified for"
+                " your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"
             )
@@ -96,10 +106,9 @@ class AuthSubwinder(Subwinder):
         self._request("LogOut")
         self._token = None
 
-    # TODO: unless I'm missing an endpoint option this isn't useful externally
-    #       can be used internally though
-    # Note: This doesn't look like it batches (likely because it's use is very
-    #       limited)
+    # TODO: unless I'm missing an endpoint option this isn't useful externally can be
+    #       used internally though
+    # Note: This doesn't look like it batches (likely because it's use is very limited)
     def check_subtitles(self, subtitles_hashers):
         # Get all of the subtitles_ids from the hashes
         hashes = [s.hash for s in subtitles_hashers]
@@ -121,8 +130,8 @@ class AuthSubwinder(Subwinder):
             # Make sure there is enough context to save subtitles
             if media.dirname is None and download_dir is None:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `dirname`"
-                    f" in {download} or `download_dir` in `download_subtitles`"
+                    "Insufficient context. Need to set either the `dirname` in"
+                    f" {download} or `download_dir` in `download_subtitles`"
                 )
 
             # Hacky way to tell if `media_name` is used in `name_format`
@@ -136,22 +145,16 @@ class AuthSubwinder(Subwinder):
             )
             if media.filename is None and try_format != name_format:
                 raise SubDownloadError(
-                    "Insufficient context. Need to set either the `filename`"
-                    f" in {download} or avoid using '{{media_name}}' in"
-                    " `name_format`"
+                    f"Insufficient context. Need to set the `filename` in {download}"
                 )
 
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
-            if download_dir is None:
-                dir_path = media.dirname
-            else:
-                dir_path = download_dir
+            dir_path = download_dir or media.dirname
 
             # Format the `filename` according to the `name_format` passed in
             media_name, _ = os.path.splitext(media.filename)
-            upload_filename = subtitles.filename
-            upload_name, _ = os.path.splitext(upload_filename)
+            upload_name, _ = os.path.splitext(subtitles.filename)
 
             filename = name_format.format(
                 media_name=media_name,
@@ -159,7 +162,7 @@ class AuthSubwinder(Subwinder):
                 lang_3=subtitles.lang_3,
                 ext=subtitles.ext,
                 upload_name=upload_name,
-                upload_filename=upload_filename,
+                upload_filename=subtitles.filename,
             )
 
             download_paths.append(os.path.join(dir_path, filename))
@@ -174,11 +177,7 @@ class AuthSubwinder(Subwinder):
             )
 
         # Download the subtitles in batches of 20, per api spec
-        BATCH_SIZE = 20
-        for i in range(0, len(downloads), BATCH_SIZE):
-            download_chunk = downloads[i : i + BATCH_SIZE]
-            paths_chunk = download_paths[i : i + BATCH_SIZE]
-            self._download_subtitles(download_chunk, paths_chunk)
+        _batch(self._download_subtitles, 20, [downloads, download_paths])
 
         # Return the list of paths where subtitle files were saved
         return download_paths
@@ -194,8 +193,8 @@ class AuthSubwinder(Subwinder):
         data = self._request("DownloadSubtitles", sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
-            # Currently pray that python supports all the encodings and is
-            # called the same as what opensubtitles returns
+            # Currently pray that python supports all the encodings and is called the
+            # same as what opensubtitles returns
             subtitles = utils.extract(result["data"], encoding)
 
             # Create the directories if needed, then save the file
@@ -219,102 +218,90 @@ class AuthSubwinder(Subwinder):
         # Pack results, if any, into `Comment` objects
         comments = []
         for raw_comments in groups:
-            if not raw_comments:
-                comments.append([])
-            else:
-                comments.append([Comment.from_data(c) for c in raw_comments])
+            comments.append([Comment.from_data(c) for c in raw_comments])
 
         return comments
 
     def user_info(self):
-        data = self._request("GetUserInfo")["data"]
-        return FullUserInfo.from_data(data)
+        return FullUserInfo.from_data(self._request("GetUserInfo")["data"])
 
     def ping(self):
         self._request("NoOperation")
 
     def guess_media(
-        self, queries, ranking_func=_rank_guess_media, **rank_params
+        self, queries, ranking_func=_rank_guess_media, *rank_args, **rank_kwargs,
     ):
         VALID_CLASSES = (list, tuple)
         if not isinstance(queries, VALID_CLASSES):
             raise ValueError(
-                f"`guess_media` expects `queries` of type {VALID_CLASSES}, but"
-                f" saw type {type(queries)} instead"
+                "`guess_media` expects `queries` to be of type included in"
+                f" {VALID_CLASSES}, but got type '{type(queries)}'"
             )
 
-        BATCH_SIZE = 3
-        results = []
-        for i in range(0, len(queries), BATCH_SIZE):
-            results += self._guess_media(
-                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
-            )
+        # Batch to 3 per api spec
+        return _batch(
+            self._guess_media, 3, [queries], ranking_func, *rank_args, **rank_kwargs,
+        )
 
-        return results
-
-    def _guess_media(self, queries, ranking_func, **rank_params):
+    def _guess_media(self, queries, ranking_func, *rank_args, **rank_kwargs):
         data = self._request("GuessMovieFromString", queries)["data"]
 
         results = []
         for query in queries:
-            result = ranking_func(data[query], query)
+            result = ranking_func(data[query], query, *rank_args, **rank_kwargs)
 
-            if result is None:
-                results.append(None)
-            else:
-                results.append(build_media_info(result))
+            # Build the correct media info if anything was returned
+            results.append(None if result is None else build_media_info(result))
 
         return results
 
     def report_movie(self, search_result):
-        self._request(
-            "ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id
-        )
+        self._request("ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id)
 
     def search_subtitles(
-        self, queries, *, ranking_func=_rank_search_subtitles, **rank_params
+        self, queries, ranking_func=_rank_search_subtitles, *rank_args, **rank_kwargs,
     ):
         # Verify that all the queries are correct before doing any requests
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query, lang_2 in queries:
             if not isinstance(query, VALID_CLASSES):
                 raise ValueError(
-                    f"`search_subtitles` takes one of {VALID_CLASSES}, but it"
-                    f" was given {query}"
+                    "`search_subtitles` expects `queries` to contain objects"
+                    f" of {VALID_CLASSES}, but got type '{type(query)}'"
                 )
 
             if lang_2 not in lang_2s:
-                # TODO: may want to include the long names as well to make it
-                #       easier for people to find the correct lang_2
+                # Show both the 2-char and long name if invalid lang is given
+                lang_map = [f"{k} -> {v}" for k, v in zip(lang_2s, lang_longs)]
+                lang_map = "\n".join(lang_map)
+
                 raise SubLangError(
-                    f"'{lang_2}' not found in valid lang list:"
-                    f" {list(lang_2s)}"
+                    f"'{lang_2}' not found in valid lang list:\n{lang_map}"
                 )
 
-        # This can return 500 items, but one query could return multiple so
-        # 20 is being used in hope that there are plenty of results for each
-        BATCH_SIZE = 20
-        results = []
-        for i in range(0, len(queries), BATCH_SIZE):
-            results += self._search_subtitles(
-                queries[i : i + BATCH_SIZE], ranking_func, **rank_params
-            )
+        # This can return 500 items, but one query could return multiple so 20 is being
+        # used in hope that there are plenty of results for each
+        return _batch(
+            self._search_subtitles,
+            20,
+            [queries],
+            ranking_func,
+            *rank_args,
+            **rank_kwargs,
+        )
 
-        return results
-
-    def _search_subtitles(self, queries, ranking_func, **rank_params):
+    def _search_subtitles(self, queries, ranking_func, *rank_args, **rank_kwargs):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request("SearchSubtitles", internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
         groups = [[] for _ in internal_queries]
         for d in data:
-            query_index = int(d["QueryNumber"])
-            groups[query_index].append(d)
+            groups[int(d["QueryNumber"])].append(d)
 
         search_results = []
         for group, (query, _) in zip(groups, queries):
-            result = ranking_func(group, query, **rank_params)
+            result = ranking_func(group, query, *rank_args, **rank_kwargs)
 
             # Get `SearchResult` setup if there is info for one
             search_result = None
@@ -332,23 +319,18 @@ class AuthSubwinder(Subwinder):
     def suggest_media(self, query):
         data = self._request("SuggestMovie", query)["data"]
 
-        # Returns an empty list for no results
-        if not data:
-            return data
-
-        raw_movies = data[query]
-        return [build_media_info(r_m) for r_m in raw_movies]
+        # `data` is an empty list if there were no results
+        return [] if not data else [build_media_info(media) for media in data[query]]
 
     def add_comment(self, search_result, comment_str, bad=False):
-        subtitle_id = search_result.subtitles.id
-        self._request("AddComment", subtitle_id, comment_str, bad)
+        self._request("AddComment", search_result.subtitles.id, comment_str, bad)
 
     def vote(self, search_result, score):
+        # TODO: raise value error here
         assert (
             1 <= score <= 10
-        ), f"Subtitle Vote must be between 1 and 10, given {score}"
-        subtitle_id = search_result.subtitles.id
-        self._request("SubtitlesVote", subtitle_id, score)
+        ), f"Subtitle Vote must be between 1 and 10, given '{score}'"
+        self._request("SubtitlesVote", search_result.subtitles.id, score)
 
     def auto_update(self, program_name):
         # Not sure if I should return this information in a better format
@@ -357,13 +339,8 @@ class AuthSubwinder(Subwinder):
     def preview_subtitles(self, queries):
         ids = [q.subtitles.file_id for q in queries]
 
-        BATCH_SIZE = 20
-        previews = []
-        for i in range(0, len(ids), BATCH_SIZE):
-            ids = ids[i : i + BATCH_SIZE]
-            previews += self._preview_subtitles(ids)
-
-        return previews
+        # Batch to 20 per api spec
+        return _batch(self._preview_subtitles, 20, [ids])
 
     def _preview_subtitles(self, ids):
         data = self._request("PreviewSubtitles", ids)["data"]
