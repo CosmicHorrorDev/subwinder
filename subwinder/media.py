@@ -4,9 +4,10 @@ import os
 from subwinder import hashers
 
 
-# TODO: need to list members on this
 @dataclass
 class Subtitles:
+    hash: str
+
     def __init__(self, hash):
         self.hash = hash
 
@@ -15,9 +16,13 @@ class Subtitles:
         return cls(hashers.md5_hash(filepath))
 
 
-# TODO: need to list members on this
 @dataclass
 class Media:
+    hash: str
+    size: int
+    dirname: str
+    filename: str
+
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
         self.size = size
