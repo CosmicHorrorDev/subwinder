@@ -39,6 +39,9 @@ class Media:
 
         return cls(hash, size, filepath)
 
+    def set_filepath(self, filepath):
+        self.dirname, self.filename = os.path.split(filepath)
+
     def set_filename(self, filename):
         self.filename = filename
 

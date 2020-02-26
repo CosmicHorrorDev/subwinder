@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+import os
 
 from subwinder.constants import _TIME_FORMAT
 from subwinder.exceptions import SubLibError
@@ -97,6 +98,15 @@ class MediaInfo:
         imdbid = str(data.get("IDMovieImdb") or data["IDMovieIMDB"])
 
         return cls(name, year, imdbid, dirname, filename)
+
+    def set_filepath(self, filepath):
+        self.dirname, self.filename = os.path.split(filepath)
+
+    def set_filename(self, filename):
+        self.filename = filename
+
+    def set_dirname(self, dirname):
+        self.dirname = dirname
 
 
 class MovieInfo(MediaInfo):
