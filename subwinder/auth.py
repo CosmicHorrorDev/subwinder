@@ -326,10 +326,9 @@ class AuthSubwinder(Subwinder):
         self._request("AddComment", search_result.subtitles.id, comment_str, bad)
 
     def vote(self, search_result, score):
-        # TODO: raise value error here
-        assert (
-            1 <= score <= 10
-        ), f"Subtitle Vote must be between 1 and 10, given '{score}'"
+        if score < 2 or score > 10:
+            raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
+
         self._request("SubtitlesVote", search_result.subtitles.id, score)
 
     def auto_update(self, program_name):
