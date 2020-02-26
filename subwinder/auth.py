@@ -25,7 +25,7 @@ def _build_search_query(query, lang):
     internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
 
     # Handle all the different formats for seaching for subtitles
-    if type(query) == Media:
+    if isinstance(query, Media):
         # Search by `Media`s hash and size
         internal_query["moviehash"] = query.hash
         internal_query["moviebytesize"] = str(query.size)
@@ -34,7 +34,7 @@ def _build_search_query(query, lang):
         internal_query["imdbid"] = query.imdbid
 
         # `EpisodeInfo` also needs a `season` and `episode`
-        if type(query) == EpisodeInfo:
+        if isinstance(query, EpisodeInfo):
             internal_query["season"] = query.season
             internal_query["episode"] = query.episode
     else:
@@ -307,7 +307,7 @@ class AuthSubwinder(Subwinder):
             search_result = None
             if result is not None:
                 search_result = SearchResult.from_data(result)
-                if type(query) == Media:
+                if isinstance(query, Media):
                     # Media could have the original file information tied to it
                     search_result.media.dirname = query.dirname
                     search_result.media.filename = query.filename
