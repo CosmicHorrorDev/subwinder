@@ -62,7 +62,7 @@ There is pretty thorough documentation in the [repo's wiki](https://github.com/L
     * Efforts are made to prevent re-exposing the same information under slightly different key names, or under different types to provide a consistent experience
     * Values are parsed to built-in Python types when it makes sense
     * Endpoints that batch do so automatically to the maximum batch size
-* Robust, but if it fails it fail fast
+* Robust, but if it fails then fail fast
     * Custom `Exception`s are defined and used to provide context on failures
     * If something will fail, try to detect it and raise an `Exception` as early as possible
     * Automatically retry requests using an exponential back-off to deal with rate-limiting
