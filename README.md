@@ -1,5 +1,3 @@
-#### This library is still undergoing heavy initial development, and shouldn't be considered stable quite yet (shooting for 2020-03-01)
-
 ## Subwinder
 
 An ergonomic python library for the [opensubtitles.org](https://opensubtitles.org) API.
