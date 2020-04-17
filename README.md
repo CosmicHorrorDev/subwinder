@@ -51,6 +51,18 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
 
 And that's it, with ~20 sloc you can search, get comments, and download a couple subtitles!
 
+### Installation
+
+**Note:** The minimum required Python version is `3.7`, you can check your current version with `python -V` or `python3 -V` if you're unsure of your current version.
+
+Install the subwinder library with your standard Python package manager e.g.
+
+```text
+$ pip install subwinder
+```
+
+As always you are recommended to install into a virtual environment.
+
 ### Documentation
 
 There is pretty thorough documentation in the [repo's wiki](https://github.com/LovecraftianHorror/subwinder/wiki) that covers all the functionality currently exposed by the library. If anything in the wiki is incorrect or confusing then please [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) to address this.
