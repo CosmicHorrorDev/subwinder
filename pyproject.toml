@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "subwinder"
-version = "0.4.0"
-description = ""
+version = "0.5.1"
+description = "An ergonomic python library for the opensubtitles.org API"
+license = "AGPL-3.0"
 authors = ["Lovecraftian Horror <LovecraftianHorror@pm.me>"]
+readme = "README.md"
+repository = "https://github.com/LovecraftianHorror/subwinder"
+keywords = ["subtitles", "opensubtitles", "subtitles api", "movies", "tv shows"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -15,4 +19,3 @@ pytest = "^3.0"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-
