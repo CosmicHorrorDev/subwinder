@@ -1,5 +1,3 @@
-import os
-
 import subwinder.hashers
 from tests.constants import TEST_DIR
 
@@ -10,7 +8,7 @@ def test_special_hash():
 
     for file, ideal_hash in hashes.items():
         hash = subwinder.hashers.special_hash(
-            os.path.join(TEST_DIR, "hash_files", file)
+            TEST_DIR / "hash_files" / file
         )
         assert hash == ideal_hash
 
@@ -25,5 +23,5 @@ def test_md5_hash():
     }
 
     for file, ideal_hash in hashes.items():
-        hash = subwinder.hashers.md5_hash(os.path.join(TEST_DIR, "hash_files", file))
+        hash = subwinder.hashers.md5_hash(TEST_DIR / "hash_files" / file)
         assert hash == ideal_hash

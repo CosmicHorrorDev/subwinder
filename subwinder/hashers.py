@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 from subwinder.exceptions import SubHashError
 
@@ -11,8 +10,8 @@ def special_hash(filepath):
     HASH_SIZE_BYTES = 8
     FILE_MIN_SIZE = CHUNK_SIZE_BYTES * 2
 
-    with open(filepath, "rb") as f:
-        filesize = os.path.getsize(filepath)
+    with filepath.open("rb") as f:
+        filesize = filepath.stat().st_size
         filehash = filesize
 
         if filesize < FILE_MIN_SIZE:
@@ -37,7 +36,7 @@ def special_hash(filepath):
 def md5_hash(filepath):
     CHUNK_SIZE = 4096
     hash_md5 = hashlib.md5()
-    with open(filepath, "rb") as f:
+    with filepath.open("rb") as f:
         for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()

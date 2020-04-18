@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-import os
+from pathlib import Path
 
-from subwinder import hashers
+from subwinder import hashers, utils
 
 
 @dataclass
@@ -13,6 +13,7 @@ class Subtitles:
 
     @classmethod
     def from_file(cls, filepath):
+        filepath = utils._force_path(filepath)
         return cls(hashers.md5_hash(filepath))
 
 
@@ -20,9 +21,10 @@ class Subtitles:
 class Media:
     hash: str
     size: int
-    dirname: str
-    filename: str
+    dirname: Path
+    filename: Path
 
+    # TODO: why not split up the dirname and filename for this?
     def __init__(self, hash, size, filepath=None):
         self.hash = hash
         self.size = size
@@ -30,20 +32,25 @@ class Media:
         if filepath is None:
             self.dirname, self.filename = None, None
         else:
-            self.dirname, self.filename = os.path.split(filepath)
+            self.set_filepath(filepath)
 
     @classmethod
     def from_file(cls, filepath):
+        filepath = utils._force_path(filepath)
         hash = hashers.special_hash(filepath)
-        size = os.path.getsize(filepath)
+        size = filepath.stat().st_size
 
         return cls(hash, size, filepath)
 
     def set_filepath(self, filepath):
-        self.dirname, self.filename = os.path.split(filepath)
+        filepath = utils._force_path(filepath)
+
+        # Why does `Path().name` return a string??
+        self.filename = Path(filepath.name)
+        self.dirname = filepath.parent
 
     def set_filename(self, filename):
-        self.filename = filename
+        self.filename = utils._force_path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = dirname
+        self.dirname = utils._force_path(dirname)

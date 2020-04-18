@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-import os
+from pathlib import Path
 
 from subwinder.constants import _TIME_FORMAT
 from subwinder.exceptions import SubLibError
+from subwinder import utils
 from subwinder.lang import LangFormat, lang_3s
 
 
@@ -85,8 +86,8 @@ class MediaInfo:
     name: str
     year: int
     imdbid: str
-    dirname: str
-    filename: str
+    dirname: Path
+    filename: Path
 
     @classmethod
     def from_data(cls, data, dirname, filename):
@@ -96,17 +97,21 @@ class MediaInfo:
         # Example: best guess when using `guess_media` for "the expanse" has
         #          `type(data["IDMovieIMDB"]) == int`
         imdbid = str(data.get("IDMovieImdb") or data["IDMovieIMDB"])
+        dirname = utils._force_path(dirname)
+        filename = utils._force_path(filename)
 
         return cls(name, year, imdbid, dirname, filename)
 
     def set_filepath(self, filepath):
-        self.dirname, self.filename = os.path.split(filepath)
+        filepath = utils._force_path(filepath)
+        self.dirname = filepath.parent
+        self.filename = Path(filepath.name)
 
     def set_filename(self, filename):
-        self.filename = filename
+        self.filename = utils._force_path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = dirname
+        self.dirname = utils._force_path(dirname)
 
 
 class MovieInfo(MediaInfo):
@@ -134,13 +139,13 @@ class EpisodeInfo(TvSeriesInfo):
     @classmethod
     def from_tv_series(cls, tv_series, season, episode):
         return cls(
-            tv_series.name,
-            tv_series.year,
-            tv_series.imdbid,
-            tv_series.dirname,
-            tv_series.filename,
-            season,
-            episode,
+            name=tv_series.name,
+            year=tv_series.year,
+            imdbid=tv_series.imdbid,
+            dirname=tv_series.dirname,
+            filename=tv_series.filename,
+            season=season,
+            episode=episode,
         )
 
 
@@ -203,7 +208,7 @@ class SubtitlesInfo:
     id: str
     file_id: str
     sub_to_movie_id: str
-    filename: str
+    filename: Path
     lang_2: str
     lang_3: str
     ext: str
@@ -211,21 +216,26 @@ class SubtitlesInfo:
 
     @classmethod
     def from_data(cls, data):
+        if data["IDSubMovieFile"] == "0":
+            sub_to_movie_id = None
+        else:
+            sub_to_movie_id = data["IDSubMovieFile"]
+
         return cls(
-            int(data["SubSize"]),
-            int(data["SubDownloadsCnt"]),
-            int(data["SubComments"]),
+            size=int(data["SubSize"]),
+            num_downloads=int(data["SubDownloadsCnt"]),
+            num_comments=int(data["SubComments"]),
             # 0.0 is the listed rating if there are no ratings yet which seems deceptive
             # at a glance
-            None if data["SubRating"] == "0.0" else float(data["SubRating"]),
-            data["IDSubtitle"],
-            data["IDSubtitleFile"],
+            rating=None if data["SubRating"] == "0.0" else float(data["SubRating"]),
+            id=data["IDSubtitle"],
+            file_id=data["IDSubtitleFile"],
             # If the search was done with anything other than movie hash and size then
             # there isn't a "IDSubMovieFile"
-            None if data["IDSubMovieFile"] == "0" else data["IDSubMovieFile"],
-            data["SubFileName"],
-            data["ISO639"],
-            data["SubLanguageID"],
-            data["SubFormat"].lower(),
-            data["SubEncoding"],
+            sub_to_movie_id=sub_to_movie_id,
+            filename=utils._force_path(data["SubFileName"]),
+            lang_2=data["ISO639"],
+            lang_3=data["SubLanguageID"],
+            ext=data["SubFormat"].lower(),
+            encoding=data["SubEncoding"],
         )

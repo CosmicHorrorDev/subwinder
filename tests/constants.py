@@ -1,5 +1,5 @@
 from datetime import datetime as dt
-import os
+from pathlib import Path
 
 from subwinder.info import (
     DownloadInfo,
@@ -14,8 +14,8 @@ from subwinder.media import Media
 from subwinder.results import SearchResult
 
 
-TEST_DIR = os.path.dirname(__file__)
-SAMPLES_DIR = os.path.join(TEST_DIR, "sample_responses")
+TEST_DIR = Path(__file__).parent
+SAMPLES_DIR = TEST_DIR / "sample_responses"
 
 MEDIA1 = Media("18379ac9af039390", 366876694, "/path/to/file.mkv")
 USER_INFO1 = UserInfo("1332962", "elderman")
@@ -34,16 +34,16 @@ MOVIE_INFO1 = MovieInfo(
     name="<movie-name>",
     year=2015,
     imdbid="<imdbid>",
-    dirname="movie_dir",
-    filename="movie_file",
+    dirname=Path("movie_dir"),
+    filename=Path("movie_file"),
 )
 
 EPISODE_INFO1 = EpisodeInfo(
     name='"Fringe" Alone in the World',
     year=2011,
     imdbid="1998676",
-    dirname="/path/to",
-    filename="file.mkv",
+    dirname=Path("/path/to"),
+    filename=Path("file.mkv"),
     season=4,
     episode=3,
 )
@@ -56,7 +56,7 @@ SUBTITLES_INFO1 = SubtitlesInfo(
     id="3387112",
     file_id="<file-id>",
     sub_to_movie_id=None,
-    filename="sub-filename.sub-ext",
+    filename=Path("sub-filename.sub-ext"),
     lang_2="<lang-2>",
     lang_3="<lang-3>",
     ext="<ext>",
@@ -71,7 +71,7 @@ SUBTITLES_INFO2 = SubtitlesInfo(
     id="4251071",
     file_id="1952941557",
     sub_to_movie_id="3585468",
-    filename="Fringe.S04E03.HDTV.XviD-LOL.srt",
+    filename=Path("Fringe.S04E03.HDTV.XviD-LOL.srt"),
     lang_2="en",
     lang_3="eng",
     ext="srt",

@@ -2,7 +2,6 @@ import pytest
 
 from datetime import datetime
 import json
-import os
 from unittest.mock import patch
 
 from subwinder.info import (
@@ -35,7 +34,7 @@ _converter._last_updated = datetime.now()
 
 
 def test_build_media_info():
-    with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
+    with open(SAMPLES_DIR / "search_subtitles.json") as f:
         RESP = json.load(f)
     data = RESP["data"][0]
 

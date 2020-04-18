@@ -2,8 +2,8 @@ import pytest
 
 from datetime import datetime
 import json
-import os
 from tempfile import TemporaryDirectory
+from pathlib import Path
 from unittest.mock import call, patch
 
 from subwinder.auth import _build_search_query, AuthSubwinder
@@ -179,9 +179,7 @@ def test_check_subtitles():
 
 # TODO: test this for batching
 def test_download_subtitles():
-    download_path = os.path.join(
-        SEARCH_RESULT1.media.dirname, SEARCH_RESULT1.subtitles.filename
-    )
+    download_path = SEARCH_RESULT1.media.dirname / SEARCH_RESULT1.subtitles.filename
     QUERIES = ((SEARCH_RESULT1,),)
     RESP = None
     # Need to get the download path here
@@ -222,7 +220,7 @@ def test__download_subtitles():
     )
 
     with TemporaryDirectory() as temp_dir:
-        sub_path = os.path.join(temp_dir, "test download.txt")
+        sub_path = Path(temp_dir) / "test download.txt"
 
         with patch.object(asw, "_request", return_value=RESP) as mocked:
             asw._download_subtitles([SEARCH_RESULT1], [sub_path])
@@ -239,7 +237,7 @@ def test__download_subtitles():
 def test_get_comments():
     # Build up the empty `SearchResult`s and add the `subtitles.id`
     queries = ([SEARCH_RESULT1, SEARCH_RESULT2],)
-    with open(os.path.join(SAMPLES_DIR, "get_comments.json")) as f:
+    with open(SAMPLES_DIR / "get_comments.json") as f:
         RESP = json.load(f)
     ideal_result = [
         [
@@ -290,7 +288,7 @@ def test_guess_media():
         MovieInfo("Nochnoy dozor", 2004, "0403358", None, None),
         MovieInfo("Aliens", 1986, "0090605", None, None),
     ]
-    with open(os.path.join(SAMPLES_DIR, "guess_media.json")) as f:
+    with open(SAMPLES_DIR / "guess_media.json") as f:
         SAMPLE_RESP = json.load(f)
 
     with patch.object(asw, "_request") as mocked:
@@ -352,7 +350,7 @@ def test__search_subtitles():
             },
         ],
     )
-    with open(os.path.join(SAMPLES_DIR, "search_subtitles.json")) as f:
+    with open(SAMPLES_DIR / "search_subtitles.json") as f:
         RESP = json.load(f)
 
     IDEAL = [SEARCH_RESULT2]
@@ -441,7 +439,7 @@ def test_preview_subtitles():
 def test__preview_subtitles():
     QUERIES = (["1951976245"],)
     CALL = ("PreviewSubtitles", QUERIES[0])
-    with open(os.path.join(SAMPLES_DIR, "preview_subtitles.json")) as f:
+    with open(SAMPLES_DIR / "preview_subtitles.json") as f:
         RESP = json.load(f)
 
     IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]

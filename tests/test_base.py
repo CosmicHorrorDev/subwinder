@@ -2,7 +2,6 @@ import pytest
 
 from datetime import datetime
 import json
-import os
 from unittest.mock import patch
 
 from subwinder.base import Subwinder
@@ -26,7 +25,7 @@ def test__request():
 
 
 def test_daily_download_info():
-    with open(os.path.join(SAMPLES_DIR, "server_info.json")) as f:
+    with open(SAMPLES_DIR / "server_info.json") as f:
         RESP = json.load(f)
     IDEAL = DOWNLOAD_INFO
 
@@ -47,7 +46,7 @@ def test_get_languages():
 
 
 def test_server_info():
-    with open(os.path.join(SAMPLES_DIR, "server_info.json")) as f:
+    with open(SAMPLES_DIR / "server_info.json") as f:
         RESP = json.load(f)
     IDEAL = SERVER_INFO
 

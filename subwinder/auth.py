@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from subwinder import utils
 from subwinder.base import Subwinder
@@ -150,11 +151,11 @@ class AuthSubwinder(Subwinder):
 
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
-            dir_path = download_dir or media.dirname
+            dir_path = utils._force_path(download_dir) or media.dirname
 
             # Format the `filename` according to the `name_format` passed in
-            media_name, _ = os.path.splitext(media.filename)
-            upload_name, _ = os.path.splitext(subtitles.filename)
+            media_name = media.filename.stem
+            upload_name = subtitles.filename.stem
 
             filename = name_format.format(
                 media_name=media_name,
@@ -165,7 +166,7 @@ class AuthSubwinder(Subwinder):
                 upload_filename=subtitles.filename,
             )
 
-            download_paths.append(os.path.join(dir_path, filename))
+            download_paths.append(dir_path / filename)
 
         # Check that the user has enough downloads remaining to satisfy all
         # `downloads`
@@ -198,9 +199,9 @@ class AuthSubwinder(Subwinder):
             subtitles = utils.extract(result["data"], encoding)
 
             # Create the directories if needed, then save the file
-            dirpath = os.path.dirname(fpath)
-            os.makedirs(dirpath, exist_ok=True)
-            with open(fpath, "w") as f:
+            dirpath = fpath.parent
+            dirpath.mkdir(exist_ok=True)
+            with fpath.open("w") as f:
                 f.write(subtitles)
 
     def get_comments(self, search_results):
