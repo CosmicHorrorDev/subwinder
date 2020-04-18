@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 from subwinder import utils
 from subwinder.base import Subwinder
