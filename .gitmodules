@@ -1,0 +1,3 @@
+[submodule "subwinder.wiki"]
+	path = subwinder.wiki
+	url = https://github.com/LovecraftianHorror/subwinder.wiki.git
