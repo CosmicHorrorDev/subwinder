@@ -21,6 +21,27 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - uses: actions/cache@v2
+      if: startsWith(runner.os, 'Linux')
+      id: cache-poetry
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+    - uses: actions/cache@v2
+      if: startsWith(runner.os, 'macOS')
+      id: cache-poetry
+      with:
+        path: ~/Library/Caches/pypoetry/virtualenvs
+        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+    - uses: actions/cache@v2
+      if: startsWith(runner.os, 'Windows')
+      id: cache-poetry
+      with:
+        path: ~\AppData\Local\pypoetry\Cache\virtualenvs
+        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
     - name: Install poetry
       run: |
         python -m pip install --upgrade pip
