@@ -50,6 +50,7 @@ jobs:
     - name: Install dependencies
       # Hopefully we are allowed to reuse id's, if not then each platform will need to be split up
       if: steps.cache-poetry.outputs.cache-hit != 'true'
+      run:
         poetry install
 
     - name: Lint with flake8
