@@ -23,21 +23,21 @@ jobs:
 
     - uses: actions/cache@v2
       if: startsWith(runner.os, 'Linux')
-      id: cache-poetry
+      id: cache-linux
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - uses: actions/cache@v2
       if: startsWith(runner.os, 'macOS')
-      id: cache-poetry
+      id: cache-mac
       with:
         path: ~/Library/Caches/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - uses: actions/cache@v2
       if: startsWith(runner.os, 'Windows')
-      id: cache-poetry
+      id: cache-windows
       with:
         path: ~\AppData\Local\pypoetry\Cache\virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -48,8 +48,10 @@ jobs:
         pip install poetry
 
     - name: Install dependencies
-      # Hopefully we are allowed to reuse id's, if not then each platform will need to be split up
-      if: steps.cache-poetry.outputs.cache-hit != 'true'
+      # Can't reuse id's and paths are different for caching so this condition is painful
+      # So basically we want to see if the matching OS had a cache hit or not, but we
+      # only want to check the id of the OS we are using
+      if: (startsWith(runner.os, 'Linux') && steps.cache-linux.outputs.cache-hit != 'true') || (startsWith(runner.os, 'macOS') && steps.cache-mac.outputs.cache-hit != 'true') || (startsWith(runner.os, 'Windows') && steps.cache-windows.outputs.cache-hit != 'true')
       run:
         poetry install
 
