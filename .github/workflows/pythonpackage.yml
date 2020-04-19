@@ -21,21 +21,24 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: actions/cache@v1
+    - name: Check Linux poetry cache
+      uses: actions/cache@v1
       if: startsWith(runner.os, 'Linux')
       id: cache-linux
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - uses: actions/cache@v1
+    - name: Check Mac poetry cache
+      uses: actions/cache@v1
       if: startsWith(runner.os, 'macOS')
       id: cache-mac
       with:
         path: ~/Library/Caches/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - uses: actions/cache@v1
+    - name: Check Windows poetry cache
+      uses: actions/cache@v1
       if: startsWith(runner.os, 'Windows')
       id: cache-windows
       with:
