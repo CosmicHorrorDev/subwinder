@@ -14,28 +14,28 @@ jobs:
         python-version: [3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v1
       if: startsWith(runner.os, 'Linux')
       id: cache-linux
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v1
       if: startsWith(runner.os, 'macOS')
       id: cache-mac
       with:
         path: ~/Library/Caches/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v1
       if: startsWith(runner.os, 'Windows')
       id: cache-windows
       with:
