@@ -77,7 +77,7 @@ There is pretty thorough documentation in the [repo's wiki](https://github.com/L
     * If something will fail, try to detect it and raise an `Exception` as early as possible
     * Automatically retry requests using an exponential back-off to deal with rate-limiting
 * Small footprint
-    * No external dependencies are required
+    * Only one direct dependency is required.
 
 ### Caveats from using `subwinder`
 
