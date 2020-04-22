@@ -1,3 +1,5 @@
+from atomicwrites import atomic_write
+
 import os
 
 from subwinder import utils
@@ -200,7 +202,7 @@ class AuthSubwinder(Subwinder):
             # Create the directories if needed, then save the file
             dirpath = fpath.parent
             dirpath.mkdir(exist_ok=True)
-            with fpath.open("w") as f:
+            with atomic_write(fpath) as f:
                 f.write(subtitles)
 
     def get_comments(self, search_results):
