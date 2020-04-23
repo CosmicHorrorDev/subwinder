@@ -1,3 +1,5 @@
+# Unauthenticated Endpoints
+
 All functionality with the unauthenticated API are exposed exclusively through the `subwinder.base` and `subwinder.lang` modules.
 
 ---

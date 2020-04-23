@@ -1,3 +1,5 @@
+# Authenticated Endpoints
+
 All functionality with the authenticated API is exposed exclusively through the `subwinder.auth` module which is exposed entirely through the `AuthSubwinder` class.
 
 ```python

@@ -1,3 +1,5 @@
+# Exceptions
+
 All the custom exceptions used by used by the library are in the `subwinder.exceptions` module.
 
 ---

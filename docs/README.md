@@ -1,3 +1,5 @@
+# Home
+
 The documentation has been split into the following pages:
 
 | Page | Description |
