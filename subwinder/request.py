@@ -47,6 +47,8 @@ def _request(method, token, *params):
     current_delay = 1.5
     start = datetime.now()
 
+    # Keep retrying if status code indicates rate limiting (429) or server error (5XX)
+    # until the `TIMEOUT` is hit
     while True:
         try:
             if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
@@ -67,9 +69,10 @@ def _request(method, token, *params):
                     f" the future\nProtocolError: {err}"
                 )
 
-        # All requests return a status except for GetSubLanguages and ServerInfo
+        # All requests return a status except for GetSubLanguages and ServerInfo so
+        # force the status
         if method in ("GetSubLanguages", "ServerInfo"):
-            return resp
+            resp["status"] = "200 OK"
 
         if "status" not in resp:
             raise SubLibError(
@@ -80,8 +83,9 @@ def _request(method, token, *params):
         status_code = resp["status"][:3]
         status_msg = resp["status"][4:]
 
-        # Retry if 429 or 503, otherwise handle appropriately
-        if status_code not in ("429", "503"):
+        # Retry if rate limit was hit (429) or server error (5XX), otherwise handle
+        # appropriately
+        if status_code not in ("429", "503", "506", "520"):
             break
 
         # Server under heavy load, wait and retry
