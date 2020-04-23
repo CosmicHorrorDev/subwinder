@@ -1,6 +1,6 @@
 # Custom Classes
 
-This consists of the classes defined in the `subwinder.info`, `subwinder.media`, and `subwinder.results` modules.
+This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-module), [`subwinder.media`](#subwindermedia-module), and [`subwinder.results`](#subwinderresults-module) modules.
 
 ---
 
@@ -34,7 +34,7 @@ This consists of the classes defined in the `subwinder.info`, `subwinder.media`,
 
 ## `subwinder.info` module
 
-This module contains a number of info classes used by the API as well as a helper function to handle building the correct `MediaInfo` derivative automatically.
+This module contains a number of info classes used by the API as well as a helper function to handle building the correct [`MediaInfo`](#mediainfo) derivative automatically.
 
 ```python
 from subwinder.info import (
@@ -52,7 +52,7 @@ from subwinder.info import (
 
 ### `build_media_info(data, dirname, filename)`
 
-This function is used to automatically create the correct `MediaInfo` object from `data`. This of course requires the information for the correct `MediaInfo` to be built.
+This function is used to automatically create the correct [`MediaInfo`](#mediainfo) object from `data`. This of course requires the information for the correct [`MediaInfo`](#mediainfo) to be built.
 
 ```python
 movie = build_media_info(
@@ -103,7 +103,7 @@ This stores all the information to represent a comment.
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `author` | `UserInfo` | The author of the comment |
+| `author` | [`UserInfo`](#userinfo) | The author of the comment |
 | `text` | `str` | The comment's text |
 | `date` | `datetime.datetime` | When the comment was left |
 
@@ -121,33 +121,33 @@ This is the base class used for representing several kinds of media returned by 
 
 ### `MovieInfo` derived from `MediaInfo`
 
-This class represents a movie returned by the API. The members are identical to `MediaInfo` with the extra context that it's specifically for a movie.
+This class represents a movie returned by the API. The members are identical to [`MediaInfo`](#mediainfo) with the extra context that it's specifically for a movie.
 
-_Members are identical to `MediaInfo`_
+_Members are identical to [`MediaInfo`](#mediainfo)_
 
 ### `TvSeriesInfo` derived from `MediaInfo`
 
-Much like `MovieInfo` this class represents a TV series returned by the API. The members are again identical to `MediaInfo` with the extra context that it's specifically for a TV series.
+Much like [`MovieInfo`](#movieinfo-derived-from-mediainfo) this class represents a TV series returned by the API. The members are again identical to [`MediaInfo`](#mediainfo) with the extra context that it's specifically for a TV series.
 
-_Members are identical to `MediaInfo`_
+_Members are identical to [`MediaInfo`](#mediainfo)_
 
 ### `EpisodeInfo` derived from `TvSeriesInfo`
 
-An episode belonging to a tv series, much like `TvSeriesInfo`, but with a season and episode number.
+An episode belonging to a tv series, much like [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo), but with a season and episode number.
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| - | - | All members from `MediaInfo` |
+| - | - | All members from [`MediaInfo`](#mediainfo) |
 | `episode` | `int` | The episode number for this episode |
 | `season` | `int` | The season number for this episode |
 
 #### `EpisodeInfo.from_tv_series(tv_series, season, episode)`
 
-This `classmethod` provides the ability to create an `EpisodeInfo` from an existing `TvSeriesInfo`. This can be used when the API returns a `TvSeriesInfo` and you would like to use a method that requires a `EpisodeInfo` instead such as `AuthSubwinder`'s `search_subtitles` method. This information could be entered manually or found using something like a regex on the filename.
+This `classmethod` provides the ability to create an `EpisodeInfo` from an existing [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo). This can be used when the API returns a [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo) and you would like to use a method that requires a `EpisodeInfo` instead such as [`AuthSubwinder`'s `search_subtitles` method](Authenticated-Endpoints.md#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs). This information could be entered manually or found using something like a regex on the filename.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `tv_series` | `TvSeriesInfo` | The TV Series that this episode belongs to |
+| `tv_series` | [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo) | The TV Series that this episode belongs to |
 | `season` | `int` | The season number for this episode |
 | `episode` | `int` | The episode number for this episode |
 
@@ -177,7 +177,7 @@ This class represents various information about the opensubtitles server.
 | :---: | :---: | :--- |
 | `application` | `str` | The current application program name |
 | `bots_online` | `int` | The number of bots currently online |
-| `daily_download_info` | `DownloadInfo` | Information about the user's daily downloads |
+| `daily_download_info` | [`DownloadInfo`](#downloadinfo) | Information about the user's daily downloads |
 | `total_subtitles_downloaded` | `int` | The total number of subtitle files downloaded |
 | `total_subtitle_files` | `int` | The number of subtitle files available |
 | `total_movies` | `int` | The number of movies tracked |
@@ -203,13 +203,13 @@ This class covers various information about a subtitle file.
 | `num_downloads` | `int` | The number of times these subtitles were downloaded |
 | `rating` | `float` or `None` | If no ratings are left then `rating` is `None` otherwise its the average rating left on the subtitles |
 | `size` | `int` | The size of the subtitles file in bytes |
-| `sub_to_movie_id` | `str` or `None` | The unique id tying these subtitles to a movie hash. Will be `None` if this search wasn't matched using a `Media` object |
+| `sub_to_movie_id` | `str` or `None` | The unique id tying these subtitles to a movie hash. Will be `None` if this search wasn't matched using a [`Media`](#media) object |
 
 ---
 
 ## `subwinder.media` module
 
-This module just contains the `Subtitles` and `Media` classes used to create objects from local files.
+This module just contains the [`Subtitles`](#subtitles) and [`Media`](#media) classes used to create objects from local files.
 
 ```python
 from subwinder.media import Media, Subtitles
@@ -237,8 +237,8 @@ _Note: `hash` and `size` are just stored directly_
 | Param | Type | Description |
 | :---: | :---: | :--- |
 | `filepath` | `pathlib.Path` or `None` | (Default `None`) Optional path to the local media file |
-| `hash` | `str` | _Refer to member_ |
-| `size` | `int` | _Refer to member_ |
+| `hash` | `str` | The hexadecimal `special_hash` of the media |
+| `size` | `int` | The size of the media in bytes |
 
 #### `Media.from_file(filepath)`
 
@@ -327,7 +327,7 @@ assert media.dirname == Path("/some/given/path")
 
 ## `subwinder.results` module
 
-This module just contains the `SearchResult` class and should likely just be merged into `subwinder.info`
+This module just contains the [`SearchResult`](#searchresult) class and should likely just be merged into [`subwinder.info`](#subwinderinfo-module).
 
 ```python
 from subwinder.results import SearchResult
@@ -335,11 +335,11 @@ from subwinder.results import SearchResult
 
 ### `SearchResult`
 
-This class represents a result returned by `AuthSubwinder`'s `search_subtitles` method.
+This class represents a result returned by [`AuthSubwinder`'s `search_subtitles`](Authenticated-Endpoints.md#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs) method.
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `author` | `UserInfo` or `None` | Optional author who uploaded the subtitles |
-| `media` | `MovieInfo` or `EpisodeInfo` | The media these subtitles are for |
-| `subtitles` | `SubtitlesInfo` | The object representing information about these subtitles |
+| `author` | [`UserInfo`](#userinfo) or `None` | Optional author who uploaded the subtitles |
+| `media` | [`MovieInfo`](#movieinfo-derived-from-mediainfo) or [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo) | The media these subtitles are for |
+| `subtitles` | [`SubtitlesInfo`](#subtitlesinfo) | The object representing information about these subtitles |
 | `upload_date` | `datetime.datetime` | The date the subtitles were uploaded |

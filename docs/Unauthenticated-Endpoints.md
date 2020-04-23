@@ -1,6 +1,6 @@
 # Unauthenticated Endpoints
 
-All functionality with the unauthenticated API are exposed exclusively through the `subwinder.base` and `subwinder.lang` modules.
+All functionality with the unauthenticated API are exposed exclusively through the [`subwinder.base`](#subwinderbase-module) and [`subwinder.lang`](#subwinderlang-module) modules.
 
 ---
 
@@ -24,7 +24,7 @@ All functionality with the unauthenticated API are exposed exclusively through t
 
 ## `subwinder.base` module
 
-This contains solely the `Subwinder` class with the following methods.
+This contains solely the [`Subwinder`](#subwinder) class with the following methods.
 
 ```python
 from subwinder.base import Subwinder
@@ -44,9 +44,9 @@ sw = Subwinder()
 
 #### `.daily_download_info()`
 
-Gets information covering the user's daily download information in the form of a `DownloadInfo` object. This information is also exposed through the `.server_info()` method.
+Gets information covering the user's daily download information in the form of a [`DownloadInfo`](Custom-Classes.md#downloadinfo) object. This information is also exposed through the `.server_info()` method.
 
-**Returns:** A `DownloadInfo` object covering daily download information for the current user.
+**Returns:** A [`DownloadInfo`](Custom-Classes.md#downloadinfo) object covering daily download information for the current user.
 
 ```python
 from subwinder.info import DownloadInfo
@@ -74,9 +74,9 @@ assert sw.get_languages() == [
 
 #### `.server_info()`
 
-Lists various information about the opensubtitles server in the form of a `ServerInfo` object.
+Lists various information about the opensubtitles server in the form of a [`ServerInfo`](Custom-Classes.md#serverinfo) object.
 
-**Returns:** A `ServerInfo` object listing various information on the opensubtitles server.
+**Returns:** A [`ServerInfo`](Custom-Classes.md#serverinfo) object listing various information on the opensubtitles server.
 
 ```python
 from subwinder.info import ServerInfo
@@ -90,7 +90,7 @@ assert type(sw.server_info()) == ServerInfo
 
 ## `subwinder.lang` module
 
-This module contains the `Enum` `LangFormat` and the global `_Lang` objects `lang_2s`, `lang_3s`, and `lang_longs`. The `LangFormat` just contains information for converting between the different formats while each of the global objects have the following functionality.
+This module contains the `Enum` `LangFormat` and the global `_Lang` objects [`lang_2s`, `lang_3s`, and `lang_longs`](#lang_2s-lang_3s-and-lang_longs). The `LangFormat` just contains information for converting between the different formats while each of the global objects have the following functionality.
 
 ```python
 from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs

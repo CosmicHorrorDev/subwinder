@@ -1,6 +1,6 @@
 # Exceptions
 
-All the custom exceptions used by used by the library are in the `subwinder.exceptions` module.
+All the custom exceptions used by used by the library are in the [`subwinder.exceptions`](#subwinderexceptions-module) module.
 
 ---
 
@@ -41,7 +41,7 @@ This is the base exception that all the other custom exceptions are derived from
 
 ### `SubAuthError`
 
-Raised when trying to use `AuthSubwinder` without providing a username, password, or useragent. Or this is raised when the API returns a response indicating that user tried to perform an invalid action (401) or when the useragent isn't valid in some way (411, 414, 415).
+Raised when trying to use [`AuthSubwinder`](Authenticated-Endpoints.md#authsubwinder) without providing a username, password, or useragent. Or this is raised when the API returns a response indicating that user tried to perform an invalid action (401) or when the useragent isn't valid in some way (411, 414, 415).
 
 ```python
 from subwinder.auth import AuthSubwinder
