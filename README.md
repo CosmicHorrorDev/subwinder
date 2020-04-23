@@ -63,7 +63,7 @@ As always you are recommended to install into a virtual environment.
 
 ### Documentation
 
-There is pretty thorough documentation in the [repo's wiki](https://github.com/LovecraftianHorror/subwinder/wiki) that covers all the functionality currently exposed by the library. If anything in the wiki is incorrect or confusing then please [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) to address this.
+There is pretty thorough documentation in the [docs directory](https://github.com/LovecraftianHorror/subwinder/blob/master/docs/README.md) that covers all the functionality currently exposed by the library. If anything in the docs are incorrect or confusing then please [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) to address this.
 
 ### Benefits from using `subwinder`
 
