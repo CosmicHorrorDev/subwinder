@@ -34,7 +34,7 @@ _API_ERROR_MAP = {
 _API_PROTOCOL_ERR_MAP = {
     503: "503 Service Unavailable",
     506: "506 Server under maintenance",
-    520: "520 Unknown internal error"
+    520: "520 Unknown internal error",
 }
 
 _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
