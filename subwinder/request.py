@@ -1,6 +1,6 @@
 from datetime import datetime
 import time
-from xmlrpc.client import ServerProxy, Transport
+from xmlrpc.client import ServerProxy, Transport, ProtocolError
 
 from subwinder.constants import _API_BASE, _REPO_URL
 from subwinder.exceptions import (
@@ -31,11 +31,15 @@ _API_ERROR_MAP = {
     "520": SubServerError,
 }
 
+_API_PROTOCOL_ERR_MAP = {
+    503: "503 Service Unavailable",
+    506: "506 Server under maintenance",
+    520: "520 Unknown internal error"
+}
+
 _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
 
 
-# FIXME: Handle xmlrpc.client.ProtocolError, 503, 506, and 520  are raised as protocol
-#        errors. Catch and manually change status
 # TODO: give a way to let lib user to set `TIMEOUT`?
 def _request(method, token, *params):
     TIMEOUT = 15
@@ -44,12 +48,24 @@ def _request(method, token, *params):
     start = datetime.now()
 
     while True:
-        if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
-            # Flexible way to call method while reducing error handling
-            resp = getattr(_client, method)(*params)
-        else:
-            # Use the token if it's defined
-            resp = getattr(_client, method)(token, *params)
+        try:
+            if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
+                # Flexible way to call method while reducing error handling
+                resp = getattr(_client, method)(*params)
+            else:
+                # Use the token if it's defined
+                resp = getattr(_client, method)(token, *params)
+        except ProtocolError as err:
+            # Try handling the `ProtocolError` appropriately
+            if err.errcode in _API_PROTOCOL_ERR_MAP:
+                resp = {"status": _API_PROTOCOL_ERR_MAP[err.errcode]}
+            else:
+                # Unexpected `ProtocolError`
+                raise SubLibError(
+                    "The server returned an unhandled protocol error. Please raise an"
+                    f" issue in the repo ({_REPO_URL}) so that this can be handled in"
+                    f" the future\nProtocolError: {err}"
+                )
 
         # All requests return a status except for GetSubLanguages and ServerInfo
         if method in ("GetSubLanguages", "ServerInfo"):
@@ -65,8 +81,6 @@ def _request(method, token, *params):
         status_msg = resp["status"][4:]
 
         # Retry if 429 or 503, otherwise handle appropriately
-        # FIXME: 503 fails the request so it won't be passed in this way instead catch
-        #        the error and manually set a status
         if status_code not in ("429", "503"):
             break
 
