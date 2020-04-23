@@ -53,7 +53,7 @@ And that's it, with ~20 sloc you can search, get comments, and download a couple
 
 **Note:** The minimum required Python version is `3.7`, you can check your current version with `python -V` or `python3 -V` if you're unsure of your current version.
 
-Install the subwinder library with your standard Python package manager e.g.
+Install the [subwinder](https://pypi.org/project/subwinder/) library with your standard Python package manager e.g.
 
 ```text
 $ pip install subwinder
