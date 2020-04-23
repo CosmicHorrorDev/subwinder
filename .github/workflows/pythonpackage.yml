@@ -50,10 +50,9 @@ jobs:
         pip install poetry
 
     - name: Install dependencies
-      # Can't reuse id's and paths are different for caching so this condition is painful
-      # So basically we want to see if the matching OS had a cache hit or not, but we
-      # only want to check the id of the OS we are using
-      if: (startsWith(runner.os, 'Linux') && steps.cache-linux.outputs.cache-hit != 'true') || (startsWith(runner.os, 'macOS') && steps.cache-mac.outputs.cache-hit != 'true') || (startsWith(runner.os, 'Windows') && steps.cache-windows.outputs.cache-hit != 'true')
+      # If this is cached then it should still use the cache, but there are some issues
+      # where the cached venv seems to not be used (granted we don't lock this to one
+      # poetry version so that doesn't help reproduction)
       run:
         poetry install
 
