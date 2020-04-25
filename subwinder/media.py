@@ -23,7 +23,10 @@ class Media:
         hash = hashers.special_hash(filepath)
         size = filepath.stat().st_size
 
-        return cls(hash, size, filepath)
+        media = cls(hash, size)
+        # Set file info from given `filepath`
+        media.set_filepath(filepath)
+        return media
 
     def set_filepath(self, filepath):
         filepath = utils._force_path(filepath)
