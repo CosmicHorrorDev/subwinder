@@ -5,19 +5,6 @@ from subwinder import hashers, utils
 
 
 @dataclass
-class Subtitles:
-    hash: str
-
-    def __init__(self, hash):
-        self.hash = hash
-
-    @classmethod
-    def from_file(cls, filepath):
-        filepath = utils._force_path(filepath)
-        return cls(hashers.md5_hash(filepath))
-
-
-@dataclass
 class Media:
     hash: str
     size: int
