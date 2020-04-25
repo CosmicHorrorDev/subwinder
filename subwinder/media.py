@@ -11,15 +11,11 @@ class Media:
     dirname: Path
     filename: Path
 
-    # TODO: why not split up the dirname and filename for this?
-    def __init__(self, hash, size, filepath=None):
+    def __init__(self, hash, size, dirname=None, filename=None):
         self.hash = hash
         self.size = size
-
-        if filepath is None:
-            self.dirname, self.filename = None, None
-        else:
-            self.set_filepath(filepath)
+        self.dirname = None if dirname is None else self.set_dirname(dirname)
+        self.filename = None if filename is None else self.set_filename(filename)
 
     @classmethod
     def from_file(cls, filepath):
