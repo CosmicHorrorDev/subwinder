@@ -14,8 +14,9 @@ class Media:
     def __init__(self, hash, size, dirname=None, filename=None):
         self.hash = hash
         self.size = size
-        self.dirname = None if dirname is None else self.set_dirname(dirname)
-        self.filename = None if filename is None else self.set_filename(filename)
+
+        self.set_dirname(dirname)
+        self.set_filename(filename)
 
     @classmethod
     def from_file(cls, filepath):

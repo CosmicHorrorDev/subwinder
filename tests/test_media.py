@@ -1,13 +1,7 @@
 from pathlib import Path
 
-from subwinder.media import Media, Subtitles
+from subwinder.media import Media
 from tests.constants import TEST_DIR
-
-
-def test_Subtitles():
-    subs = Subtitles.from_file(TEST_DIR / "hash_files" / "random_1")
-
-    assert subs.hash == "52b16cb071a2da214782380a0100003b"
 
 
 def test_Media():
