@@ -15,7 +15,6 @@ from subwinder.info import (
     UserInfo,
 )
 from subwinder.lang import _converter
-from subwinder.media import Subtitles
 from subwinder.ranking import _rank_search_subtitles
 from tests.constants import (
     DOWNLOAD_INFO,
@@ -145,36 +144,6 @@ def test_auto_update():
     CALL = ("AutoUpdate", PROGRAM_NAME)
 
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
-
-
-def test_check_subtitles():
-    QUERIES = (
-        [
-            Subtitles("a9672c89bc3f5438f820f06bab708067"),
-            Subtitles("0ca1f1e42cfb58c1345e149f98ac3aec"),
-            Subtitles("11111111111111111111111111111111"),
-        ],
-    )
-    RESP = {
-        "status": "200 OK",
-        "data": {
-            "a9672c89bc3f5438f820f06bab708067": "1",
-            "0ca1f1e42cfb58c1345e149f98ac3aec": "3",
-            "11111111111111111111111111111111": "0",
-        },
-        "seconds": "0.009",
-    }
-    CALL = (
-        "CheckSubHash",
-        [
-            "a9672c89bc3f5438f820f06bab708067",
-            "0ca1f1e42cfb58c1345e149f98ac3aec",
-            "11111111111111111111111111111111",
-        ],
-    )
-    IDEAL_RESULT = ["1", "3", None]
-
-    _standard_asw_mock("check_subtitles", "_request", QUERIES, RESP, CALL, IDEAL_RESULT)
 
 
 # TODO: test this for batching

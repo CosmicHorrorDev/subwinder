@@ -108,18 +108,6 @@ class AuthSubwinder(Subwinder):
         self._request("LogOut")
         self._token = None
 
-    # TODO: unless I'm missing an endpoint option this isn't useful externally can be
-    #       used internally though
-    # Note: This doesn't look like it batches (likely because it's use is very limited)
-    def check_subtitles(self, subtitles_hashers):
-        # Get all of the subtitles_ids from the hashes
-        hashes = [s.hash for s in subtitles_hashers]
-        data = self._request("CheckSubHash", hashes)["data"]
-        subtitles_ids = [data[h] for h in hashes]
-
-        # Subtitle id "0" means no subtitle match so return as `None`
-        return [sub_id if sub_id != "0" else None for sub_id in subtitles_ids]
-
     def download_subtitles(
         self, downloads, download_dir=None, name_format="{upload_filename}"
     ):
