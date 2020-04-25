@@ -20,7 +20,6 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`ServerInfo`](#serverinfo)
     * [`SubtitlesInfo`](#subtitlesinfo)
 * [`subwinder.media` module](#subwindermedia-module)
-    * [`Subtitles`](#subtitles)
     * [`Media`](#media)
         * [Initialization](#initialization)
         * [`Media.from_file()`](#mediafrom_filefilepath)
@@ -209,15 +208,11 @@ This class covers various information about a subtitle file.
 
 ## `subwinder.media` module
 
-This module just contains the [`Subtitles`](#subtitles) and [`Media`](#media) classes used to create objects from local files.
+This module just contains the and [`Media`](#media) class used to create objects from local files.
 
 ```python
-from subwinder.media import Media, Subtitles
+from subwinder.media import Media
 ```
-
-### `Subtitles`
-
-This class honestly seems useless at his point, if I get anything about it figured out then I'll update this.
 
 ### `Media`
 
@@ -234,11 +229,7 @@ This class is used to get the `special_hash` and filesize of a media file which 
 
 _Note: `hash` and `size` are just stored directly_
 
-| Param | Type | Description |
-| :---: | :---: | :--- |
-| `filepath` | `pathlib.Path` or `None` | (Default `None`) Optional path to the local media file |
-| `hash` | `str` | The hexadecimal `special_hash` of the media |
-| `size` | `int` | The size of the media in bytes |
+_All parameters match the members in the order `Media(hash, size, dirname=None, filename=None)`_
 
 #### `Media.from_file(filepath)`
 
