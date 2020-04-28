@@ -1,6 +1,5 @@
 import base64
 import gzip
-from pathlib import Path
 
 
 def extract(bytes, encoding):
