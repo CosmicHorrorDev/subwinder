@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum
 
 from subwinder.exceptions import SubLangError
-from subwinder.request import _request
+from subwinder._request import request
 
 
 _LANG_2_KEY = "ISO639"
@@ -33,7 +33,7 @@ class _LangConverter:
         self._langs = [[], [], [], []]
 
     def _fetch(self):
-        return _request("GetSubLanguages", None)["data"]
+        return request("GetSubLanguages", None)["data"]
 
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh unless

@@ -1,6 +1,6 @@
 from subwinder.info import ServerInfo
 from subwinder.lang import lang_2s, lang_3s, lang_longs
-from subwinder.request import _request
+from subwinder._request import request
 
 
 class Subwinder:
@@ -10,8 +10,8 @@ class Subwinder:
         return f"{self.__class__.__name__}"
 
     def _request(self, method, *params):
-        # Call the `_request` function with our token
-        return _request(method, self._token, *params)
+        # Call the `request` function with our token
+        return request(method, self._token, *params)
 
     def daily_download_info(self):
         return self.server_info().daily_download_info

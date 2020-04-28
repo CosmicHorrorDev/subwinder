@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from subwinder import hashers, utils
+from subwinder import hashers, _internal_utils
 
 
 @dataclass
@@ -20,7 +20,7 @@ class Media:
 
     @classmethod
     def from_file(cls, filepath):
-        filepath = utils._force_path(filepath)
+        filepath = _internal_utils.force_path(filepath)
         hash = hashers.special_hash(filepath)
         size = filepath.stat().st_size
 
@@ -30,14 +30,14 @@ class Media:
         return media
 
     def set_filepath(self, filepath):
-        filepath = utils._force_path(filepath)
+        filepath = _internal_utils.force_path(filepath)
 
         # Why does `Path().name` return a string??
         self.filename = Path(filepath.name)
         self.dirname = filepath.parent
 
     def set_filename(self, filename):
-        self.filename = utils._force_path(filename)
+        self.filename = _internal_utils.force_path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = utils._force_path(dirname)
+        self.dirname = _internal_utils.force_path(dirname)

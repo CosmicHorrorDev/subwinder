@@ -15,7 +15,7 @@ from subwinder.info import (
     UserInfo,
 )
 from subwinder.lang import _converter
-from subwinder.ranking import _rank_search_subtitles
+from subwinder._ranking import rank_search_subtitles
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -290,7 +290,7 @@ def test_report_movie():
 
 def test_search_subtitles():
     QUERIES = (((MEDIA1, "en"), (MOVIE_INFO1, "fr"), (EPISODE_INFO1, "de"),),)
-    CALL = (*QUERIES, _rank_search_subtitles)
+    CALL = (*QUERIES, rank_search_subtitles)
     # Just testing that the correct amount of `SearchResult`s are returned
     RESP = [
         SEARCH_RESULT1,
@@ -307,7 +307,7 @@ def test_search_subtitles():
 def test__search_subtitles():
     QUERIES = (
         ((MEDIA1, "en"),),
-        _rank_search_subtitles,
+        rank_search_subtitles,
     )
     CALL = (
         "SearchSubtitles",

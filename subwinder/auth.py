@@ -2,7 +2,7 @@ from atomicwrites import atomic_write
 
 import os
 
-from subwinder import utils
+from subwinder import utils, _internal_utils
 from subwinder.base import Subwinder
 from subwinder.exceptions import (
     SubAuthError,
@@ -18,7 +18,7 @@ from subwinder.info import (
 )
 from subwinder.lang import lang_2s, lang_longs, LangFormat
 from subwinder.media import Media
-from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
+from subwinder._ranking import rank_guess_media, rank_search_subtitles
 from subwinder.results import SearchResult
 
 
@@ -140,7 +140,7 @@ class AuthSubwinder(Subwinder):
 
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
-            dir_path = utils._force_path(download_dir) or media.dirname
+            dir_path = _internal_utils.force_path(download_dir) or media.dirname
 
             # Format the `filename` according to the `name_format` passed in
             media_name = media.filename.stem
@@ -219,7 +219,7 @@ class AuthSubwinder(Subwinder):
         self._request("NoOperation")
 
     def guess_media(
-        self, queries, ranking_func=_rank_guess_media, *rank_args, **rank_kwargs,
+        self, queries, ranking_func=rank_guess_media, *rank_args, **rank_kwargs,
     ):
         VALID_CLASSES = (list, tuple)
         if not isinstance(queries, VALID_CLASSES):
@@ -249,7 +249,7 @@ class AuthSubwinder(Subwinder):
         self._request("ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id)
 
     def search_subtitles(
-        self, queries, ranking_func=_rank_search_subtitles, *rank_args, **rank_kwargs,
+        self, queries, ranking_func=rank_search_subtitles, *rank_args, **rank_kwargs,
     ):
         # Verify that all the queries are correct before doing any requests
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)

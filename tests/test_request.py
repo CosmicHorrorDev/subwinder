@@ -1,6 +1,6 @@
 from unittest.mock import call, patch
 
-from subwinder.request import _client, _request
+from subwinder._request import _client, request
 
 
 # Note: this test takes a bit of time because of the delayed API request retry
@@ -8,7 +8,7 @@ def test__request():
     RESP = {"status": "200 OK", "data": "The data!", "seconds": "0.15"}
     with patch.object(_client, "ServerInfo", return_value=RESP) as mocked:
         # Response should be passed through on success
-        assert _request("ServerInfo", None) == RESP
+        assert request("ServerInfo", None) == RESP
         mocked.assert_called_once_with()
 
     CALLS = [
@@ -21,5 +21,5 @@ def test__request():
     ]
     with patch.object(_client, "GetUserInfo") as mocked:
         mocked.side_effect = RESPS
-        assert _request("GetUserInfo", "<token>", "arg1", "arg2") == RESPS[1]
+        assert request("GetUserInfo", "<token>", "arg1", "arg2") == RESPS[1]
         mocked.assert_has_calls(CALLS)

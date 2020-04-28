@@ -1,10 +1,10 @@
-from subwinder.ranking import _rank_guess_media, _rank_search_subtitles
+from subwinder._ranking import rank_guess_media, rank_search_subtitles
 
 
 def test__rank_guess_media():
     DUMMY_RESULT = {"BestGuess": "Best result!"}
 
-    assert _rank_guess_media(DUMMY_RESULT, None) == "Best result!"
+    assert rank_guess_media(DUMMY_RESULT, None) == "Best result!"
 
 
 def test__rank_search_subtitles():
@@ -28,4 +28,4 @@ def test__rank_search_subtitles():
     ]
 
     for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:
-        assert _rank_search_subtitles(*args, **kwargs) == ideal_result
+        assert rank_search_subtitles(*args, **kwargs) == ideal_result
