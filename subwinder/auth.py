@@ -2,7 +2,7 @@ from atomicwrites import atomic_write
 
 import os
 
-from subwinder import utils, _internal_utils
+from subwinder import utils
 from subwinder.base import Subwinder
 from subwinder.exceptions import (
     SubAuthError,
@@ -140,7 +140,10 @@ class AuthSubwinder(Subwinder):
 
             # Store the subtitle file next to the original media unless
             # `download_dir` was set
-            dir_path = _internal_utils.force_path(download_dir) or media.dirname
+            if download_dir is None:
+                dir_path = media.dirname
+            else:
+                dir_path = os.fspath(download_dir)
 
             # Format the `filename` according to the `name_format` passed in
             media_name = media.filename.stem

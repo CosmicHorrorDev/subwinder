@@ -4,7 +4,6 @@ from pathlib import Path
 
 from subwinder.constants import _TIME_FORMAT
 from subwinder.exceptions import SubLibError
-from subwinder import _internal_utils
 from subwinder.lang import LangFormat, lang_3s
 
 
@@ -90,28 +89,32 @@ class MediaInfo:
     filename: Path
 
     @classmethod
-    def from_data(cls, data, dirname, filename):
+    def from_data(cls, data, dirname=None, filename=None):
         name = data["MovieName"]
         year = int(data["MovieYear"])
         # For some reason opensubtitles sometimes returns this as an integer
         # Example: best guess when using `guess_media` for "the expanse" has
         #          `type(data["IDMovieIMDB"]) == int`
         imdbid = str(data.get("IDMovieImdb") or data["IDMovieIMDB"])
-        dirname = _internal_utils.force_path(dirname)
-        filename = _internal_utils.force_path(filename)
+
+        if dirname is not None:
+            dirname = Path(dirname)
+
+        if filename is not None:
+            filename = Path(filename)
 
         return cls(name, year, imdbid, dirname, filename)
 
     def set_filepath(self, filepath):
-        filepath = _internal_utils.force_path(filepath)
-        self.dirname = filepath.parent
-        self.filename = Path(filepath.name)
+        filepath = Path(filepath)
+        self.set_dirname(filepath.parent)
+        self.set_filename(filepath.name)
 
     def set_filename(self, filename):
-        self.filename = _internal_utils.force_path(filename)
+        self.filename = Path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = _internal_utils.force_path(dirname)
+        self.dirname = Path(dirname)
 
 
 class MovieInfo(MediaInfo):
@@ -233,7 +236,7 @@ class SubtitlesInfo:
             # If the search was done with anything other than movie hash and size then
             # there isn't a "IDSubMovieFile"
             sub_to_movie_id=sub_to_movie_id,
-            filename=_internal_utils.force_path(data["SubFileName"]),
+            filename=Path(data["SubFileName"]),
             lang_2=data["ISO639"],
             lang_3=data["SubLanguageID"],
             ext=data["SubFormat"].lower(),
