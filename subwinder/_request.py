@@ -69,9 +69,9 @@ def request(method, token, *params):
                     f" the future\nProtocolError: {err}"
                 )
 
-        # All requests return a status except for GetSubLanguages and ServerInfo so
-        # force the status
-        if method in ("GetSubLanguages", "ServerInfo"):
+        # Some endpoints don't return a status when "OK" like GetSubLanguages or
+        # ServerInfo, so force the status if it's missing
+        if "status" not in method:
             resp["status"] = "200 OK"
 
         if "status" not in resp:
