@@ -71,7 +71,7 @@ def request(method, token, *params):
 
         # Some endpoints don't return a status when "OK" like GetSubLanguages or
         # ServerInfo, so force the status if it's missing
-        if "status" not in method:
+        if "status" not in resp:
             resp["status"] = "200 OK"
 
         if "status" not in resp:
