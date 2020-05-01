@@ -124,22 +124,26 @@ class AuthSubwinder(Subwinder):
                     f" {download} or `download_dir` in `download_subtitles`"
                 )
 
-            # Hacky way to tell if `media_name` is used in `name_format`
-            try_format = name_format.format(
-                media_name="",
-                lang_2="{lang_2}",
-                lang_3="{lang_3}",
-                ext="{ext}",
-                upload_name="{upload_name}",
-                upload_filename="{upload_filename}",
-            )
-            if media.filename is None and try_format != name_format:
-                raise SubDownloadError(
-                    f"Insufficient context. Need to set the `filename` in {download}"
-                )
+            if media.filename is None:
+                # Hacky way to see if `media_name` is used in `name_format`
+                try:
+                    _ = name_format.format(
+                        lang_2="{lang_2}",
+                        lang_3="{lang_3}",
+                        ext="{ext}",
+                        upload_name="{upload_name}",
+                        upload_filename="{upload_filename}",
+                    )
+                except KeyError:
+                    # Can't set the media's `media_name` if we have no `media_name`
+                    raise SubDownloadError(
+                        "Insufficient context. Need to set the `filename` for"
+                        f" {download} if you plan on using `media_name` in the"
+                        " `name_format`"
+                    )
 
-            # Store the subtitle file next to the original media unless
-            # `download_dir` was set
+            # Store the subtitle file next to the original media unless `download_dir`
+            # was set
             if download_dir is None:
                 dir_path = media.dirname
             else:
