@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import call, patch
 
 from subwinder.auth import _build_search_query, AuthSubwinder
-from subwinder.exceptions import SubAuthError
+from subwinder.exceptions import SubAuthError, SubDownloadError
 from subwinder.info import (
     Comment,
     MovieInfo,
@@ -157,13 +157,33 @@ def test_download_subtitles():
 
     asw = _dummy_auth_subwinder()
 
+    # Test sucessfully downloading
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             result = asw.download_subtitles(*QUERIES)
-
     mocked.assert_called_with(*CALL)
     assert result == IDEAL
+
+    # Test failing from no `download_dir`
+    temp_dirname = QUERIES[0][0].media.dirname
+    QUERIES[0][0].media.dirname = None
+    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
+        # Mock out the call to get remaining downloads as 200
+        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+            with pytest.raises(SubDownloadError):
+                result = asw.download_subtitles(*QUERIES)
+    QUERIES[0][0].media.dirname = temp_dirname
+
+    # Test failing from no `media_name` for `name_format`
+    temp_filename = QUERIES[0][0].media.filename
+    QUERIES[0][0].media.filename = None
+    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
+        # Mock out the call to get remaining downloads as 200
+        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+            with pytest.raises(SubDownloadError):
+                result = asw.download_subtitles(*QUERIES, name_format="{media_name}")
+    QUERIES[0][0].media.filename = temp_filename
 
 
 def test__download_subtitles():
