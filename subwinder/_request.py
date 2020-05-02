@@ -51,6 +51,14 @@ class Endpoints(Enum):
     UPLOAD_SUBTITLES = "UploadSubtitles"
 
 
+_TOKENLESS_ENDPOINTS = [
+    Endpoints.AUTO_UPDATE,
+    Endpoints.GET_SUB_LANGUAGES,
+    Endpoints.LOG_IN,
+    Endpoints.SERVER_INFO,
+]
+
+
 # Responses 403, 404, 405, 406, 409 should be prevented by API
 _API_ERROR_MAP = {
     "401": SubAuthError,
@@ -80,7 +88,7 @@ _client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
 
 
 # TODO: give a way to let lib user to set `TIMEOUT`?
-def request(method, token, *params):
+def request(endpoint, token, *params):
     TIMEOUT = 15
     DELAY_FACTOR = 2
     current_delay = 1.5
@@ -90,12 +98,12 @@ def request(method, token, *params):
     # until the `TIMEOUT` is hit
     while True:
         try:
-            if method in ("AutoUpdate", "GetSubLanguages", "LogIn", "ServerInfo"):
+            if endpoint in _TOKENLESS_ENDPOINTS:
                 # Flexible way to call method while reducing error handling
-                resp = getattr(_client, method)(*params)
+                resp = getattr(_client, endpoint.value)(*params)
             else:
                 # Use the token if it's defined
-                resp = getattr(_client, method)(token, *params)
+                resp = getattr(_client, endpoint.value)(token, *params)
         except ProtocolError as err:
             # Try handling the `ProtocolError` appropriately
             if err.errcode in _API_PROTOCOL_ERR_MAP:
@@ -112,12 +120,6 @@ def request(method, token, *params):
         # ServerInfo, so force the status if it's missing
         if "status" not in resp:
             resp["status"] = "200 OK"
-
-        if "status" not in resp:
-            raise SubLibError(
-                f'"{method}" should return a status and didn\'t, consider raising an'
-                f" issue at {_REPO_URL} to address this"
-            )
 
         status_code = resp["status"][:3]
         status_msg = resp["status"][4:]

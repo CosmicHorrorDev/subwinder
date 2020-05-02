@@ -19,6 +19,7 @@ from subwinder.info import (
 from subwinder.lang import lang_2s, lang_longs, LangFormat
 from subwinder.media import Media
 from subwinder._ranking import rank_guess_media, rank_search_subtitles
+from subwinder._request import Endpoints
 from subwinder.results import SearchResult
 
 
@@ -101,11 +102,11 @@ class AuthSubwinder(Subwinder):
         return f"{self.__class__.__name__}(_token: {self._token.__repr__()})"
 
     def _login(self, username, password, useragent):
-        resp = self._request("LogIn", username, password, "en", useragent)
+        resp = self._request(Endpoints.LOG_IN, username, password, "en", useragent)
         return resp["token"]
 
     def _logout(self):
-        self._request("LogOut")
+        self._request(Endpoints.LOG_OUT)
         self._token = None
 
     def download_subtitles(
@@ -187,7 +188,7 @@ class AuthSubwinder(Subwinder):
             encodings.append(search_result.subtitles.encoding)
             sub_file_ids.append(search_result.subtitles.file_id)
 
-        data = self._request("DownloadSubtitles", sub_file_ids)["data"]
+        data = self._request(Endpoints.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
 
         for encoding, result, fpath in zip(encodings, data, filepaths):
             # Currently pray that python supports all the encodings and is called the
@@ -202,7 +203,7 @@ class AuthSubwinder(Subwinder):
 
     def get_comments(self, search_results):
         subtitle_ids = [s.subtitles.id for s in search_results]
-        data = self._request("GetComments", subtitle_ids)["data"]
+        data = self._request(Endpoints.GET_COMMENTS, subtitle_ids)["data"]
 
         # Group the results, if any, by the query order
         groups = [[] for _ in search_results]
@@ -220,10 +221,10 @@ class AuthSubwinder(Subwinder):
         return comments
 
     def user_info(self):
-        return FullUserInfo.from_data(self._request("GetUserInfo")["data"])
+        return FullUserInfo.from_data(self._request(Endpoints.GET_USER_INFO)["data"])
 
     def ping(self):
-        self._request("NoOperation")
+        self._request(Endpoints.NO_OPERATION)
 
     def guess_media(
         self, queries, ranking_func=rank_guess_media, *rank_args, **rank_kwargs,
@@ -241,7 +242,7 @@ class AuthSubwinder(Subwinder):
         )
 
     def _guess_media(self, queries, ranking_func, *rank_args, **rank_kwargs):
-        data = self._request("GuessMovieFromString", queries)["data"]
+        data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
         results = []
         for query in queries:
@@ -253,7 +254,9 @@ class AuthSubwinder(Subwinder):
         return results
 
     def report_movie(self, search_result):
-        self._request("ReportWrongMovieHash", search_result.subtitles.sub_to_movie_id)
+        self._request(
+            Endpoints.REPORT_WRONG_MOVIE_HASH, search_result.subtitles.sub_to_movie_id
+        )
 
     def search_subtitles(
         self, queries, ranking_func=rank_search_subtitles, *rank_args, **rank_kwargs,
@@ -289,7 +292,7 @@ class AuthSubwinder(Subwinder):
 
     def _search_subtitles(self, queries, ranking_func, *rank_args, **rank_kwargs):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
-        data = self._request("SearchSubtitles", internal_queries)["data"]
+        data = self._request(Endpoints.SEARCH_SUBTITLES, internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
         groups = [[] for _ in internal_queries]
@@ -314,23 +317,25 @@ class AuthSubwinder(Subwinder):
         return search_results
 
     def suggest_media(self, query):
-        data = self._request("SuggestMovie", query)["data"]
+        data = self._request(Endpoints.SUGGEST_MOVIE, query)["data"]
 
         # `data` is an empty list if there were no results
         return [] if not data else [build_media_info(media) for media in data[query]]
 
     def add_comment(self, search_result, comment_str, bad=False):
-        self._request("AddComment", search_result.subtitles.id, comment_str, bad)
+        self._request(
+            Endpoints.ADD_COMMENT, search_result.subtitles.id, comment_str, bad
+        )
 
     def vote(self, search_result, score):
         if score < 2 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
-        self._request("SubtitlesVote", search_result.subtitles.id, score)
+        self._request(Endpoints.SUBTITLES_VOTE, search_result.subtitles.id, score)
 
     def auto_update(self, program_name):
         # Not sure if I should return this information in a better format
-        return self._request("AutoUpdate", program_name)
+        return self._request(Endpoints.AUTO_UPDATE, program_name)
 
     def preview_subtitles(self, queries):
         ids = [q.subtitles.file_id for q in queries]
@@ -339,7 +344,7 @@ class AuthSubwinder(Subwinder):
         return _batch(self._preview_subtitles, 20, [ids])
 
     def _preview_subtitles(self, ids):
-        data = self._request("PreviewSubtitles", ids)["data"]
+        data = self._request(Endpoints.PREVIEW_SUBTITLES, ids)["data"]
 
         # Unpack our data
         previews = []

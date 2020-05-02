@@ -4,6 +4,7 @@ from datetime import datetime as dt
 
 from subwinder._request import _client, request
 from subwinder.exceptions import SubServerError
+from subwinder._request import Endpoints
 
 import pytest
 
@@ -13,7 +14,7 @@ def test__request():
     RESP = {"status": "200 OK", "data": "The data!", "seconds": "0.15"}
     with patch.object(_client, "ServerInfo", return_value=RESP) as mocked:
         # Response should be passed through on success
-        assert request("ServerInfo", None) == RESP
+        assert request(Endpoints.SERVER_INFO, None) == RESP
         mocked.assert_called_once_with()
 
     CALLS = [
@@ -26,32 +27,15 @@ def test__request():
     ]
     with patch.object(_client, "GetUserInfo") as mocked:
         mocked.side_effect = RESPS
-        assert request("GetUserInfo", "<token>", "arg1", "arg2") == RESPS[1]
+        assert request(Endpoints.GET_USER_INFO, "<token>", "arg1", "arg2") == RESPS[1]
         mocked.assert_has_calls(CALLS)
 
 
 def test_request_timeout():
-    ENDPOINTS = [
-        "AddComment",
-        "AutoUpdate",
-        "DownloadSubtitles",
-        "GetComments",
-        "GetUserInfo",
-        "GuessMovieFromString",
-        "LogIn",
-        "LogOut",
-        "NoOperation",
-        "PreviewSubtitles",
-        "ReportWrongMovieHash",
-        "SearchSubtitles",
-        "ServerInfo",
-        "SubtitlesVote",
-        "SuggestMovie",
-    ]
 
     # Reqquests take a bit to timeout so were just gonna run all of them simulatneously
-    with Pool(len(ENDPOINTS)) as pool:
-        pool.map(_test_request_timeout, ENDPOINTS)
+    with Pool(len(Endpoints)) as pool:
+        pool.map(_test_request_timeout, list(Endpoints))
 
 
 def _test_request_timeout(endpoint):
@@ -65,7 +49,7 @@ def _test_request_timeout(endpoint):
         {"status": "429 Too many requests", "seconds": "0.10"},
     ]
 
-    with patch.object(_client, endpoint) as mocked:
+    with patch.object(_client, endpoint.value) as mocked:
         mocked.side_effect = RESPS
         start = dt.now()
         with pytest.raises(SubServerError):

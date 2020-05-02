@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from subwinder.base import Subwinder
 from subwinder.lang import _converter
+from subwinder._request import Endpoints
 from tests.constants import DOWNLOAD_INFO, SAMPLES_DIR, SERVER_INFO
 
 
@@ -33,7 +34,7 @@ def test_daily_download_info():
         result = Subwinder().daily_download_info()
 
     assert result == IDEAL
-    mocked.assert_called_once_with("ServerInfo")
+    mocked.assert_called_once_with(Endpoints.SERVER_INFO)
 
 
 def test_get_languages():
@@ -54,4 +55,4 @@ def test_server_info():
         result = Subwinder().server_info()
 
     assert result == IDEAL
-    mocked.assert_called_once_with("ServerInfo")
+    mocked.assert_called_once_with(Endpoints.SERVER_INFO)

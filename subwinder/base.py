@@ -1,6 +1,6 @@
 from subwinder.info import ServerInfo
 from subwinder.lang import lang_2s, lang_3s, lang_longs
-from subwinder._request import request
+from subwinder._request import request, Endpoints
 
 
 class Subwinder:
@@ -20,4 +20,4 @@ class Subwinder:
         return list(zip(lang_2s, lang_3s, lang_longs))
 
     def server_info(self):
-        return ServerInfo.from_data(self._request("ServerInfo"))
+        return ServerInfo.from_data(self._request(Endpoints.SERVER_INFO))

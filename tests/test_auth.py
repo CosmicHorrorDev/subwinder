@@ -16,6 +16,7 @@ from subwinder.info import (
 )
 from subwinder.lang import _converter
 from subwinder._ranking import rank_search_subtitles
+from subwinder._request import Endpoints
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -106,7 +107,7 @@ def test_with():
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
-    CALL = ("LogIn", "<username>", "<password>", "en", "<useragent>")
+    CALL = (Endpoints.LOG_IN, "<username>", "<password>", "en", "<useragent>")
 
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
@@ -114,7 +115,7 @@ def test__login():
 def test__logout():
     QUERIES = ()
     RESP = {"status": "200 OK", "seconds": 0.055}
-    CALL = ("LogOut",)
+    CALL = (Endpoints.LOG_OUT,)
 
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
@@ -122,7 +123,7 @@ def test__logout():
 def test_add_comment():
     QUERIES = (SEARCH_RESULT1, "bad comment", True)
     RESP = {"status": "200 OK", "seconds": "0.228"}
-    CALL = ("AddComment", SEARCH_RESULT1.subtitles.id, "bad comment", True)
+    CALL = (Endpoints.ADD_COMMENT, SEARCH_RESULT1.subtitles.id, "bad comment", True)
 
     _standard_asw_mock("add_comment", "_request", QUERIES, RESP, CALL, None)
 
@@ -141,7 +142,7 @@ def test_auto_update():
         "comments": "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed",
         "status": "200 OK",
     }
-    CALL = ("AutoUpdate", PROGRAM_NAME)
+    CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
 
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
 
@@ -215,7 +216,7 @@ def test__download_subtitles():
             asw._download_subtitles([SEARCH_RESULT1], [sub_path])
 
         mocked.assert_called_with(
-            "DownloadSubtitles", [SEARCH_RESULT1.subtitles.file_id]
+            Endpoints.DOWNLOAD_SUBTITLES, [SEARCH_RESULT1.subtitles.file_id]
         )
 
         # Check the contents for the correct result
@@ -250,7 +251,7 @@ def test_get_comments():
         ],
     ]
     CALL = (
-        "GetComments",
+        Endpoints.GET_COMMENTS,
         [SEARCH_RESULT1.subtitles.id, SEARCH_RESULT2.subtitles.id],
     )
 
@@ -268,8 +269,8 @@ def test_guess_media():
     ]
     # The calls are split due to batching
     CALLS = [
-        call("GuessMovieFromString", QUERIES[:3]),
-        call("GuessMovieFromString", QUERIES[3:]),
+        call(Endpoints.GUESS_MOVIE_FROM_STRING, QUERIES[:3]),
+        call(Endpoints.GUESS_MOVIE_FROM_STRING, QUERIES[3:]),
     ]
     IDEAL_RESULT = [
         TvSeriesInfo("Heroes", 2006, "0813715", None, None),
@@ -295,14 +296,14 @@ def test__guess_media():
 
 def test_ping():
     RESP = {"status": "200 OK", "seconds": "0.055"}
-    CALL = ("NoOperation",)
+    CALL = (Endpoints.NO_OPERATION,)
 
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
 
 
 def test_report_movie():
     QUERY = (SEARCH_RESULT1,)
-    CALL = ("ReportWrongMovieHash", SEARCH_RESULT1.subtitles.sub_to_movie_id)
+    CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT1.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
     _standard_asw_mock("report_movie", "_request", QUERY, RESP, CALL, None)
@@ -330,7 +331,7 @@ def test__search_subtitles():
         rank_search_subtitles,
     )
     CALL = (
-        "SearchSubtitles",
+        Endpoints.SEARCH_SUBTITLES,
         [
             {
                 "sublanguageid": "eng",
@@ -349,7 +350,7 @@ def test__search_subtitles():
 
 def test_suggest_media():
     QUERY = ("matrix",)
-    CALL = ("SuggestMovie", "matrix")
+    CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
     RESP = {
         "status": "200 OK",
         "data": {
@@ -391,7 +392,7 @@ def test_user_info():
         },
         "seconds": "0.241",
     }
-    CALL = ("GetUserInfo",)
+    CALL = (Endpoints.GET_USER_INFO,)
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
@@ -409,7 +410,7 @@ def test_vote():
         },
         "seconds": "0.075",
     }
-    CALL = ("SubtitlesVote", SEARCH_RESULT1.subtitles.id, SCORE)
+    CALL = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, SCORE)
 
     _standard_asw_mock("vote", "_request", QUERIES, RESP, CALL, None)
 
@@ -427,7 +428,7 @@ def test_preview_subtitles():
 
 def test__preview_subtitles():
     QUERIES = (["1951976245"],)
-    CALL = ("PreviewSubtitles", QUERIES[0])
+    CALL = (Endpoints.PREVIEW_SUBTITLES, QUERIES[0])
     with open(SAMPLES_DIR / "preview_subtitles.json") as f:
         RESP = json.load(f)
 
