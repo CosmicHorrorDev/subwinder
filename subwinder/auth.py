@@ -150,7 +150,7 @@ class AuthSubwinder(Subwinder):
                 dir_path = os.fspath(download_dir)
 
             # Format the `filename` according to the `name_format` passed in
-            media_name = media.filename.stem
+            media_name = None if media.filename is None else media.filename.stem
             upload_name = subtitles.filename.stem
 
             filename = name_format.format(
