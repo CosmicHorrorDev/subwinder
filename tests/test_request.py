@@ -1,4 +1,6 @@
 from unittest.mock import call, patch
+from multiprocessing.dummy import Pool
+from datetime import datetime as dt
 
 from subwinder._request import _client, request
 from subwinder.exceptions import SubServerError
@@ -29,32 +31,45 @@ def test__request():
 
 
 def test_request_timeout():
+    ENDPOINTS = [
+        "AddComment",
+        "AutoUpdate",
+        "DownloadSubtitles",
+        "GetComments",
+        "GetUserInfo",
+        "GuessMovieFromString",
+        "LogIn",
+        "LogOut",
+        "NoOperation",
+        "PreviewSubtitles",
+        "ReportWrongMovieHash",
+        "SearchSubtitles",
+        "ServerInfo",
+        "SubtitlesVote",
+        "SuggestMovie",
+    ]
+
+    # Reqquests take a bit to timeout so were just gonna run all of them simulatneously
+    with Pool(len(ENDPOINTS)) as pool:
+        pool.map(_test_request_timeout, ENDPOINTS)
+
+
+def _test_request_timeout(endpoint):
+    RATE_LIMIT_SECONDS = 10
+
+    # Due to the exponential backoff this should be enough errors to trigger a timeout
     RESPS = [
         {"status": "429 Too many requests", "seconds": "0.10"},
         {"status": "429 Too many requests", "seconds": "0.10"},
         {"status": "429 Too many requests", "seconds": "0.10"},
         {"status": "429 Too many requests", "seconds": "0.10"},
     ]
-    ENDPOINTS = [
-        "AddComment",
-        "AutoUpdate",
-        "DownloadSubtitles",
-        "LogIn",
-        "LogOut",
-        "GetComments",
-        "GetUserInfo",
-        "GuessMovieFromString",
-        "NoOperation",
-        "PreviewSubtitles",
-        "ReportWrongMovieHash",
-        "SearchSubtitles",
-        "SubtitlesVote",
-        "SuggestMovie",
-        "ServerInfo",
-    ]
 
-    for endpoint in ENDPOINTS:
-        with patch.object(_client, endpoint) as mocked:
-            mocked.side_effect = RESPS
-            with pytest.raises(SubServerError):
-                request(endpoint, "<token>")
+    with patch.object(_client, endpoint) as mocked:
+        mocked.side_effect = RESPS
+        start = dt.now()
+        with pytest.raises(SubServerError):
+            request(endpoint, "<token>")
+
+        # `request` should keep trying long enough for the rate limit to expire
+        assert (dt.now() - start).total_seconds() > RATE_LIMIT_SECONDS
