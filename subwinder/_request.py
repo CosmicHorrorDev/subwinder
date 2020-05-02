@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 import time
 from xmlrpc.client import ServerProxy, Transport, ProtocolError
 
@@ -10,6 +11,44 @@ from subwinder.exceptions import (
     SubServerError,
     SubUploadError,
 )
+
+
+# The names of all the different endpoints exposed by opensubtitles
+class Endpoints(Enum):
+    ADD_COMMENT = "AddComment"
+    ADD_REQUEST = "AddRequest"
+    AUTO_UPDATE = "AutoUpdate"
+    CHECK_MOVIE_HASH = "CheckMovieHash"
+    CHECK_MOVIE_HASH2 = "CheckMovieHash2"
+    CHECK_SUB_HASH = "CheckSubHash"
+    DETECT_LANGUAGE = "DetectLanguage"
+    DOWNLOAD_SUBTITLES = "DownloadSubtitles"
+    GET_AVAILABLE_TRANSLATIONS = "GetAvailableTranslations"
+    GET_COMMENTS = "GetComments"
+    GET_IMDB_MOVIE_DETAILS = "GetIMDBMovieDetails"
+    GET_SUB_LANGUAGES = "GetSubLanguages"
+    GET_TRANSLATION = "GetTranslation"
+    GET_USER_INFO = "GetUserInfo"
+    GUESS_MOVIE_FROM_STRING = "GuessMovieFromString"
+    INSERT_MOVIE = "InsertMovie"
+    INSERT_MOVIE_HASH = "InsertMovieHash"
+    LOG_IN = "LogIn"
+    LOG_OUT = "LogOut"
+    NO_OPERATION = "NoOperation"
+    PREVIEW_SUBTITLES = "PreviewSubtitles"
+    QUICK_SUGGEST = "QuickSuggest"
+    REPORT_WRONG_IMDB_MOVIE = "ReportWrongImdbMovie"
+    REPORT_WRONG_MOVIE_HASH = "ReportWrongMovieHash"
+    SEARCH_MOVIES_ON_IMDB = "SearchMoviesOnIMDB"
+    SEARCH_SUBTITLES = "SearchSubtitles"
+    SEARCH_TO_MAIL = "SearchToMail"
+    SET_SUBSCRIBE_URL = "SetSubscribeUrl"
+    SERVER_INFO = "ServerInfo"
+    SUBSCRIBE_TO_HASH = "SubscribeToHash"
+    SUBTITLES_VOTE = "SubtitlesVote"
+    SUGGEST_MOVIE = "SuggestMovie"
+    TRY_UPLOAD_SUBTITLES = "TryUploadSubtitles"
+    UPLOAD_SUBTITLES = "UploadSubtitles"
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
