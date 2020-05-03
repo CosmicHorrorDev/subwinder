@@ -1,17 +1,16 @@
 # Unauthenticated Endpoints
 
-All functionality with the unauthenticated API are exposed exclusively through the [`subwinder.base`](#subwinderbase-module) and [`subwinder.lang`](#subwinderlang-module) modules.
+All functionality with the unauthenticated API are exposed directly from the [`Subwinder Object`](#subwinderbase-module) and the [`subwinder.lang`](#subwinderlang-module) module.
 
 ---
 
 ## Table of Contents
 
-* [`subwinder.base` module](#subwinderbase-module)
-    * [`Subwinder`](#subwinder)
-        * [Initialization](#initialization)
-        * [`.daily_download_info()`](#daily_download_info)
-        * [`.get_languages()`](#get_languages)
-        * [`.server_info()`](#server_info)
+* [`Subwinder`](#subwinder)
+    * [Initialization](#initialization)
+    * [`.daily_download_info()`](#daily_download_info)
+    * [`.get_languages()`](#get_languages)
+    * [`.server_info()`](#server_info)
 * [`subwinder.lang` module](#subwinderlang-module)
     * [`lang_2s`, `lang_3s`, and `lang_longs`](#lang_2s-lang_3s-and-lang_longs)
         * [`.convert()`](#convertlang-to_format)
@@ -22,17 +21,13 @@ All functionality with the unauthenticated API are exposed exclusively through t
 
 ---
 
-## `subwinder.base` module
-
-This contains solely the [`Subwinder`](#subwinder) class with the following methods.
-
-```python
-from subwinder.base import Subwinder
-```
-
 ### `Subwinder`
 
 This class provides the functionality of the unauthenticated API.
+
+```python
+from subwinder import Subwinder
+```
 
 #### Initialization
 

@@ -6,9 +6,10 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 from unittest.mock import call, patch
 
+from subwinder import AuthSubwinder, Subwinder
 from subwinder._ranking import rank_search_subtitles
 from subwinder._request import Endpoints
-from subwinder.auth import _build_search_query, AuthSubwinder
+from subwinder.core import _build_search_query
 from subwinder.exceptions import SubAuthError, SubDownloadError
 from subwinder.info import (
     Comment,
@@ -26,6 +27,7 @@ from tests.constants import (
     SAMPLES_DIR,
     SEARCH_RESULT1,
     SEARCH_RESULT2,
+    SERVER_INFO,
 )
 
 
@@ -80,6 +82,44 @@ def test__build_search_query():
     # `assert` that all of the queries get the intended responses
     for args, ideal_result in PARAM_TO_IDEAL_RESULT:
         assert _build_search_query(*args) == ideal_result
+
+
+@pytest.mark.skip(reason="Only passes the values onto `_request`")
+def test__request():
+    pass
+
+
+def test_daily_download_info():
+    with open(SAMPLES_DIR / "server_info.json") as f:
+        RESP = json.load(f)
+    IDEAL = DOWNLOAD_INFO
+
+    with patch.object(Subwinder, "_request", return_value=RESP) as mocked:
+        result = Subwinder().daily_download_info()
+
+    assert result == IDEAL
+    mocked.assert_called_once_with(Endpoints.SERVER_INFO)
+
+
+def test_get_languages():
+    sw = Subwinder()
+    assert sw.get_languages() == [
+        ("de", "ger", "German"),
+        ("en", "eng", "English"),
+        ("fr", "fre", "French"),
+    ]
+
+
+def test_server_info():
+    with open(SAMPLES_DIR / "server_info.json") as f:
+        RESP = json.load(f)
+    IDEAL = SERVER_INFO
+
+    with patch.object(Subwinder, "_request", return_value=RESP) as mocked:
+        result = Subwinder().server_info()
+
+    assert result == IDEAL
+    mocked.assert_called_once_with(Endpoints.SERVER_INFO)
 
 
 # TODO: assert that _request isn't called for bad params?

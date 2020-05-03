@@ -44,7 +44,7 @@ This is the base exception that all the other custom exceptions are derived from
 Raised when trying to use [`AuthSubwinder`](Authenticated-Endpoints.md#authsubwinder) without providing a username, password, or useragent. Or this is raised when the API returns a response indicating that user tried to perform an invalid action (401) or when the useragent isn't valid in some way (411, 414, 415).
 
 ```python
-from subwinder.auth import AuthSubwinder
+from subwinder import AuthSubwinder
 
 import os
 
@@ -93,7 +93,7 @@ lang_2 = lang_longs.convert("Gibberish", LangFormat.LANG_2)
 Raised whenever there is an error based around the use of the library. This is primarily caused by invalid parameters getting passed through (no matter how strict I make most things).
 
 ```python
-from Subwinder.auth import AuthSubwinder
+from Subwinder import AuthSubwinder
 
 
 with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:

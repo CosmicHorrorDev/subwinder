@@ -1,10 +1,6 @@
 # Authenticated Endpoints
 
-All functionality with the authenticated API is exposed exclusively through the `subwinder.auth` module which is exposed entirely through the [`AuthSubwinder`](#authsubwinder) class.
-
-```python
-from subwinder.auth import AuthSubwinder
-```
+All functionality with the authenticated API is exposed from `subwinder` through the [`AuthSubwinder`](#authsubwinder) class.
 
 ---
 
@@ -30,6 +26,10 @@ from subwinder.auth import AuthSubwinder
 ## `AuthSubwinder`
 
 The class that handles all authenticated functionality exposed by the opensubtitles API.
+
+```python
+from subwinder import AuthSubwinder
+```
 
 ### Initialization
 
