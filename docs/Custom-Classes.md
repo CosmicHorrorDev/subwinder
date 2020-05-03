@@ -1,6 +1,6 @@
 # Custom Classes
 
-This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-module) and [`subwinder.media`](#subwindermedia-module) modules.
+This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-module) module and the [`Media`](#media) object from the base `subwinder` module.
 
 ---
 
@@ -20,13 +20,12 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`SearchResult`](#searchresult)
     * [`ServerInfo`](#serverinfo)
     * [`SubtitlesInfo`](#subtitlesinfo)
-* [`subwinder.media` module](#subwindermedia-module)
-    * [`Media`](#media)
-        * [Initialization](#initialization)
-        * [`Media.from_parts()`](#mediafrom_partshash-size-dirname-filename)
-        * [`.set_filepath()`](#set_filepathfilepath)
-        * [`.set_filename()`](#set_filenamefilename)
-        * [`.set_dirname()`](#set_dirnamedirname)
+* [`Media`](#media)
+    * [Initialization](#initialization)
+    * [`Media.from_parts()`](#mediafrom_partshash-size-dirname-filename)
+    * [`.set_filepath()`](#set_filepathfilepath)
+    * [`.set_filename()`](#set_filenamefilename)
+    * [`.set_dirname()`](#set_dirnamedirname)
 
 ---
 
@@ -219,14 +218,6 @@ This class covers various information about a subtitle file.
 
 ---
 
-## `subwinder.media` module
-
-This module just contains the and [`Media`](#media) class used to create objects from local files.
-
-```python
-from subwinder.media import Media
-```
-
 ### `Media`
 
 This class is used to get the `special_hash` and filesize of a media file which is useful for searching for subtitles using an exact file match.
@@ -237,6 +228,10 @@ This class is used to get the `special_hash` and filesize of a media file which 
 | `filename` | `pathlib.Path` or `None` | (Default `None`) Optional file name of the local media file |
 | `hash` | `str` | The hexadecimal `special_hash` of the media |
 | `size` | `int` | The size of the media in bytes |
+
+```python
+from subwinder import Media
+```
 
 #### Initialization
 

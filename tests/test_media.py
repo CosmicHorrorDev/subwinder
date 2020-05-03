@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from subwinder.media import Media
+from subwinder import Media
 from tests.constants import TEST_DIR
 
 

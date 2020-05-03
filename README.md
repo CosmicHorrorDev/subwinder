@@ -15,8 +15,7 @@ Our task is composed of 3 simple steps
 **Note:** The user agent is specific to the program using the API. You can look [here](https://trac.opensubtitles.org/projects/opensubtitles/wiki/DevReadFirst) under "How to request a new user agent" to see about what user agent you can set for development, or how to get an official user agent for your program.
 
 ```python
-from subwinder import AuthSubwinder
-from subwinder.media import Media
+from subwinder import AuthSubwinder, Media
 
 from datetime import datetime as dt
 from pathlib import Path
