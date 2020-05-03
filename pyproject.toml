@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subwinder"
-version = "0.5.1"
+version = "1.0.0"
 description = "An ergonomic python library for the opensubtitles.org API"
 license = "AGPL-3.0"
 authors = ["Lovecraftian Horror <LovecraftianHorror@pm.me>"]
