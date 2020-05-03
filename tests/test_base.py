@@ -4,9 +4,9 @@ from datetime import datetime
 import json
 from unittest.mock import patch
 
+from subwinder._request import Endpoints
 from subwinder.base import Subwinder
 from subwinder.lang import _converter
-from subwinder._request import Endpoints
 from tests.constants import DOWNLOAD_INFO, SAMPLES_DIR, SERVER_INFO
 
 

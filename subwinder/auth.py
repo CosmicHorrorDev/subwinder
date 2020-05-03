@@ -3,6 +3,8 @@ from atomicwrites import atomic_write
 import os
 
 from subwinder import utils
+from subwinder._ranking import rank_guess_media, rank_search_subtitles
+from subwinder._request import Endpoints
 from subwinder.base import Subwinder
 from subwinder.exceptions import (
     SubAuthError,
@@ -18,8 +20,6 @@ from subwinder.info import (
 )
 from subwinder.lang import lang_2s, lang_longs, LangFormat
 from subwinder.media import Media
-from subwinder._ranking import rank_guess_media, rank_search_subtitles
-from subwinder._request import Endpoints
 from subwinder.results import SearchResult
 
 

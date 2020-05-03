@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from subwinder.exceptions import SubLangError
 from subwinder._request import request
+from subwinder.exceptions import SubLangError
 
 
 _LANG_2_KEY = "ISO639"

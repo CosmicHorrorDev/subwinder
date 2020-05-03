@@ -6,6 +6,8 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 from unittest.mock import call, patch
 
+from subwinder._ranking import rank_search_subtitles
+from subwinder._request import Endpoints
 from subwinder.auth import _build_search_query, AuthSubwinder
 from subwinder.exceptions import SubAuthError, SubDownloadError
 from subwinder.info import (
@@ -15,8 +17,6 @@ from subwinder.info import (
     UserInfo,
 )
 from subwinder.lang import _converter
-from subwinder._ranking import rank_search_subtitles
-from subwinder._request import Endpoints
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,

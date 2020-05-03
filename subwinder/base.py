@@ -1,6 +1,6 @@
+from subwinder._request import request, Endpoints
 from subwinder.info import ServerInfo
 from subwinder.lang import lang_2s, lang_3s, lang_longs
-from subwinder._request import request, Endpoints
 
 
 class Subwinder:
