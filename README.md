@@ -23,10 +23,10 @@ from pathlib import Path
 
 # Step 1. Getting our `Media` objects created and searching
 # You can create the `Media` by passing in the filepath
-movie = Media.from_file("/path/to/movie.mkv")
+movie = Media("/path/to/movie.mkv")
 # Or if you are already using `Path`s then you can pass in a path too (or you
 # can build it from the individual pieces if you don't have local files)
-episode = Media.from_file(Path("/path/to/episode.avi"))
+episode = Media(Path("/path/to/episode.avi"))
 with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
     results = asw.search_subtitles([(movie, "en"), (episode, "fr")])
     # We're assuming both `Media` returned a `SearchResult` for this example

@@ -22,7 +22,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
 * [`subwinder.media` module](#subwindermedia-module)
     * [`Media`](#media)
         * [Initialization](#initialization)
-        * [`Media.from_file()`](#mediafrom_filefilepath)
+        * [`Media.from_parts()`](#mediafrom_partshash-size-dirname-filename)
         * [`.set_filepath()`](#set_filepathfilepath)
         * [`.set_filename()`](#set_filenamefilename)
         * [`.set_dirname()`](#set_dirnamedirname)
@@ -227,13 +227,7 @@ This class is used to get the `special_hash` and filesize of a media file which 
 
 #### Initialization
 
-_Note: `hash` and `size` are just stored directly_
-
-_All parameters match the members in the order `Media(hash, size, dirname=None, filename=None)`_
-
-#### `Media.from_file(filepath)`
-
-This `classmethod` makes it easy to build a `Media` object directly from a local file using the file's `filepath`.
+Builds a `Media` object directly from a local file using the file's `filepath`.
 
 
 | Param | Type | Description |
@@ -245,13 +239,28 @@ This `classmethod` makes it easy to build a `Media` object directly from a local
 ```python
 from pathlib import Path
 
-movie = Media.from_file("/path/to/movie.mp4")
-episode = Media.from_file(Path("/path/to/episode.avi"))
+movie = Media("/path/to/movie.mp4")
+episode = Media(Path("/path/to/episode.avi"))
+```
+
+#### `Media.from_parts(hash, size, dirname, filename)`
+
+_Note: If possible it is preferred to build the media from the [constructor](#initialization)_
+
+_Note: `hash` and `size` are just stored directly while dirname and filename will be converted to `Path`s_
+
+_All parameters match the members in the order `Media(hash, size, dirname=None, filename=None)`_
+
+```python
+# Build a movie to search from using the hash and filesize
+# Note: this will not have context for the original filename or what
+# directory to download into like it would if you used the normal constructor
+movie = Media("<movie-hash>", <movie-filesize>)
 ```
 
 #### `.set_filepath(filepath)`
 
-Sets the `filename` and `dirname` for the `Media`. Useful for when you can't initialize the `Media` using `.from_file(filepath)`, but you want to have subtitles downloaded using the directory and filename from `filepath`.
+Sets the `filename` and `dirname` for the `Media`. Useful for when you can't initialize the `Media` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
@@ -274,7 +283,7 @@ assert media.filename == Path("movie.mkv")
 
 #### `.set_filename(filename)`
 
-Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` with `.from_file(filepath)`, but you want the context of the `filename` when downloading the subtitles.
+Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
@@ -295,7 +304,7 @@ assert media.filename == Path("episode.mp4")
 
 ### `.set_dirname(dirname)`
 
-Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` with `.from_file(filepath)`, but you want to automatically save the subtitles for this `Media` in `dirname`.
+Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want to automatically save the subtitles for this `Media` in `dirname`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |

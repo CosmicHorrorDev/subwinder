@@ -17,7 +17,7 @@ from subwinder.results import SearchResult
 TEST_DIR = Path(__file__).parent
 SAMPLES_DIR = TEST_DIR / "sample_responses"
 
-MEDIA1 = Media("18379ac9af039390", 366876694, "/path/to", "file.mkv")
+MEDIA1 = Media.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
 USER_INFO1 = UserInfo("1332962", "elderman")
 
 FULL_USER_INFO1 = FullUserInfo(
