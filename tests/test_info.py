@@ -11,6 +11,7 @@ from subwinder.info import (
     FullUserInfo,
     MediaInfo,
     MovieInfo,
+    SearchResult,
     SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
@@ -21,6 +22,7 @@ from tests.constants import (
     FULL_USER_INFO1,
     USER_INFO1,
     SAMPLES_DIR,
+    SEARCH_RESULT2,
     SUBTITLES_INFO1,
 )
 
@@ -141,3 +143,10 @@ def test_SubtitlesInfo():
     }
 
     assert SubtitlesInfo.from_data(DATA) == SUBTITLES_INFO1
+
+
+def test_SearchResult():
+    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+        SAMPLE_RESP = json.load(f)["data"][0]
+
+    assert SEARCH_RESULT2 == SearchResult.from_data(SAMPLE_RESP, "/path/to", "file.mkv")

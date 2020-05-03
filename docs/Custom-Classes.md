@@ -1,6 +1,6 @@
 # Custom Classes
 
-This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-module), [`subwinder.media`](#subwindermedia-module), and [`subwinder.results`](#subwinderresults-module) modules.
+This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-module) and [`subwinder.media`](#subwindermedia-module) modules.
 
 ---
 
@@ -17,6 +17,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo)
         * [`EpisodeInfo.from_tv_series()`](#episodeinfofrom_tv_seriestv_series-season-episode)
     * [`DownloadInfo`](#downloadinfo)
+    * [`SearchResult`](#searchresult)
     * [`ServerInfo`](#serverinfo)
     * [`SubtitlesInfo`](#subtitlesinfo)
 * [`subwinder.media` module](#subwindermedia-module)
@@ -26,8 +27,6 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
         * [`.set_filepath()`](#set_filepathfilepath)
         * [`.set_filename()`](#set_filenamefilename)
         * [`.set_dirname()`](#set_dirnamedirname)
-* [`subwinder.results` module](#subwinderresults-module)
-    * [`SearchResult`](#searchresult)
 
 ---
 
@@ -45,6 +44,9 @@ from subwinder.info import (
     MovieInfo,
     TvSeriesInfo,
     EpisodeInfo,
+    DownloadInfo,
+    SearchResult,
+    ServerInfo,
     SubtitlesInfo,
 )
 ```
@@ -167,6 +169,17 @@ This class contains various information on the daily download info for the curre
 | `limit` | `int` | The daily download limit for the user |
 | `limit_checked_by` | `str` | How the limit is tracked (normally by `"user_ip"`) |
 | `remaining` | `int` | The remaining number of daily downloads for the user|
+
+### `SearchResult`
+
+This class represents a result returned by [`AuthSubwinder`'s `search_subtitles`](Authenticated-Endpoints.md#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs) method.
+
+| Member | Type | Description |
+| :---: | :---: | :--- |
+| `author` | [`UserInfo`](#userinfo) or `None` | Optional author who uploaded the subtitles |
+| `media` | [`MovieInfo`](#movieinfo-derived-from-mediainfo) or [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo) | The media these subtitles are for |
+| `subtitles` | [`SubtitlesInfo`](#subtitlesinfo) | The object representing information about these subtitles |
+| `upload_date` | `datetime.datetime` | The date the subtitles were uploaded |
 
 ### `ServerInfo`
 
@@ -322,24 +335,3 @@ media.set_dirname("/some/given/path")
 # Now `dirname` is the `Path` for the given directory
 assert media.dirname == Path("/some/given/path")
 ```
-
----
-
-## `subwinder.results` module
-
-This module just contains the [`SearchResult`](#searchresult) class and should likely just be merged into [`subwinder.info`](#subwinderinfo-module).
-
-```python
-from subwinder.results import SearchResult
-```
-
-### `SearchResult`
-
-This class represents a result returned by [`AuthSubwinder`'s `search_subtitles`](Authenticated-Endpoints.md#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs) method.
-
-| Member | Type | Description |
-| :---: | :---: | :--- |
-| `author` | [`UserInfo`](#userinfo) or `None` | Optional author who uploaded the subtitles |
-| `media` | [`MovieInfo`](#movieinfo-derived-from-mediainfo) or [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo) | The media these subtitles are for |
-| `subtitles` | [`SubtitlesInfo`](#subtitlesinfo) | The object representing information about these subtitles |
-| `upload_date` | `datetime.datetime` | The date the subtitles were uploaded |

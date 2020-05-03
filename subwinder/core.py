@@ -16,11 +16,11 @@ from subwinder.info import (
     EpisodeInfo,
     FullUserInfo,
     MovieInfo,
+    SearchResult,
     ServerInfo,
 )
 from subwinder.lang import lang_2s, lang_3s, lang_longs, LangFormat
 from subwinder.media import Media
-from subwinder.results import SearchResult
 
 
 def _build_search_query(query, lang):

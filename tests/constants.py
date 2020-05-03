@@ -7,11 +7,11 @@ from subwinder.info import (
     FullUserInfo,
     MovieInfo,
     ServerInfo,
+    SearchResult,
     SubtitlesInfo,
     UserInfo,
 )
 from subwinder.media import Media
-from subwinder.results import SearchResult
 
 
 TEST_DIR = Path(__file__).parent
