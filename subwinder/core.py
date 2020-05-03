@@ -149,11 +149,11 @@ class AuthSubwinder(Subwinder):
                 # Hacky way to see if `media_name` is used in `name_format`
                 try:
                     _ = name_format.format(
-                        lang_2="{lang_2}",
-                        lang_3="{lang_3}",
-                        ext="{ext}",
-                        upload_name="{upload_name}",
-                        upload_filename="{upload_filename}",
+                        lang_2="",
+                        lang_3="",
+                        ext="",
+                        upload_name="",
+                        upload_filename="",
                     )
                 except KeyError:
                     # Can't set the media's `media_name` if we have no `media_name`
