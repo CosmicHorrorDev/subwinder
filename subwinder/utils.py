@@ -1,5 +1,6 @@
 import base64
 import gzip
+from pathlib import Path
 
 from subwinder.exceptions import SubHashError
 
@@ -14,25 +15,23 @@ def extract(bytes, encoding):
 # TODO: Would be nice for this to take a `str` or `Path` filepath
 def special_hash(filepath):
     CHUNK_SIZE_BYTES = 64 * 1024
-    # HASH_SIZE_BYTES = 8
     FILE_MIN_SIZE = CHUNK_SIZE_BYTES * 2
 
-    with filepath.open("rb") as f:
+    # Force `filepath` to be `Path`
+    filepath = Path(filepath)
+
+    with filepath.open("rb") as file:
         filesize = filepath.stat().st_size
-        # filehash = filesize
         hasher = _SumHasher(filesize)
 
         if filesize < FILE_MIN_SIZE:
             raise SubHashError(f"Filesize is below minimum of {FILE_MIN_SIZE} bytes")
 
-        for i in range(2):
-            # Seek to 64KiB before the end on second pass
-            if i == 1:
-                f.seek(-CHUNK_SIZE_BYTES, 2)
-
-            # Process each chunk of the file
-            chunk = f.read(CHUNK_SIZE_BYTES)
-            hasher.update(chunk)
+        # Hash the first chunk of the file
+        hasher.update(file.read(CHUNK_SIZE_BYTES))
+        # and the last chunk
+        file.seek(-CHUNK_SIZE_BYTES, 2)
+        hasher.update(file.read(CHUNK_SIZE_BYTES))
 
     return hasher.digest()
 
