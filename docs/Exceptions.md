@@ -62,7 +62,7 @@ Raised when the user tries to download subtitles in a way that needs either the 
 
 ### `SubHashError`
 
-Raised when the user in some way tries to get the `subwinder.hashers.special_hash` of a file that is below the minimum required size of 128 KiB.
+Raised when the user in some way tries to get the `subwinder.utils.special_hash` of a file that is below the minimum required size of 128 KiB.
 
 ```python
 from subwinder.media import Media

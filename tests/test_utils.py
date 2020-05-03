@@ -1,4 +1,5 @@
-from subwinder.utils import extract
+from subwinder.utils import extract, special_hash
+from tests.constants import TEST_DIR
 
 
 def test_extract():
@@ -12,3 +13,12 @@ def test_extract():
     )
 
     assert extract(COMPRESSED, "UTF-8") == IDEAL
+
+
+def test_special_hash():
+    # Maps filename to hash
+    hashes = {"random_1": "38516a7d01f4e37d", "random_2": "a16ad3dbbe8037fa"}
+
+    for file, ideal_hash in hashes.items():
+        hash = special_hash(TEST_DIR / "hash_files" / file)
+        assert hash == ideal_hash

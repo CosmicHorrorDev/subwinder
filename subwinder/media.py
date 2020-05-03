@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from subwinder import hashers
+from subwinder.utils import special_hash
 
 
 @dataclass
@@ -13,7 +13,7 @@ class Media:
 
     def __init__(self, filepath):
         filepath = Path(filepath)
-        hash = hashers.special_hash(filepath)
+        hash = special_hash(filepath)
         size = filepath.stat().st_size
 
         self._from_parts(hash, size)
