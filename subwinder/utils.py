@@ -11,6 +11,7 @@ def extract(bytes, encoding):
 
 # As per API spec with some tweaks to make it a bit nicer
 # https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+# TODO: Would be nice for this to take a `str` or `Path` filepath
 def special_hash(filepath):
     CHUNK_SIZE_BYTES = 64 * 1024
     # HASH_SIZE_BYTES = 8
