@@ -3,7 +3,7 @@ from enum import Enum
 import time
 from xmlrpc.client import ServerProxy, Transport, ProtocolError
 
-from subwinder.constants import _API_BASE, _REPO_URL
+from subwinder._constants import API_BASE, REPO_URL
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -84,7 +84,7 @@ _API_PROTOCOL_ERR_MAP = {
     520: "520 Unknown internal error",
 }
 
-_client = ServerProxy(_API_BASE, allow_none=True, transport=Transport())
+_client = ServerProxy(API_BASE, allow_none=True, transport=Transport())
 
 
 # TODO: give a way to let lib user to set `TIMEOUT`?
@@ -112,7 +112,7 @@ def request(endpoint, token, *params):
                 # Unexpected `ProtocolError`
                 raise SubLibError(
                     "The server returned an unhandled protocol error. Please raise an"
-                    f" issue in the repo ({_REPO_URL}) so that this can be handled in"
+                    f" issue in the repo ({REPO_URL}) so that this can be handled in"
                     f" the future\nProtocolError: {err}"
                 )
 
@@ -146,5 +146,5 @@ def request(endpoint, token, *params):
     else:
         raise SubLibError(
             "the API returned an unhandled response, consider raising an issue to"
-            f" address this at {_REPO_URL}\nResponse status: '{resp['status']}'"
+            f" address this at {REPO_URL}\nResponse status: '{resp['status']}'"
         )

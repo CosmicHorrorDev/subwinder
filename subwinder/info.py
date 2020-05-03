@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from subwinder.constants import _TIME_FORMAT
+from subwinder._constants import TIME_FORMAT
 from subwinder.exceptions import SubLibError
 from subwinder.lang import LangFormat, lang_3s
 
@@ -74,7 +74,7 @@ class Comment:
     @classmethod
     def from_data(cls, data):
         author = UserInfo.from_data(data)
-        date = datetime.strptime(data["Created"], _TIME_FORMAT)
+        date = datetime.strptime(data["Created"], TIME_FORMAT)
         text = data["Comment"]
 
         return cls(author, date, text)

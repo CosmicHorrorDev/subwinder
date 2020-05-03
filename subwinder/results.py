@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from subwinder.constants import _TIME_FORMAT
+from subwinder._constants import TIME_FORMAT
 from subwinder.info import (
     build_media_info,
     MediaInfo,
@@ -22,6 +22,6 @@ class SearchResult:
         author = None if data["UserID"] == "0" else UserInfo.from_data(data)
         media = build_media_info(data, dirname, filename)
         subtitles = SubtitlesInfo.from_data(data)
-        upload_date = datetime.strptime(data["SubAddDate"], _TIME_FORMAT)
+        upload_date = datetime.strptime(data["SubAddDate"], TIME_FORMAT)
 
         return cls(author, media, subtitles, upload_date)
