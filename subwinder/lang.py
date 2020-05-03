@@ -30,7 +30,7 @@ class _LangConverter:
     def __init__(self):
         self._last_updated = None
         # Separate list for each of the lang types
-        self._langs = [[], [], [], []]
+        self._langs = [[] for _ in list(LangFormat)]
 
     def _fetch(self):
         return request("GetSubLanguages", None)["data"]
@@ -46,7 +46,7 @@ class _LangConverter:
         lang_sets = self._fetch()
 
         # Reset any of the info currently in `_lang`
-        self._langs = [[], [], [], []]
+        self._langs = [[] for _ in list(LangFormat)]
         for lang_set in lang_sets:
             self._langs[LangFormat.LANG_2.value].append(lang_set[_LANG_2_KEY])
             self._langs[LangFormat.LANG_3.value].append(lang_set[_LANG_3_KEY])
