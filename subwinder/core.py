@@ -72,6 +72,7 @@ class Subwinder:
     """
     The class used for all unauthenticated functionality exposed by the library.
     """
+
     _token = None
 
     def __repr__(self):
@@ -109,6 +110,7 @@ class AuthSubwinder(Subwinder):
     The class used for all authenticated and unauthenticated functionality exposed by
     the library.
     """
+
     def __init__(self, username=None, password=None, useragent=None):
         """
         Signs in the user with the given `username`, `password` and program's

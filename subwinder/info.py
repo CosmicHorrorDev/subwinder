@@ -31,6 +31,7 @@ class UserInfo:
     """
     Data container holding basic user information.
     """
+
     id: str
     name: str
 
@@ -48,6 +49,7 @@ class FullUserInfo(UserInfo):
     """
     Data container holding extensive user information.
     """
+
     rank: str
     num_uploads: int
     num_downloads: int
@@ -80,6 +82,7 @@ class Comment:
     """
     Data container for a comment.
     """
+
     author: UserInfo
     date: datetime
     text: str
@@ -98,6 +101,7 @@ class MediaInfo:
     """
     Data container for a generic Media.
     """
+
     name: str
     year: int
     imdbid: str
@@ -150,6 +154,7 @@ class EpisodeInfo(TvSeriesInfo):
     """
     Data contianer for a single TV Series Episode.
     """
+
     season: int
     episode: int
 
@@ -181,6 +186,7 @@ class DownloadInfo:
     """
     Data container for a user's daily download information.
     """
+
     ip: str
     downloaded: int
     remaining: int
@@ -204,6 +210,7 @@ class ServerInfo:
     """
     Data container for various information for opensubtitles' server.
     """
+
     application: str
     users_online: int
     users_logged_in: int
@@ -236,6 +243,7 @@ class SubtitlesInfo:
     """
     Data container for a set of uploaded Subtitles.
     """
+
     size: int
     num_downloads: int
     num_comments: int
@@ -281,6 +289,7 @@ class SearchResult:
     """
     Data container for a search result from searching for subtitles.
     """
+
     author: UserInfo
     media: MediaInfo
     subtitles: SubtitlesInfo

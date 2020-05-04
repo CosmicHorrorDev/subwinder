@@ -9,6 +9,7 @@ class Media:
     """
     Data container representing some media (Movie, Episode, etc.) to search for.
     """
+
     hash: str
     size: int
     dirname: Path

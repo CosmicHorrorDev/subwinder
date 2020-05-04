@@ -92,6 +92,7 @@ class _Lang:
     as possible. You should be using the global `lang_2s`, `lang_3s`, and `lang_longs`
     instead of building more of these (hence it being private).
     """
+
     _format: LangFormat
 
     def __contains__(self, lang):
