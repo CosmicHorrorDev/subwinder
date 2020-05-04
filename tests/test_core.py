@@ -453,9 +453,9 @@ def test_user_info():
 
 
 def test_vote():
-    SCORE = 8
-    QUERIES = (SEARCH_RESULT1, SCORE)
-    RESP = {
+    INVALID_SCORES = [0, 11]
+    VALID_SCORES = [1, 10]
+    SAMPLE_RESP = {
         "status": "200 OK",
         "data": {
             "SubRating": "8.0",
@@ -464,9 +464,23 @@ def test_vote():
         },
         "seconds": "0.075",
     }
-    CALL = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, SCORE)
 
-    _standard_asw_mock("vote", "_request", QUERIES, RESP, CALL, None)
+    # Test valid scores
+    for score in VALID_SCORES:
+        query = (SEARCH_RESULT1, score)
+        call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
+        _standard_asw_mock("vote", "_request", query, SAMPLE_RESP, call, None)
+
+    # Test invalid scores
+    for score in INVALID_SCORES:
+        query = (SEARCH_RESULT1, score)
+        call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
+
+        asw = _dummy_auth_subwinder()
+
+        with patch.object(asw, "vote", return_value=SAMPLE_RESP):
+            with pytest.raises(ValueError):
+                asw.vote(*query)
 
 
 def test_preview_subtitles():
