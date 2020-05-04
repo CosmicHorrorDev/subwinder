@@ -1,5 +1,6 @@
 from atomicwrites import atomic_write
 
+from pathlib import Path
 import os
 
 from subwinder import utils
@@ -218,9 +219,7 @@ class AuthSubwinder(Subwinder):
             if download_dir is None:
                 dir_path = media.dirname
             else:
-                # FIXME: this is a bug, `dir_path` should be a `Path` not `str` or
-                #        `bytes`
-                dir_path = os.fspath(download_dir)
+                dir_path = Path(download_dir)
 
             # Format the `filename` according to the `name_format` passed in
             media_name = None if media.filename is None else media.filename.stem

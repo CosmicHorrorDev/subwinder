@@ -196,7 +196,7 @@ def test_download_subtitles():
 
     FULL_PATH = Path("test dir") / "test file"
     FULL_QUERIES = ((SEARCH_RESULT1,), "test dir", "test file")
-    FULL_CALL = (*FULL_QUERIES, [FULL_PATH])
+    FULL_CALL = ((SEARCH_RESULT1,), [FULL_PATH])
     FULL_IDEAL = [FULL_PATH]
     RESP = None
 
