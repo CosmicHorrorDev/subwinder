@@ -79,13 +79,12 @@ class Subwinder:
     def __repr__(self):
         return f"{self.__class__.__name__}"
 
-    # TODO: really should be `endpoint` over `method` now
-    def _request(self, method, *params):
+    def _request(self, endpoint, *params):
         """
         Call the API `Endpoint` represented by `method` with any of the given `params`.
         """
         # Call the `request` function with our token
-        return request(method, self._token, *params)
+        return request(endpoint, self._token, *params)
 
     def daily_download_info(self):
         """
@@ -455,13 +454,12 @@ class AuthSubwinder(Subwinder):
         # Not sure if I should return this information in a better format
         return self._request(Endpoints.AUTO_UPDATE, program_name)
 
-    # FIXME: this really makes more sense to be `results` instead of `queries`
-    def preview_subtitles(self, queries):
+    def preview_subtitles(self, results):
         """
-        Gets a preview for the subtitles represented by `queries`. Useful for being able
+        Gets a preview for the subtitles represented by `results`. Useful for being able
         to see part of the subtitles without eating into your daily download limit.
         """
-        ids = [q.subtitles.file_id for q in queries]
+        ids = [q.subtitles.file_id for q in results]
 
         # Batch to 20 per api spec
         return _batch(self._preview_subtitles, 20, [ids])
