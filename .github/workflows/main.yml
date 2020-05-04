@@ -25,41 +25,28 @@ jobs:
       shell: bash
       run: echo ::set-output name=version::$(python -c "import sys; print('.'.join(str(v) for v in sys.version_info))")
 
-    - name: Check Linux poetry cache
-      uses: actions/cache@v1
-      if: startsWith(runner.os, 'Linux')
-      id: cache-linux
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: poetry-venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
-
-    - name: Check Mac poetry cache
-      uses: actions/cache@v1
-      if: startsWith(runner.os, 'macOS')
-      id: cache-mac
-      with:
-        path: ~/Library/Caches/pypoetry/virtualenvs
-        key: poetry-venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
-
-    - name: Check Windows poetry cache
-      uses: actions/cache@v1
-      if: startsWith(runner.os, 'Windows')
-      id: cache-windows
-      with:
-        path: ~\AppData\Local\pypoetry\Cache\virtualenvs
-        key: poetry-venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
-
     - name: Install poetry
       run: |
         python -m pip install --upgrade pip
         pip install poetry
 
+    - name: Set Common Virtual Environment Dir
+      run: poetry config cache-dir $HOME/venv
+
+    - name: Setup Cache
+      uses: actions/cache@v1
+      id: cache
+      with:
+        path: ~/venv
+        key: poetry-venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+
+    - name: Ensure Cache Health
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: poetry run pip --version >/dev/null 2>&1 || rm -rf ~/venv
+
     - name: Install dependencies
-      # If this is cached then it should still use the cache, but there are some issues
-      # where the cached venv seems to not be used (granted we don't lock this to one
-      # poetry version so that doesn't help reproduction)
-      run:
-        poetry install
+      run: poetry install
 
     - name: Lint with flake8
       run: |
@@ -69,9 +56,7 @@ jobs:
         poetry run flake8 . --count --statistics
 
     - name: Check black formatting
-      run: |
-        poetry run black --check .
+      run: poetry run black --check .
 
     - name: Test with pytest
-      run: |
-        poetry run pytest
+      run: poetry run pytest
