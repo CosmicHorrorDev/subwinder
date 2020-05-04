@@ -189,42 +189,56 @@ def test_auto_update():
 
 # TODO: test this for batching
 def test_download_subtitles():
-    download_path = SEARCH_RESULT1.media.dirname / SEARCH_RESULT1.subtitles.filename
-    QUERIES = ((SEARCH_RESULT1,),)
+    BARE_PATH = SEARCH_RESULT1.media.dirname / SEARCH_RESULT1.subtitles.filename
+    BARE_QUERIES = ((SEARCH_RESULT1,),)
+    BARE_CALL = (*BARE_QUERIES, [BARE_PATH])
+    BARE_IDEAL = [BARE_PATH]
+
+    FULL_PATH = Path("test dir") / "test file"
+    FULL_QUERIES = ((SEARCH_RESULT1,), "test dir", "test file")
+    FULL_CALL = (*FULL_QUERIES, [FULL_PATH])
+    FULL_IDEAL = [FULL_PATH]
     RESP = None
-    # Need to get the download path here
-    CALL = (*QUERIES, [download_path])
-    IDEAL = [download_path]
 
     asw = _dummy_auth_subwinder()
 
-    # Test sucessfully downloading
+    # Test sucessfully downloading with bare params
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
-            result = asw.download_subtitles(*QUERIES)
-    mocked.assert_called_with(*CALL)
-    assert result == IDEAL
+            result = asw.download_subtitles(*BARE_QUERIES)
+    mocked.assert_called_with(*BARE_CALL)
+    assert result == BARE_IDEAL
+
+    # Test successfully downloading with full params
+    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
+        # Mock out the call to get remaining downloads as 200
+        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+            result = asw.download_subtitles(*FULL_QUERIES)
+    mocked.assert_called_with(*FULL_CALL)
+    assert result == FULL_IDEAL
 
     # Test failing from no `download_dir`
-    temp_dirname = QUERIES[0][0].media.dirname
-    QUERIES[0][0].media.dirname = None
+    temp_dirname = BARE_QUERIES[0][0].media.dirname
+    BARE_QUERIES[0][0].media.dirname = None
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             with pytest.raises(SubDownloadError):
-                result = asw.download_subtitles(*QUERIES)
-    QUERIES[0][0].media.dirname = temp_dirname
+                result = asw.download_subtitles(*BARE_QUERIES)
+    BARE_QUERIES[0][0].media.dirname = temp_dirname
 
     # Test failing from no `media_name` for `name_format`
-    temp_filename = QUERIES[0][0].media.filename
-    QUERIES[0][0].media.filename = None
+    temp_filename = BARE_QUERIES[0][0].media.filename
+    BARE_QUERIES[0][0].media.filename = None
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             with pytest.raises(SubDownloadError):
-                result = asw.download_subtitles(*QUERIES, name_format="{media_name}")
-    QUERIES[0][0].media.filename = temp_filename
+                result = asw.download_subtitles(
+                    *BARE_QUERIES, name_format="{media_name}"
+                )
+    BARE_QUERIES[0][0].media.filename = temp_filename
 
 
 def test__download_subtitles():
