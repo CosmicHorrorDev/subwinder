@@ -89,6 +89,14 @@ _client = ServerProxy(API_BASE, allow_none=True, transport=Transport())
 
 # TODO: give a way to let lib user to set `TIMEOUT`?
 def request(endpoint, token, *params):
+    """
+    Function to allow for robust and reusable calls to the XMLRPC API. `endpoint`
+    is the `Endpoint` that you want to use from the opensubtitles API. `token` is the
+    auth token that is used for any user-authenticated calls. `*params` are any
+    additional parameters to pass to the API.
+    Note: Retrying with exponential backoff and exposing appropriate errors are all
+    handled automatically.
+    """
     TIMEOUT = 15
     DELAY_FACTOR = 2
     current_delay = 1.5

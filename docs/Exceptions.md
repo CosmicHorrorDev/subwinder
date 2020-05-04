@@ -37,7 +37,7 @@ from subwinder.exceptions import (
 
 ### `SubwinderError`
 
-This is the base exception that all the other custom exceptions are derived from. It's honestly just used when either something violates an assumption I made about the API or when the API returns a status code that I have no idea why it was raised. All of these places point back to raising an issue in this repo to try and address the issue.
+This is the base exception that all the other custom exceptions are derived from. It's honestly just used when either something violates an assumption I made about the API. All of these places point back to raising an issue in this repo to try and address the issue.
 
 ### `SubAuthError`
 
@@ -58,7 +58,7 @@ with AuthSubwinder() as asw:
 
 ### `SubDownloadError`
 
-Raised when the user tries to download subtitles in a way that needs either the directory name or media name without having been provided that information. Or this is raised when the user has reached the download limit.
+Raised when the user tries to download subtitles in a way that needs either the directory name or media name without having been provided that information. Or when the user has reached the download limit.
 
 ### `SubHashError`
 
@@ -104,7 +104,7 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
 
 ### `SubServerError`
 
-When the server raises a 5xx error on a request or when the user hits more than 40 requests in 10 seconds the library retries the request with exponential backoff for at least 10 seconds, but if that timeout is exceeded and the server is still returning one a 5xx or too many requests then a `SubServerError` is raised.
+When the server raises a 5xx error on a request or when the user hits more than 40 requests in 10 seconds the library retries the request with exponential backoff for at least 10 seconds, but if that timeout is exceeded and the server is still returning either a 5xx or too many requests then a `SubServerError` is raised.
 
 ### `SubUploadError`
 

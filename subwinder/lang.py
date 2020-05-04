@@ -86,6 +86,12 @@ _converter = _LangConverter()
 
 @dataclass
 class _Lang:
+    """
+    Class that represents all actions for one of the three lang formats returned by the
+    API. each `_Lang` shares a common `_converter` to try and reduce API calls as much
+    as possible. You should be using the global `lang_2s`, `lang_3s`, and `lang_longs`
+    instead of building more of these (hence it being private).
+    """
     _format: LangFormat
 
     def __contains__(self, lang):
@@ -101,6 +107,9 @@ class _Lang:
         return len(_converter.list(self._format))
 
     def convert(self, lang, to_format):
+        """
+        Convert the `lang` from the current format to `to_format`.
+        """
         return _converter.convert(lang, self._format, to_format)
 
 

@@ -6,6 +6,9 @@ from subwinder.exceptions import SubHashError
 
 
 def extract(bytes, encoding):
+    """
+    Extract `bytes` from being gzip'd and base64 encoded.
+    """
     compressed = base64.b64decode(bytes)
     return gzip.decompress(compressed).decode(encoding)
 
@@ -14,6 +17,9 @@ def extract(bytes, encoding):
 # https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 # TODO: Would be nice for this to take a `str` or `Path` filepath
 def special_hash(filepath):
+    """
+    The "special hash" used by opensubtitles representing a specific media file.
+    """
     CHUNK_SIZE_BYTES = 64 * 1024
     FILE_MIN_SIZE = CHUNK_SIZE_BYTES * 2
 

@@ -9,6 +9,10 @@ from subwinder.lang import LangFormat, lang_3s
 
 # Build the right info object from the "MovieKind"
 def build_media_info(data, dirname=None, filename=None):
+    """
+    Automatically builds `data` into the correct `MediaInfo` class. `dirname` and
+    `filename` can be set to tie the resulting object to some local file.
+    """
     MEDIA_MAP = {
         "movie": MovieInfo,
         "episode": EpisodeInfo,
@@ -24,6 +28,9 @@ def build_media_info(data, dirname=None, filename=None):
 
 @dataclass
 class UserInfo:
+    """
+    Data container holding basic user information.
+    """
     id: str
     name: str
 
@@ -38,6 +45,9 @@ class UserInfo:
 
 @dataclass
 class FullUserInfo(UserInfo):
+    """
+    Data container holding extensive user information.
+    """
     rank: str
     num_uploads: int
     num_downloads: int
@@ -67,6 +77,9 @@ class FullUserInfo(UserInfo):
 
 @dataclass
 class Comment:
+    """
+    Data container for a comment.
+    """
     author: UserInfo
     date: datetime
     text: str
@@ -82,6 +95,9 @@ class Comment:
 
 @dataclass
 class MediaInfo:
+    """
+    Data container for a generic Media.
+    """
     name: str
     year: int
     imdbid: str
@@ -118,15 +134,22 @@ class MediaInfo:
 
 
 class MovieInfo(MediaInfo):
-    pass
+    """
+    Data container for a Movie.
+    """
 
 
 class TvSeriesInfo(MediaInfo):
-    pass
+    """
+    Data container for a TV Series.
+    """
 
 
 @dataclass
 class EpisodeInfo(TvSeriesInfo):
+    """
+    Data contianer for a single TV Series Episode.
+    """
     season: int
     episode: int
 
@@ -155,6 +178,9 @@ class EpisodeInfo(TvSeriesInfo):
 # TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever different?
 @dataclass
 class DownloadInfo:
+    """
+    Data container for a user's daily download information.
+    """
     ip: str
     downloaded: int
     remaining: int
@@ -175,6 +201,9 @@ class DownloadInfo:
 
 @dataclass
 class ServerInfo:
+    """
+    Data container for various information for opensubtitles' server.
+    """
     application: str
     users_online: int
     users_logged_in: int
@@ -204,6 +233,9 @@ class ServerInfo:
 
 @dataclass
 class SubtitlesInfo:
+    """
+    Data container for a set of uploaded Subtitles.
+    """
     size: int
     num_downloads: int
     num_comments: int
@@ -246,6 +278,9 @@ class SubtitlesInfo:
 
 @dataclass
 class SearchResult:
+    """
+    Data container for a search result from searching for subtitles.
+    """
     author: UserInfo
     media: MediaInfo
     subtitles: SubtitlesInfo
