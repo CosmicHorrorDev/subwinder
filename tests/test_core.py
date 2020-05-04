@@ -478,8 +478,9 @@ def test_vote():
 
         asw = _dummy_auth_subwinder()
 
-        with patch.object(asw, "vote", return_value=SAMPLE_RESP):
+        with patch.object(asw, "_request", return_value=SAMPLE_RESP):
             with pytest.raises(ValueError):
+                print(query)
                 asw.vote(*query)
 
 

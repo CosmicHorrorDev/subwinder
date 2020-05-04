@@ -442,9 +442,7 @@ class AuthSubwinder(Subwinder):
         """
         Votes for the `search_result` with a score of `score`.
         """
-        # FIXME: I don't know what I was thinking, but it should be `score < 1` not
-        #        `score < 2`
-        if score < 2 or score > 10:
+        if score < 1 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
         self._request(Endpoints.SUBTITLES_VOTE, search_result.subtitles.id, score)
