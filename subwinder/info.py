@@ -67,8 +67,7 @@ class FullUserInfo(UserInfo):
         user_info = UserInfo.from_data(data)
 
         return cls(
-            id=user_info.id,
-            name=user_info.name,
+            **user_info.__dict__,
             rank=data["UserRank"],
             num_uploads=int(data["UploadCnt"]),
             num_downloads=int(data["DownloadCnt"]),
@@ -170,11 +169,7 @@ class EpisodeInfo(TvSeriesInfo):
     @classmethod
     def from_tv_series(cls, tv_series, season, episode):
         return cls(
-            name=tv_series.name,
-            year=tv_series.year,
-            imdbid=tv_series.imdbid,
-            dirname=tv_series.dirname,
-            filename=tv_series.filename,
+            **tv_series.__dict__,
             season=season,
             episode=episode,
         )
