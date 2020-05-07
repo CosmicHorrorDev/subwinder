@@ -21,7 +21,10 @@ def build_media_info(data, dirname=None, filename=None):
 
     kind = data["MovieKind"]
     if kind in MEDIA_MAP:
-        return MEDIA_MAP[kind].from_data(data, dirname, filename)
+        media = MEDIA_MAP[kind].from_data(data)
+        media.set_dirname(dirname)
+        media.set_filename(filename)
+        return media
 
     raise SubLibError(f"Undefined MovieKind: '{data['MovieKind']}'")
 
@@ -108,7 +111,7 @@ class MediaInfo:
     filename: Path
 
     @classmethod
-    def from_data(cls, data, dirname=None, filename=None):
+    def from_data(cls, data):
         name = data["MovieName"]
         year = int(data["MovieYear"])
         # For some reason opensubtitles sometimes returns this as an integer
@@ -116,13 +119,7 @@ class MediaInfo:
         #          `type(data["IDMovieIMDB"]) == int`
         imdbid = str(data.get("IDMovieImdb") or data["IDMovieIMDB"])
 
-        if dirname is not None:
-            dirname = Path(dirname)
-
-        if filename is not None:
-            filename = Path(filename)
-
-        return cls(name, year, imdbid, dirname, filename)
+        return cls(name, year, imdbid, dirname=None, filename=None)
 
     def set_filepath(self, filepath):
         filepath = Path(filepath)
@@ -130,10 +127,10 @@ class MediaInfo:
         self.set_filename(filepath.name)
 
     def set_filename(self, filename):
-        self.filename = Path(filename)
+        self.filename = None if filename is None else Path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = Path(dirname)
+        self.dirname = None if dirname is None else Path(dirname)
 
 
 class MovieInfo(MediaInfo):
@@ -158,8 +155,8 @@ class EpisodeInfo(TvSeriesInfo):
     episode: int
 
     @classmethod
-    def from_data(cls, data, dirname, filename):
-        tv_series = TvSeriesInfo.from_data(data, dirname, filename)
+    def from_data(cls, data):
+        tv_series = TvSeriesInfo.from_data(data)
         # Yay different keys for the same data!
         season = int(data.get("SeriesSeason") or data.get("Season"))
         episode = int(data.get("SeriesEpisode") or data.get("Episode"))
@@ -287,9 +284,9 @@ class SearchResult:
     upload_date: datetime
 
     @classmethod
-    def from_data(cls, data, dirname=None, filename=None):
+    def from_data(cls, data):
         author = None if data["UserID"] == "0" else UserInfo.from_data(data)
-        media = build_media_info(data, dirname, filename)
+        media = build_media_info(data)
         subtitles = SubtitlesInfo.from_data(data)
         upload_date = datetime.strptime(data["SubAddDate"], TIME_FORMAT)
 

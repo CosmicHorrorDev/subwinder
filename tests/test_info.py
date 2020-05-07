@@ -43,17 +43,17 @@ def test_build_media_info():
     # Test detecting the correct type of media
     with patch.object(EpisodeInfo, "from_data") as mocked:
         build_media_info(data)
-        mocked.assert_called_once_with(data, None, None)
+        mocked.assert_called_once_with(data)
 
     data["MovieKind"] = "movie"
     with patch.object(MovieInfo, "from_data") as mocked:
         build_media_info(data)
-        mocked.assert_called_once_with(data, None, None)
+        mocked.assert_called_once_with(data)
 
     data["MovieKind"] = "tv series"
     with patch.object(TvSeriesInfo, "from_data") as mocked:
         build_media_info(data)
-        mocked.assert_called_once_with(data, None, None)
+        mocked.assert_called_once_with(data)
 
 
 def test_UserInfo():
@@ -96,7 +96,7 @@ def test_MediaInfo():
         "IDMovieImdb": "<imdbid>",
     }
 
-    assert MediaInfo.from_data(DATA, None, None) == MediaInfo(
+    assert MediaInfo.from_data(DATA) == MediaInfo(
         "<name>", 2000, "<imdbid>", None, None
     )
 
@@ -120,9 +120,13 @@ def test_EpisodeInfo():
         "Episode": "3",
     }
 
-    tv_series = TvSeriesInfo.from_data(DATA, "/path/to", "file.mkv")
+    tv_series = TvSeriesInfo.from_data(DATA)
+    tv_series.set_filepath("/path/to/file.mkv")
 
-    assert EpisodeInfo.from_data(DATA, "/path/to", "file.mkv") == EPISODE_INFO1
+    episode_info = EpisodeInfo.from_data(DATA)
+    episode_info.set_filepath("/path/to/file.mkv")
+
+    assert episode_info == EPISODE_INFO1
     assert EpisodeInfo.from_tv_series(tv_series, 4, 3) == EPISODE_INFO1
 
 
@@ -149,4 +153,6 @@ def test_SearchResult():
     with open(SAMPLES_DIR / "search_subtitles.json") as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
-    assert SEARCH_RESULT2 == SearchResult.from_data(SAMPLE_RESP, "/path/to", "file.mkv")
+    search_result = SearchResult.from_data(SAMPLE_RESP)
+    search_result.media.set_filepath("/path/to/file.mkv")
+    assert SEARCH_RESULT2 == search_result
