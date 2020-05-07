@@ -1,4 +1,4 @@
-from subwinder._ranking import rank_guess_media, rank_search_subtitles
+from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
 
 def test__rank_guess_media():

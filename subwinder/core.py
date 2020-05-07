@@ -4,7 +4,6 @@ from pathlib import Path
 import os
 
 from subwinder import utils
-from subwinder._ranking import rank_guess_media, rank_search_subtitles
 from subwinder._request import request, Endpoints
 from subwinder.exceptions import (
     SubAuthError,
@@ -22,6 +21,7 @@ from subwinder.info import (
 )
 from subwinder.lang import lang_2s, lang_3s, lang_longs, LangFormat
 from subwinder.media import Media
+from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
 
 def _build_search_query(query, lang):

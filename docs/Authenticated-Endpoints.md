@@ -144,7 +144,7 @@ Tries to guess the movies or TV series that match the each of the `queries` stri
 | Param | Type | Description |
 | :---: | :---: | :--- |
 | `queries` | `List[str]` | The list of strings to guess media for |
-| `ranking_func` | `function( results, query, *rank_args, **rank_kwargs ) -> best_result` | (Default `subwinder._ranking.rank_guess_media`) The function used to pick the "best" media from the returned guesses. This function takes the response returned for each query in `queries` that is formatted [as specified here](https://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC#GuessMovieFromString) along with the original `query` string and any `*rank_args` and `**rank_kwargs` passed in. The default just returns the one listed as `"BestGuess"`, but you can supply a custom function that follows this interface |
+| `ranking_func` | `function( results, query, *rank_args, **rank_kwargs ) -> best_result` | (Default `subwinder.ranking.rank_guess_media`) The function used to pick the "best" media from the returned guesses. This function takes the response returned for each query in `queries` that is formatted [as specified here](https://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC#GuessMovieFromString) along with the original `query` string and any `*rank_args` and `**rank_kwargs` passed in. The default just returns the one listed as `"BestGuess"`, but you can supply a custom function that follows this interface |
 | `**rank_args` | `args` | (Default `[]`) The `args` passed to `ranking_func` |
 | `**rank_kwargs` | `kwargs` | (Default `{}`) The `kwargs` passed to `ranking_func` |
 
@@ -214,7 +214,7 @@ Searches for subtitles for each query in `queries`. The API also limits the numb
 | Param | Type | Description |
 | :---: | :---: | :--- |
 | `queries` | [`List[Media or MovieInfo or EpisodeInfo]`](Custom-Classes.md) | The list of objects the you would like to search subtitles for |
-| `ranking_func` | `function( results, query, *rank_args, **rank_kwargs ) -> best_result` | (Default `subwinder._ranking.rank_search_subtitles`) The function used to try and pick the best result of the results returned. This function takes the `results` returned by the API, the `query` that the results are returned for, and any `*rank_args` and `**rank_kwargs` passed in to return the "best" pick |
+| `ranking_func` | `function( results, query, *rank_args, **rank_kwargs ) -> best_result` | (Default `subwinder.ranking.rank_search_subtitles`) The function used to try and pick the best result of the results returned. This function takes the `results` returned by the API, the `query` that the results are returned for, and any `*rank_args` and `**rank_kwargs` passed in to return the "best" pick |
 | `**rank_args` | `args` | (Default `[]`) The `args` passed to the `ranking_func` |
 | `**rank_kwargs` | `kwargs` | (Default `{exclude_bad=True, sub_exts=None}`) Passed to `ranking_func` by default the ranking function picks the result with the highest `"Score"`. If `exclude_bad` is `True` then it will skip any subtitles that are listed as bad. `sub_exts` can be used to pass in a list of accepted formats such as `["srt", "ssa"]` |
 

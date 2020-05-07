@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import call, patch
 
 from subwinder import AuthSubwinder, Subwinder
-from subwinder._ranking import rank_search_subtitles
 from subwinder._request import Endpoints
 from subwinder.core import _build_search_query
 from subwinder.exceptions import SubAuthError, SubDownloadError
@@ -18,6 +17,7 @@ from subwinder.info import (
     UserInfo,
 )
 from subwinder.lang import _converter
+from subwinder.ranking import rank_search_subtitles
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
