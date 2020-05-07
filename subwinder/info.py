@@ -168,11 +168,7 @@ class EpisodeInfo(TvSeriesInfo):
 
     @classmethod
     def from_tv_series(cls, tv_series, season, episode):
-        return cls(
-            **tv_series.__dict__,
-            season=season,
-            episode=episode,
-        )
+        return cls(**tv_series.__dict__, season=season, episode=episode,)
 
 
 # TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever different?
