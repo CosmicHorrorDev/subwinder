@@ -4,7 +4,6 @@ from subwinder.exceptions import SubHashError
 from subwinder import info
 from subwinder.ranking import rank_search_subtitles
 
-from datetime import datetime as dt
 import json
 from pathlib import Path
 
@@ -81,8 +80,8 @@ def main():
         else:
             saved_subs = []
 
-        ext_results = [ExtSearchResult.from_search_result(result) for result in results]
-        saved_subs += [ext_result.to_json_dict() for ext_result in ext_results]
+        ext_subs = [ExtSubtitlesInfo.from_search_result(result) for result in results]
+        saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
 
         with SAVED_SUBS_FILE.open("w") as file:
             json.dump(saved_subs, file)
@@ -120,63 +119,41 @@ def rank_by_whitelist(results, query, author_whitelist):
 
 
 # So with the libraries API (due to the design of opensubtitles.org's API) there is no
-# easy way to link a local subtitle file with a `SearchResult`. So if you want to do
-# anything that would require that `SearchResult` later you likely want to serialize it
+# easy way to link a local subtitle file with a `SubtitlesInfo`. So if you want to do
+# anything that would require that `SubtitlesInfo` later you likely want to serialize it
 # to some form to store it. For this example we will just use JSON because it's easy.
-# The nice thing is we can just inherit from `SearchResult` while still being able to
-# pass in our extended class to things that would normally expect a `SearchResult`.
-class ExtSearchResult(info.SearchResult):
+# The nice thing is we can just inherit from `SubtitlesInfo` while still being able to
+# pass in our extended class to things that would normally expect a `SubtitlesInfo`.
+class ExtSubtitlesInfo(info.SubtitlesInfo):
     @classmethod
-    def from_search_result(cls, search_result):
-        # We just want all the members from `search_result` in our `ExtSearchResult`
+    def from_subtitles(cls, sub_container):
+        # Add the option for passing `SearchResults` in
+        if isinstance(sub_container, info.SearchResult):
+            sub_container = sub_container.subtitles
+
+        # We just want all the members from `sub_container` in our `ExtSubtitlesInfo`
         # Yes this seems hacky, python's classes are _interesting_, so were going to
-        # create a ExtSearchResult skipping __init__ by using __new__ then set our
-        # members (aka __dict__) to all of those from `search_result`
-        ext_search_result = ExtSearchResult.__new__(ExtSearchResult)
-        ext_search_result.__dict__ = search_result.__dict__
-        return ext_search_result
+        # create a ExtSubtitlesInfo skipping __init__ by using __new__ then set our
+        # members (aka __dict__) to all of those from `subtitles`
+        ext_subtitles = ExtSubtitlesInfo.__new__(ExtSubtitlesInfo)
+        ext_subtitles.__dict__ = sub_container.__dict__
+        return ext_subtitles
 
     def to_json_dict(self):
         # Need to get everything into a `dict` of json serializable values
-        json_dict = {
-            "author": self.author.__dict__,
-            "media": self.media.__dict__,
-            # `self.media` can be one of several types inheriting from `info.MediaInfo`
-            "media_type": self.media.__class__.__name__,
-            "subtitles": self.subtitles.__dict__,
-            "upload_date": dt.strftime(self.upload_date, "%Y-%m-%d %H:%M:%S"),
-        }
-        json_dict["media"]["dirname"] = str(self.media.dirname)
-        json_dict["media"]["filename"] = str(self.media.filename)
-        json_dict["subtitles"]["filename"] = str(self.subtitles.filename)
+        json_dict = self.__dict__
+        json_dict["filename"] = str(self.filename)
 
         return json_dict
 
-    # TODO: setup up custom json decoder and encoder
     @classmethod
     def from_json_dict(cls, json_dict):
-        # And now we just need to do the reverse of `.to_json_dict(...)` with some extra
-        # song and dance (If you were really doing this it could make sense to extend
-        # the other classes or set up an alternate constructor to make this easier)
-        search_result = info.SearchResult.__new__(info.SearchResult)
-        search_result.author = info.UserInfo.__new__(info.UserInfo)
-        # Get the class back from the media type
-        media_type = getattr(info, json_dict["media_type"])
-        search_result.media = media_type.__new__(media_type)
-        search_result.subtitles = info.SubtitlesInfo.__new__(info.SubtitlesInfo)
+        # And now we just need to do the reverse of `.to_json_dict(...)`
+        subtitles = info.SubtitlesInfo.__new__(info.SubtitlesInfo)
+        subtitles.filename = Path(subtitles.filename)
 
-        search_result.author.__dict__ = json_dict["author"]
-        search_result.media.__dict__ = json_dict["media"]
-        search_result.media.dirname = Path(search_result.media.dirname)
-        search_result.media.filename = Path(search_result.media.filename)
-        search_result.subtitles.__dict__ = json_dict["subtitles"]
-        search_result.subtitles.filename = Path(search_result.subtitles.filename)
-        search_result.upload_date = dt.strptime(
-            json_dict["upload_date"], "%Y-%m-%d %H:%M:%S"
-        )
-
-        # Now return the `ExtSearchResult` for our `SearchResult`
-        return ExtSearchResult.from_search_result(search_result)
+        # Now return the `ExtSubtitlesInfo` for our `SubtitlesInfo`
+        return ExtSubtitlesInfo.from_search_result(subtitles)
 
 
 if __name__ == "__main__":
