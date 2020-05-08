@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 
 from subwinder import utils
+from subwinder._internal_utils import _type_check
 from subwinder._request import request, Endpoints
 from subwinder.exceptions import (
     SubAuthError,
@@ -18,6 +19,7 @@ from subwinder.info import (
     MovieInfo,
     SearchResult,
     ServerInfo,
+    SubtitlesInfo,
 )
 from subwinder.lang import lang_2s, lang_3s, lang_longs, LangFormat
 from subwinder.media import Media
@@ -182,6 +184,7 @@ class AuthSubwinder(Subwinder):
         `download_dir` is provided. Files are automatically named according to the
         provided `name_format`.
         """
+        # Get all the subtitle file_ids from `downloads`
         # List of paths where the subtitle files should be saved
         download_paths = []
         for download in downloads:
@@ -271,19 +274,24 @@ class AuthSubwinder(Subwinder):
             with atomic_write(fpath) as f:
                 f.write(subtitles)
 
-    def get_comments(self, search_results):
+    def get_comments(self, sub_containers):
         """
         Get all `Comment`s for the provided `search_results` if there are any.
         """
-        subtitle_ids = [s.subtitles.id for s in search_results]
-        data = self._request(Endpoints.GET_COMMENTS, subtitle_ids)["data"]
+        ids = []
+        for sub_container in sub_containers:
+            _type_check(sub_container, (SearchResult, SubtitlesInfo))
+            if isinstance(sub_container, SearchResult):
+                sub_container = sub_container.subtitles
+            ids.append(sub_container.id)
+        data = self._request(Endpoints.GET_COMMENTS, ids)["data"]
 
         # Group the results, if any, by the query order
-        groups = [[] for _ in search_results]
+        groups = [[] for _ in sub_containers]
         if data:
             for id, comments in data.items():
                 # Returned `id` has a leading _ for some reason so strip it
-                index = subtitle_ids.index(id[1:])
+                index = ids.index(id[1:])
                 groups[index] = data[id]
 
         # Pack results, if any, into `Comment` objects
@@ -315,12 +323,7 @@ class AuthSubwinder(Subwinder):
         function can be provided to better match the result with `ranking_func` where
         parameters can be passed to this function using `*args` and `**kwargs`.
         """
-        VALID_CLASSES = (list, tuple)
-        if not isinstance(queries, VALID_CLASSES):
-            raise ValueError(
-                "`guess_media` expects `queries` to be of type included in"
-                f" {VALID_CLASSES}, but got type '{type(queries)}'"
-            )
+        _type_check(queries, (list, tuple))
 
         # Batch to 3 per api spec
         return _batch(
@@ -341,7 +344,7 @@ class AuthSubwinder(Subwinder):
 
     # TODO: can we ensure that the `search_result` was matched using a file hash before
     #       calling this endpoint
-    def report_movie(self, search_result):
+    def report_movie(self, sub_container):
         """
         Reports the subtitles tied to the `search_result`. This can only be done if the
         match was done using a `Media` object so that the subtitles can be tied to a
@@ -351,9 +354,13 @@ class AuthSubwinder(Subwinder):
         would be better to add a comment instead to give context as to why they're bad
         (`.add_comment("<meaningful-comment>", bad=True)`).
         """
-        self._request(
-            Endpoints.REPORT_WRONG_MOVIE_HASH, search_result.subtitles.sub_to_movie_id
-        )
+        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        # Get subtitles file_id from `sub_container`
+        if isinstance(sub_container, SearchResult):
+            sub_container = sub_container.subtitles
+        sub_to_movie_id = sub_container.sub_to_movie_id
+
+        self._request(Endpoints.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
 
     def search_subtitles(
         self, queries, ranking_func=rank_search_subtitles, *rank_args, **rank_kwargs,
@@ -428,23 +435,33 @@ class AuthSubwinder(Subwinder):
         # `data` is an empty list if there were no results
         return [] if not data else [build_media_info(media) for media in data[query]]
 
-    def add_comment(self, search_result, comment_str, bad=False):
+    def add_comment(self, sub_container, comment_str, bad=False):
         """
         Adds the comment `comment_str` for the `search_result`. If desired you can
         denote that the comment is due to the result being `bad`.
         """
-        self._request(
-            Endpoints.ADD_COMMENT, search_result.subtitles.id, comment_str, bad
-        )
+        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
+        if isinstance(sub_container, SearchResult):
+            sub_id_obj = sub_container.subtitles
+        sub_id = sub_id_obj.id
 
-    def vote(self, search_result, score):
+        self._request(Endpoints.ADD_COMMENT, sub_id, comment_str, bad)
+
+    def vote(self, sub_container, score):
         """
-        Votes for the `search_result` with a score of `score`.
+        Votes for the `sub_id_obj` with a score of `score`.
         """
         if score < 1 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
-        self._request(Endpoints.SUBTITLES_VOTE, search_result.subtitles.id, score)
+        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
+        if isinstance(sub_container, SearchResult):
+            sub_id_obj = sub_container.subtitles
+        sub_id = sub_id_obj.id
+
+        self._request(Endpoints.SUBTITLES_VOTE, sub_id, score)
 
     def auto_update(self, program_name):
         """
@@ -454,15 +471,21 @@ class AuthSubwinder(Subwinder):
         # Not sure if I should return this information in a better format
         return self._request(Endpoints.AUTO_UPDATE, program_name)
 
-    def preview_subtitles(self, results):
+    def preview_subtitles(self, sub_containers):
         """
         Gets a preview for the subtitles represented by `results`. Useful for being able
         to see part of the subtitles without eating into your daily download limit.
         """
-        ids = [q.subtitles.file_id for q in results]
+        # Get the subtitles file_ids from `sub_containers`
+        file_ids = []
+        for sub_container in sub_containers:
+            _type_check(sub_container, (SearchResult, SubtitlesInfo))
+            if isinstance(sub_container, SearchResult):
+                sub_container = sub_container.subtitles
+            file_ids.append(sub_container.file_id)
 
         # Batch to 20 per api spec
-        return _batch(self._preview_subtitles, 20, [ids])
+        return _batch(self._preview_subtitles, 20, [file_ids])
 
     def _preview_subtitles(self, ids):
         data = self._request(Endpoints.PREVIEW_SUBTITLES, ids)["data"]
