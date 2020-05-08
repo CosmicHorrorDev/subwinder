@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from subwinder._request import request
+from subwinder._request import Endpoints, request
 from subwinder.exceptions import SubLangError
 
 
@@ -33,7 +33,7 @@ class _LangConverter:
         self._langs = [[] for _ in list(LangFormat)]
 
     def _fetch(self):
-        return request("GetSubLanguages", None)["data"]
+        return request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
 
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh unless
