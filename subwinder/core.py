@@ -16,6 +16,7 @@ from subwinder.info import (
     Comment,
     EpisodeInfo,
     FullUserInfo,
+    MediaInfo,
     MovieInfo,
     SearchResult,
     ServerInfo,
@@ -179,7 +180,7 @@ class AuthSubwinder(Subwinder):
         self, downloads, download_dir=None, name_format="{upload_filename}"
     ):
         """
-        Attempts to download the `SearchResults` passed in as `downloads`. The download
+        Attempts to download the `SearchResult`s passed in as `downloads`. The download
         will attempt to place files in the same directory as the original file unless
         `download_dir` is provided. Files are automatically named according to the
         provided `name_format`.
@@ -188,8 +189,17 @@ class AuthSubwinder(Subwinder):
         # List of paths where the subtitle files should be saved
         download_paths = []
         for download in downloads:
-            media = download.media
-            subtitles = download.subtitles
+            # All downloads should be some container for `SubtitlesInfo`
+            _type_check(download, (SearchResult, SubtitlesInfo))
+            if isinstance(download, SearchResult):
+                media = download.media
+                subtitles = download.subtitles
+            else:
+                subtitles = download
+                # There's no original media so fake it
+                media = MediaInfo.__new__(MediaInfo)
+                media.dirname = None
+                media.filename = None
 
             # Make sure there is enough context to save subtitles
             if media.dirname is None and download_dir is None:
