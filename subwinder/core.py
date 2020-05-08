@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 from subwinder import utils
-from subwinder._internal_utils import _type_check
+from subwinder._internal_utils import type_check
 from subwinder._request import request, Endpoints
 from subwinder.exceptions import (
     SubAuthError,
@@ -190,7 +190,7 @@ class AuthSubwinder(Subwinder):
         download_paths = []
         for download in downloads:
             # All downloads should be some container for `SubtitlesInfo`
-            _type_check(download, (SearchResult, SubtitlesInfo))
+            type_check(download, (SearchResult, SubtitlesInfo))
             if isinstance(download, SearchResult):
                 media = download.media
                 subtitles = download.subtitles
@@ -290,7 +290,7 @@ class AuthSubwinder(Subwinder):
         """
         ids = []
         for sub_container in sub_containers:
-            _type_check(sub_container, (SearchResult, SubtitlesInfo))
+            type_check(sub_container, (SearchResult, SubtitlesInfo))
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
             ids.append(sub_container.id)
@@ -333,7 +333,7 @@ class AuthSubwinder(Subwinder):
         function can be provided to better match the result with `ranking_func` where
         parameters can be passed to this function using `*args` and `**kwargs`.
         """
-        _type_check(queries, (list, tuple))
+        type_check(queries, (list, tuple))
 
         # Batch to 3 per api spec
         return _batch(
@@ -364,7 +364,7 @@ class AuthSubwinder(Subwinder):
         would be better to add a comment instead to give context as to why they're bad
         (`.add_comment("<meaningful-comment>", bad=True)`).
         """
-        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, SubtitlesInfo))
         # Get subtitles file_id from `sub_container`
         if isinstance(sub_container, SearchResult):
             sub_container = sub_container.subtitles
@@ -450,7 +450,7 @@ class AuthSubwinder(Subwinder):
         Adds the comment `comment_str` for the `search_result`. If desired you can
         denote that the comment is due to the result being `bad`.
         """
-        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, SubtitlesInfo))
         # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
@@ -465,7 +465,7 @@ class AuthSubwinder(Subwinder):
         if score < 1 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
-        _type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, SubtitlesInfo))
         # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
@@ -489,7 +489,7 @@ class AuthSubwinder(Subwinder):
         # Get the subtitles file_ids from `sub_containers`
         file_ids = []
         for sub_container in sub_containers:
-            _type_check(sub_container, (SearchResult, SubtitlesInfo))
+            type_check(sub_container, (SearchResult, SubtitlesInfo))
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
             file_ids.append(sub_container.file_id)
