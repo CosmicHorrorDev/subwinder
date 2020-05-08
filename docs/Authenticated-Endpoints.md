@@ -8,18 +8,18 @@ All functionality with the authenticated API is exposed from `subwinder` through
 
 * [`AuthSubwinder`](#authsubwinder)
     * [Initialization](#initialization)
-    * [`.add_comment()`](#add_commentsearch_result-comment_str-bad)
+    * [`.add_comment()`](#add_commentsub_container-comment_str-bad)
     * [`.auto_update()`](#auto_updateprogram_name)
     * [`.download_subtitles()`](#download_subtitlesdownloads-download_dir-name_format)
-    * [`.get_comments()`](#get_commentssearch_results)
+    * [`.get_comments()`](#get_commentssub_containers)
     * [`.guess_media()`](#guess_mediaqueries-ranking_func-rank_args-rank_kwargs)
-    * [`.preview_subtitles`](#preview_subtitlesqueries)
+    * [`.preview_subtitles`](#preview_subtitlessub_containers)
     * [`.ping()`](#ping)
-    * [`.report_movie()`](#report_moviesearch_result)
+    * [`.report_movie()`](#report_moviesub_container)
     * [`.search_subtitles()`](#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs)
     * [`.suggest_media()`](#suggest_mediaquery)
     * [`.user_info()`](#user_info)
-    * [`.vote()`](#votesearch_result-score)
+    * [`.vote()`](#votesub_container-score)
 
 ---
 
@@ -48,13 +48,13 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
     ...
 ```
 
-### `.add_comment(search_result, comment_str, bad)`
+### `.add_comment(sub_container, comment_str, bad)`
 
-Adds a comment to the `search_result` were the text is `comment_str` and optionally you may indicate whether the comment is to indicate that the subtitles for the `search_result` are `bad`.
+Adds a comment to the `sub_container` were the text is `comment_str` and optionally you may indicate whether the comment is to indicate that the subtitles for the `sub_container` are `bad`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `search_result` | [`SearchResult`](CustomClasses.md#searchresult) | Search result to leave the comment on |
+| `sub_container` | [`SearchResult`](Custom-Classes.md#searchresult) or [`SubtitlesInfo`](Custom-Classes.md#subtitlesinfo) | Subtitles to leave the comment on |
 | `comment_str` | `str` | The text for the comment |
 | `bad` | `bool` | (Default `False`) Indicate whether the comment is because the subtitles are bad |
 
@@ -101,7 +101,7 @@ Download subtitles will download the subtitles for all the `downloads` either be
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `downloads`| [`List[SearchResult]`](Custom-Classes.md#searchresult) | Search results to download subtitles for |
+| `downloads`| `List[SearchResult or SubtitlesInfo]` [[1]](Custom-Classes.md#searchresult) [[2]](Custom-Classes.md#subtitlesinfo) | Subtitles to download. Note that `SubtitlesInfo` will be more limited since there isn't information to any original media it's linked to like a filename or dirname |
 | `download_dir` | `str`, `pathlib.Path`, or `None` | (Default `None`) The directory the subtitles are downloaded into. If `None` it will attempt to download next to the original [`Media`](Custom-Classes.md#media) file: however, some [`SearchResult`s](Custom-Classes.md#searchresult) will not be associated to a media (`.media.dirname is None`) so this will raise a [`SubDownloadError`](Exceptions.md#subdownloaderror). This can be fixed by either setting `download_dir` or by setting any missing `.media.dirname` |
 | `name_format` | `str` | (Default `"{upload_filename}"`) is the format used to name the downloaded subtitles. It defaults to the uploaded filename for the subtitles: however, it gets `format`ed with possible values including `media_name` for the name of the [`Media`](Custom-Classes.md#media) without the file extension that was searched for (same situation as `download_dir`, may have to set `.media.filename`), `lang_2`, `lang_2`, `ext` for the extension, `upload_name`, `upload_filename`. A popular format would be `"{media_name}.{lang_3}.{ext}"` |
 
@@ -117,16 +117,16 @@ download_paths = asw.download_subtitles(
 )
 ```
 
-### `.get_comments(search_results)`
+### `.get_comments(sub_containers)`
 
-Get comments will get any of the comments people left on all the `search_results`.
+Get comments will get any of the comments people left on all the `sub_containers`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `search_results` | [`List[SearchResult]`](#Custom-Classes.md#searchresult) | List of [`SearchResult`s](Custom-Classes.md#searchresult) to get comments for |
+| `sub_containers` | `List[SearchResult or SubtitlesInfo]` [[1]](Custom-Classes.md#searchresult) [[2]](Cuctom-Classes.md#subtitlesinfo) | List of subtitles to get comments for |
 
 
-**Returns:** a list of lists of [`Comment`s](Custom-Classes.md#comment) (`List[List[Comment]]`) where each list is all the comments left on each [`SearchResult`](Custom-classes.md#searchresult).
+**Returns:** a list of lists of [`Comment`s](Custom-Classes.md#comment) (`List[List[Comment]]`) where each list is all the comments left on each [`SearchResult`](Custom-Classes.md#searchresult) or [`SubtitlesInfo`](Custom-Classes.md#subtitlesinfo) object.
 
 ```python
 # Say we wanted to print out any of the comments left on the `search_results`
@@ -162,15 +162,15 @@ guesses = asw.get_comments(
 )
 ```
 
-### `.preview_subtitles(queries)`
+### `.preview_subtitles(sub_containers)`
 
-Gets a preview for the given list of [`SearchResult`s](#Custom-Classes.md#searchresult). This can be used to try and determine the quality of subtitles before downloading them.
+Gets a preview for the given list of subtitles. This can be used to try and determine the quality of subtitles before downloading them.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `queries` | [`List[SearchResult]`](Custom-Classes.md#searchresult) | The list of search results that you want to get previews for |
+| `sub_containers` | `List[SearchResult or SubtitlesInfo]` [[1]](Custom-Classes.md#searchresult) [[2]](Custom-Classes.md#subtitlesinfo) | The list of subtitles that you want to get previews for |
 
-**Returns:** A `List[str]` where each string in the list is the corresponding preview for each [`SearchResult`](Custom-Classes.md#searchresult) given.
+**Returns:** A `List[str]` where each string in the list is the corresponding preview for each [`SearchResult`](Custom-Classes.md#searchresult) or [`SubtitlesInfo`](Custom-Classes.md#subtitlesinfo) given.
 
 ```python
 # Want to get previews for `search_results`
@@ -192,15 +192,15 @@ _No params, no return value_
 asw.ping()
 ```
 
-### `.report_movie(search_result)`
+### `.report_movie(sub_container)`
 
-**Note:** this can only be used for [`SearchResult`s](Custom-Classes.md#searchresult) that were found by searching with a [`Media`](Custom-Classes.md#media) object since it's tied to that specific file.
+**Note:** this can only be used for subtitles that were found by searching with a [`Media`](Custom-Classes.md#media) object since it's tied to that specific file.
 
-This is used to hint to the API that the subtitles for this [`SearchResult`](Custom-Classes.md#searchresult) are wrong for this specific [`Media`](Custom-Classes.md#media). They could be de-synchronized, list the wrong language, etc.. After some number of reports the hash will be removed from the database.
+This is used to hint to the API that the subtitles are wrong for this specific [`Media`](Custom-Classes.md#media). They could be de-synchronized, etc.. After some number of reports the hash will be removed from the database.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `search_result` | [`SearchResult`](Custom-Classes.md#searchresult) | The subtitles to report. This has to have been searched for using a [`Media`](Custom-Classes.md#media) object because reports are tied to the specific movie file |
+| `sub_container` | [`SearchResult`](Custom-Classes.md#searchresult) or [`SubtitlesInfo`](Custom-Classes.md#subtitlesinfo) | The subtitles to report. This has to have been searched for using a [`Media`](Custom-Classes.md#media) object because reports are tied to the specific movie file |
 
 
 ```python
@@ -255,13 +255,13 @@ Used to get info on the signed in user, it returns all the information provided 
 user_info = asw.user_info()
 ```
 
-### `.vote(search_result, score)`
+### `.vote(sub_container, score)`
 
-Add your vote with a score between 1 and 10 for the subtitles indicated by `search_result`
+Add your vote with a score between 1 and 10 for the subtitles indicated by `sub_container`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `search_result` | [`SearchResult`](Custom-Classes.md#searchresult) | The search result for the subtitles that you want to vote on |
+| `sub_container` | [`SearchResult`](Custom-Classes.md#searchresult) [`SubtitlesInfo`](Custom-Classes.md#subtitlesinfo) | The subtitles that you want to vote on |
 | `score` | `int` | Rating between 1 and 10 that you give the subtitles |
 
 ```python
