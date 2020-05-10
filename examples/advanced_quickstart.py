@@ -58,34 +58,36 @@ def main():
         )
         print("Downloaded")
 
-        # Move all the media that we have subtitles for now
-        # Note: that this does not retain any special directory structure from
-        #       `INPUT_DIR` in `OUTPUT_DIR`
-        print(f"Moving matched media and subtitle files to {OUTPUT_DIR}... ", end="")
-        for result, download in zip(results, download_paths):
-            from_media_path = result.media.dirname / result.media.filename
-            to_media_path = OUTPUT_DIR / from_media_path.name
-            from_media_path.rename(to_media_path)
+    # And at this point we're done with the API. Exiting the `with` logs out of the API
 
-            from_sub_path = download
-            to_sub_path = OUTPUT_DIR / from_sub_path.name
-            from_sub_path.rename(to_sub_path)
-        print("Moved")
+    # Move all the media that we have subtitles for now
+    # Note: that this does not retain any special directory structure from
+    #       `INPUT_DIR` in `OUTPUT_DIR`
+    print(f"Moving matched media and subtitle files to {OUTPUT_DIR}... ", end="")
+    for result, download in zip(results, download_paths):
+        from_media_path = result.media.dirname / result.media.filename
+        to_media_path = OUTPUT_DIR / from_media_path.name
+        from_media_path.rename(to_media_path)
 
-        # Save the search results to a file in case we want them later
-        print(f"Updating index of saved files {SAVED_SUBS_FILE}... ", end="")
-        if SAVED_SUBS_FILE.is_file():
-            with SAVED_SUBS_FILE.open() as file:
-                saved_subs = json.load(file)
-        else:
-            saved_subs = []
+        from_sub_path = download
+        to_sub_path = OUTPUT_DIR / from_sub_path.name
+        from_sub_path.rename(to_sub_path)
+    print("Moved")
 
-        ext_subs = [ExtSubtitlesInfo.from_search_result(result) for result in results]
-        saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
+    # Save the search results to a file in case we want them later
+    print(f"Updating index of saved files {SAVED_SUBS_FILE}... ", end="")
+    if SAVED_SUBS_FILE.is_file():
+        with SAVED_SUBS_FILE.open() as file:
+            saved_subs = json.load(file)
+    else:
+        saved_subs = []
 
-        with SAVED_SUBS_FILE.open("w") as file:
-            json.dump(saved_subs, file)
-        print("Updated")
+    ext_subs = [ExtSubtitlesInfo.from_search_result(result) for result in results]
+    saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
+
+    with SAVED_SUBS_FILE.open("w") as file:
+        json.dump(saved_subs, file)
+    print("Updated")
 
 
 # Lets setup our custom ranking function
@@ -111,7 +113,7 @@ def rank_by_whitelist(results, query, author_whitelist):
     # Search all the results for a known-good author
     for result in results:
         for author in author_whitelist:
-            if author == result["UserNickName"]:
+            if author == result.author.name:
                 return result
 
     # No matching result
