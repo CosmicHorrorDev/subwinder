@@ -1,4 +1,5 @@
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
+from tests.constants import SEARCH_RESULT1, SEARCH_RESULT2
 
 
 def test__rank_guess_media():
@@ -9,8 +10,8 @@ def test__rank_guess_media():
 
 def test__rank_search_subtitles():
     DUMMY_RESULTS = [
-        {"SubBad": "1", "SubFormat": "ASS", "Score": 105.0},
-        {"SubBad": "0", "SubFormat": "Srt", "Score": 100.0},
+        SEARCH_RESULT1,
+        SEARCH_RESULT2,
     ]
 
     # Format is (<args>, <kwargs>, <result>)

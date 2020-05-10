@@ -25,15 +25,16 @@ def rank_search_subtitles(results, query, exclude_bad=True, sub_exts=None):
 
     for result in results:
         # Skip if someone listed sub as bad and `exclude_bad` is `True`
-        if exclude_bad and result["SubBad"] != "0":
+        if exclude_bad and result.num_bad_reports > 0:
             continue
 
         # Skip incorrect `sub_ext`s if provided
-        if sub_exts is not None and result["SubFormat"].lower() not in sub_exts:
+        if sub_exts is not None and result.subtitles.ext.lower() not in sub_exts:
             continue
 
-        if max_score is None or result["Score"] > max_score:
+        # Pick the one with the highest score if it matches all other criteria
+        if max_score is None or result.score > max_score:
             best_result = result
-            max_score = result["Score"]
+            max_score = result.score
 
     return best_result

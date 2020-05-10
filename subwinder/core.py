@@ -416,25 +416,24 @@ class AuthSubwinder(Subwinder):
 
         # Go through the results and organize them in the order of `queries`
         groups = [[] for _ in internal_queries]
-        for d in data:
-            groups[int(d["QueryNumber"])].append(d)
+        for raw_result in data:
+            # Results are returned in an arbitrary order so first figure out the query
+            query_index = int(raw_result["QueryNumber"])
+            query, _ = queries[query_index]
 
-        search_results = []
+            # Go ahead and format the result as a `SearchResult`
+            result = SearchResult.from_data(raw_result)
+            result.media.set_dirname(query.dirname)
+            result.media.set_filename(query.filename)
+
+            groups[query_index].append(result)
+
+        # And select the best results with the `ranking_func`
+        selected = []
         for group, (query, _) in zip(groups, queries):
-            result = ranking_func(group, query, *rank_args, **rank_kwargs)
+            selected.append(ranking_func(group, query, *rank_args, **rank_kwargs))
 
-            # Get `SearchResult` setup if there is info for one
-            search_result = None
-            if result is not None:
-                search_result = SearchResult.from_data(result)
-                if isinstance(query, Media):
-                    # Media could have the original file information tied to it
-                    search_result.media.dirname = query.dirname
-                    search_result.media.filename = query.filename
-
-            search_results.append(search_result)
-
-        return search_results
+        return selected
 
     def suggest_media(self, query):
         """
