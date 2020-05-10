@@ -16,6 +16,7 @@ from subwinder.info import (
     Comment,
     EpisodeInfo,
     FullUserInfo,
+    GuessMediaResult,
     MediaInfo,
     MovieInfo,
     SearchResult,
@@ -343,14 +344,12 @@ class AuthSubwinder(Subwinder):
     def _guess_media(self, queries, ranking_func, *rank_args, **rank_kwargs):
         data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
-        results = []
+        selected = []
         for query in queries:
-            result = ranking_func(data[query], query, *rank_args, **rank_kwargs)
+            result = GuessMediaResult.from_data(data[query])
+            selected.append(ranking_func(result, query, *rank_args, **rank_kwargs))
 
-            # Build the correct media info if anything was returned
-            results.append(None if result is None else build_media_info(result))
-
-        return results
+        return selected
 
     # TODO: can we ensure that the `search_result` was matched using a file hash before
     #       calling this endpoint

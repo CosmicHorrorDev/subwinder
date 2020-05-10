@@ -5,6 +5,7 @@ from subwinder.info import (
     DownloadInfo,
     EpisodeInfo,
     FullUserInfo,
+    GuessMediaResult,
     MovieInfo,
     ServerInfo,
     SearchResult,
@@ -111,4 +112,8 @@ SERVER_INFO = ServerInfo(
     total_subtitle_files=1864277,
     total_movies=136445,
     daily_download_info=DOWNLOAD_INFO,
+)
+
+GUESS_MEDIA_RESULT = GuessMediaResult(
+    best_guess=MOVIE_INFO1, from_string=EPISODE_INFO1, from_imdb=[],
 )

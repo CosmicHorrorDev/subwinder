@@ -11,6 +11,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`UserInfo`](#userinfo)
     * [`FullUserInfo`](#fulluserinfo-derived-from-userinfo)
     * [`Comment`](#comment)
+    * [`GuessMediaResult`](#guessmediaresult)
     * [`MediaInfo`](#mediainfo)
     * [`MovieInfo`](#movieinfo-derived-from-mediainfo)
     * [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo)
@@ -106,6 +107,16 @@ This stores all the information to represent a comment.
 | `author` | [`UserInfo`](#userinfo) | The author of the comment |
 | `text` | `str` | The comment's text |
 | `date` | `datetime.datetime` | When the comment was left |
+
+### `GuessMediaResult`
+
+This stores all the information returned when guessing media (used by `guess_media`'s ranking function and returned directly by the unranked variant).
+
+| Member | Type | Description |
+| :---: | :---: | :--- |
+| `best_guess` | [`MovieInfo`](#movieinfo) or [`EpisodeInfo`](#episodeinfo) | The best guess for the provided query |
+| `from_string` | [`MovieInfo`](#movieinfo) or [`EpisodeInfo`](#episodeinfo) | The guess purely from the provided string |
+| `from_imdb` | `List[MovieInfo or EpisodeInfo]` [[0]](#movieinfo) [[1]](#episodeinfo) | List of results based off IMDB (I'm really just guessing at this point) |
 
 ### `MediaInfo`
 

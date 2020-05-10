@@ -1,14 +1,17 @@
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
-from tests.constants import SEARCH_RESULT1, SEARCH_RESULT2
+from tests.constants import (
+    GUESS_MEDIA_RESULT,
+    MOVIE_INFO1,
+    SEARCH_RESULT1,
+    SEARCH_RESULT2,
+)
 
 
-def test__rank_guess_media():
-    DUMMY_RESULT = {"BestGuess": "Best result!"}
-
-    assert rank_guess_media(DUMMY_RESULT, None) == "Best result!"
+def test_rank_guess_media():
+    assert rank_guess_media(GUESS_MEDIA_RESULT, None) == MOVIE_INFO1
 
 
-def test__rank_search_subtitles():
+def test_rank_search_subtitles():
     DUMMY_RESULTS = [
         SEARCH_RESULT1,
         SEARCH_RESULT2,

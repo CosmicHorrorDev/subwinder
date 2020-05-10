@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 from subwinder._constants import TIME_FORMAT
 from subwinder.exceptions import SubLibError
@@ -113,6 +114,7 @@ class MediaInfo:
     @classmethod
     def from_data(cls, data):
         name = data["MovieName"]
+        # Sometimes this is returned as an `int`, sometimes it's a `str` ¯\_(ツ)_/¯
         year = int(data["MovieYear"])
         # For some reason opensubtitles sometimes returns this as an integer
         # Example: best guess when using `guess_media` for "the expanse" has
@@ -294,4 +296,42 @@ class SearchResult:
             # at a glance
             rating=None if data["SubRating"] == "0.0" else float(data["SubRating"]),
             score=data["Score"],
+        )
+
+
+@dataclass
+class GuessMediaResult:
+    """
+    Data container for a result from `AuthSubwinder`'s `guess_media` method
+    """
+
+    best_guess: MediaInfo
+    from_string: MediaInfo
+    from_imdb: List[MediaInfo]
+
+    @classmethod
+    def from_data(cls, data):
+        # So just in case you're wondering why there's all these hoops to jump
+        # through. The API returns each value paired in a dict where the IMDB id is
+        # the key, but since we don't know the key we have to do some extra work to
+        # ignore it while still getting the value attached to it (Oh yeah, but
+        # "BestGuess" is **not** returned this way, yet all the others are)
+        best_guess = data["BestGuess"]
+
+        # So this one is a bit complicated, from what I've seen sometimes this is a
+        # `dict` where the key is the IMDB id, and sometimes its a `list` with length 1
+        from_string = data["GuessMovieFromString"]
+        if type(from_string) == dict:
+            from_string = list(from_string.values())
+        from_string = from_string[0]
+
+        # When theres no results it's an empty `list`, when there are results it's a
+        # `dict` so need to force the potentially empty `list` to a `dict` first
+        from_imdb = list(dict(data["GetIMDBSuggest"]).values())
+
+        return cls(
+            # Now that it's orgainzed build the appropriate `MediaInfo`
+            best_guess=build_media_info(best_guess),
+            from_string=build_media_info(from_string),
+            from_imdb=[build_media_info(media) for media in from_imdb],
         )

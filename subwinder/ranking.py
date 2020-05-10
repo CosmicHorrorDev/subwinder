@@ -5,7 +5,7 @@ def rank_guess_media(results, query):
     trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC#GuessMovieFromString
     and `query` is the original `str` being guessed.
     """
-    return results["BestGuess"]
+    return results.best_guess
 
 
 def rank_search_subtitles(results, query, exclude_bad=True, sub_exts=None):
