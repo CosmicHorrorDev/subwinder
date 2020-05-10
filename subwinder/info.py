@@ -233,9 +233,6 @@ class SubtitlesInfo:
     """
 
     size: int
-    num_downloads: int
-    num_comments: int
-    rating: float
     id: str
     file_id: str
     sub_to_movie_id: str
@@ -247,6 +244,8 @@ class SubtitlesInfo:
 
     @classmethod
     def from_data(cls, data):
+        # If the search was done with anything other than movie hash and size then
+        # there isn't a "IDSubMovieFile"
         if data["IDSubMovieFile"] == "0":
             sub_to_movie_id = None
         else:
@@ -254,15 +253,8 @@ class SubtitlesInfo:
 
         return cls(
             size=int(data["SubSize"]),
-            num_downloads=int(data["SubDownloadsCnt"]),
-            num_comments=int(data["SubComments"]),
-            # 0.0 is the listed rating if there are no ratings yet which seems deceptive
-            # at a glance
-            rating=None if data["SubRating"] == "0.0" else float(data["SubRating"]),
             id=data["IDSubtitle"],
             file_id=data["IDSubtitleFile"],
-            # If the search was done with anything other than movie hash and size then
-            # there isn't a "IDSubMovieFile"
             sub_to_movie_id=sub_to_movie_id,
             filename=Path(data["SubFileName"]),
             lang_2=data["ISO639"],
@@ -282,12 +274,24 @@ class SearchResult:
     media: MediaInfo
     subtitles: SubtitlesInfo
     upload_date: datetime
+    num_bad_reports: int
+    num_downloads: int
+    num_comments: int
+    rating: float
+    score: float
 
     @classmethod
     def from_data(cls, data):
-        author = None if data["UserID"] == "0" else UserInfo.from_data(data)
-        media = build_media_info(data)
-        subtitles = SubtitlesInfo.from_data(data)
-        upload_date = datetime.strptime(data["SubAddDate"], TIME_FORMAT)
-
-        return cls(author, media, subtitles, upload_date)
+        return cls(
+            author=None if data["UserID"] == "0" else UserInfo.from_data(data),
+            media=build_media_info(data),
+            subtitles=SubtitlesInfo.from_data(data),
+            upload_date=datetime.strptime(data["SubAddDate"], TIME_FORMAT),
+            num_bad_reports=int(data["SubBad"]),
+            num_downloads=int(data["SubDownloadsCnt"]),
+            num_comments=int(data["SubComments"]),
+            # 0.0 is the listed rating if there are no ratings yet which seems deceptive
+            # at a glance
+            rating=None if data["SubRating"] == "0.0" else float(data["SubRating"]),
+            score=data["Score"],
+        )

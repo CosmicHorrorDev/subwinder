@@ -175,9 +175,14 @@ This class represents a result returned by [`AuthSubwinder`'s `search_subtitles`
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `author` | [`UserInfo`](#userinfo) or `None` | Optional author who uploaded the subtitles |
+| `author` | [`UserInfo`](#userinfo) or `None` | Author who uploaded the subtitles. `None` indicates the subtitles were uploaded anonymously. |
 | `media` | [`MovieInfo`](#movieinfo-derived-from-mediainfo) or [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo) | The media these subtitles are for |
+| `num_bad_reports` | `int` | I'm guessing this is the number of times this result has been commented on as "bad". The documentation states that it's "self-explained" :upside_down_face: |
+| `num_comments` | `int` | The number of comments left on this result |
+| `num_downloads` | `int` | The number of times these subtitles were downloaded |
+| `score` | `float` | How well the API judged this as a match for the provided query (I'm guessing higher is better, I don't think this value is even mentioned in the API :upside_down_face:) |
 | `subtitles` | [`SubtitlesInfo`](#subtitlesinfo) | The object representing information about these subtitles |
+| `rating` | `float` or `None` | If no ratings are left then `rating` is `None` otherwise its the average rating left on the subtitles |
 | `upload_date` | `datetime.datetime` | The date the subtitles were uploaded |
 
 ### `ServerInfo`
@@ -210,9 +215,6 @@ This class covers various information about a subtitle file.
 | `id` | `str` | The unique id for the subtitles |
 | `lang_2` | `str` | The subtitles' language in the 2 letter format |
 | `lang_3` | `str` | The subtitles' language in the 3 letter format |
-| `num_comments` | `int` | The number of comments left on the subtitles |
-| `num_downloads` | `int` | The number of times these subtitles were downloaded |
-| `rating` | `float` or `None` | If no ratings are left then `rating` is `None` otherwise its the average rating left on the subtitles |
 | `size` | `int` | The size of the subtitles file in bytes |
 | `sub_to_movie_id` | `str` or `None` | The unique id tying these subtitles to a movie hash. Will be `None` if this search wasn't matched using a [`Media`](#media) object |
 

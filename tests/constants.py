@@ -50,9 +50,6 @@ EPISODE_INFO1 = EpisodeInfo(
 
 SUBTITLES_INFO1 = SubtitlesInfo(
     size=71575,
-    num_downloads=22322,
-    num_comments=0,
-    rating=None,
     id="3387112",
     file_id="<file-id>",
     sub_to_movie_id=None,
@@ -65,9 +62,6 @@ SUBTITLES_INFO1 = SubtitlesInfo(
 
 SUBTITLES_INFO2 = SubtitlesInfo(
     size=58024,
-    num_downloads=57765,
-    num_comments=2,
-    rating=None,
     id="4251071",
     file_id="1952941557",
     sub_to_movie_id="3585468",
@@ -83,10 +77,23 @@ SEARCH_RESULT1 = SearchResult(
     media=MOVIE_INFO1,
     subtitles=SUBTITLES_INFO1,
     upload_date=dt(2015, 3, 29, 13, 23, 44),
+    num_bad_reports=1,
+    num_downloads=22322,
+    num_comments=0,
+    rating=None,
+    score=105.0,
 )
 
 SEARCH_RESULT2 = SearchResult(
-    USER_INFO1, EPISODE_INFO1, SUBTITLES_INFO2, dt(2011, 10, 8, 7, 36, 1),
+    USER_INFO1,
+    EPISODE_INFO1,
+    SUBTITLES_INFO2,
+    dt(2011, 10, 8, 7, 36, 1),
+    num_bad_reports=0,
+    num_downloads=57765,
+    num_comments=2,
+    rating=None,
+    score=103.57765,
 )
 
 DOWNLOAD_INFO = DownloadInfo(
