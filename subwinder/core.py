@@ -375,6 +375,21 @@ class AuthSubwinder(Subwinder):
         self, queries, ranking_func=rank_search_subtitles, *rank_args, **rank_kwargs,
     ):
         """
+        Same as `search_subtitles_unranked`, but the results are run through the
+        `ranking_func` first to try and determine the best result.
+        """
+        # Get all the results for the query
+        groups = self.search_subtitles_unranked(queries)
+
+        # And select the best results with the `ranking_func`
+        selected = []
+        for group, (query, _) in zip(groups, queries):
+            selected.append(ranking_func(group, query, *rank_args, **rank_kwargs))
+
+        return selected
+
+    def search_subtitles_unranked(self, queries):
+        """
         Searches for any subtitles that match the provided `queries`. Queries are
         allowed to be `Media`, `MovieInfo`, or `EpisodeInfo` objects. A custom ranking
         function for matching a result can be provided through `ranking_func` which also
@@ -383,11 +398,7 @@ class AuthSubwinder(Subwinder):
         # Verify that all the queries are correct before doing any requests
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query, lang_2 in queries:
-            if not isinstance(query, VALID_CLASSES):
-                raise ValueError(
-                    "`search_subtitles` expects `queries` to contain objects"
-                    f" of {VALID_CLASSES}, but got type '{type(query)}'"
-                )
+            type_check(query, VALID_CLASSES)
 
             if lang_2 not in lang_2s:
                 # Show both the 2-char and long name if invalid lang is given
@@ -400,16 +411,9 @@ class AuthSubwinder(Subwinder):
 
         # This can return 500 items, but one query could return multiple so 20 is being
         # used in hope that there are plenty of results for each
-        return _batch(
-            self._search_subtitles,
-            20,
-            [queries],
-            ranking_func,
-            *rank_args,
-            **rank_kwargs,
-        )
+        return _batch(self._search_subtitles_unranked, 20, [queries],)
 
-    def _search_subtitles(self, queries, ranking_func, *rank_args, **rank_kwargs):
+    def _search_subtitles_unranked(self, queries):
         internal_queries = [_build_search_query(q, l) for q, l in queries]
         data = self._request(Endpoints.SEARCH_SUBTITLES, internal_queries)["data"]
 
@@ -427,12 +431,7 @@ class AuthSubwinder(Subwinder):
 
             groups[query_index].append(result)
 
-        # And select the best results with the `ranking_func`
-        selected = []
-        for group, (query, _) in zip(groups, queries):
-            selected.append(ranking_func(group, query, *rank_args, **rank_kwargs))
-
-        return selected
+        return groups
 
     def suggest_media(self, query):
         """

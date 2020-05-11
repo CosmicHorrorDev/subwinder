@@ -17,7 +17,6 @@ from subwinder.info import (
     UserInfo,
 )
 from subwinder.lang import _converter
-from subwinder.ranking import rank_search_subtitles
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -365,24 +364,27 @@ def test_report_movie():
 
 def test_search_subtitles():
     QUERIES = (((MEDIA1, "en"), (MOVIE_INFO1, "fr"), (EPISODE_INFO1, "de"),),)
-    CALL = (*QUERIES, rank_search_subtitles)
+    CALL = (*QUERIES,)
     # Just testing that the correct amount of `SearchResult`s are returned
     RESP = [
-        SEARCH_RESULT1,
-        SEARCH_RESULT1,
-        SEARCH_RESULT1,
+        [SEARCH_RESULT2],
+        [SEARCH_RESULT2],
+        [SEARCH_RESULT2],
     ]
-    IDEAL = RESP
+    IDEAL = [
+        SEARCH_RESULT2,
+        SEARCH_RESULT2,
+        SEARCH_RESULT2,
+    ]
 
     _standard_asw_mock(
-        "search_subtitles", "_search_subtitles", QUERIES, RESP, CALL, IDEAL
+        "search_subtitles", "search_subtitles_unranked", QUERIES, RESP, CALL, IDEAL
     )
 
 
-def test__search_subtitles():
+def test__search_subtitles_unranked():
     QUERIES = (
         ((MEDIA1, "en"),),
-        rank_search_subtitles,
     )
     CALL = (
         Endpoints.SEARCH_SUBTITLES,
@@ -397,9 +399,11 @@ def test__search_subtitles():
     with open(SAMPLES_DIR / "search_subtitles.json") as f:
         RESP = json.load(f)
 
-    IDEAL = [SEARCH_RESULT2]
+    IDEAL = [[SEARCH_RESULT2]]
 
-    _standard_asw_mock("_search_subtitles", "_request", QUERIES, RESP, CALL, IDEAL)
+    _standard_asw_mock(
+        "_search_subtitles_unranked", "_request", QUERIES, RESP, CALL, IDEAL
+    )
 
 
 def test_suggest_media():
@@ -480,7 +484,6 @@ def test_vote():
 
         with patch.object(asw, "_request", return_value=SAMPLE_RESP):
             with pytest.raises(ValueError):
-                print(query)
                 asw.vote(*query)
 
 
