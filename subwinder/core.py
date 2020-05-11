@@ -330,6 +330,18 @@ class AuthSubwinder(Subwinder):
         self, queries, ranking_func=rank_guess_media, *rank_args, **rank_kwargs,
     ):
         """
+        Same as `guess_media_unranked`, but selects the best result using `ranking_func`
+        """
+        results = self.guess_media_unranked(queries)
+
+        selected = []
+        for result, query in zip(results, queries):
+            selected.append(ranking_func(result, query, *rank_args, **rank_kwargs))
+
+        return selected
+
+    def guess_media_unranked(self, queries):
+        """
         Attempts to guess the media described by each of the `queries`. A custom ranking
         function can be provided to better match the result with `ranking_func` where
         parameters can be passed to this function using `*args` and `**kwargs`.
@@ -337,19 +349,13 @@ class AuthSubwinder(Subwinder):
         type_check(queries, (list, tuple))
 
         # Batch to 3 per api spec
-        return _batch(
-            self._guess_media, 3, [queries], ranking_func, *rank_args, **rank_kwargs,
-        )
+        return _batch(self._guess_media_unranked, 3, [queries])
 
-    def _guess_media(self, queries, ranking_func, *rank_args, **rank_kwargs):
+    def _guess_media_unranked(self, queries):
         data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
-        selected = []
-        for query in queries:
-            result = GuessMediaResult.from_data(data[query])
-            selected.append(ranking_func(result, query, *rank_args, **rank_kwargs))
-
-        return selected
+        # Convert the raw results to `GuessMediaResult`
+        return [GuessMediaResult.from_data(data[query]) for query in queries]
 
     # TODO: can we ensure that the `search_result` was matched using a file hash before
     #       calling this endpoint

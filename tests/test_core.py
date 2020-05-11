@@ -342,11 +342,6 @@ def test_guess_media():
     mocked.assert_has_calls(CALLS)
 
 
-@pytest.mark.skip()
-def test__guess_media():
-    pass
-
-
 def test_ping():
     RESP = {"status": "200 OK", "seconds": "0.055"}
     CALL = (Endpoints.NO_OPERATION,)
@@ -383,9 +378,7 @@ def test_search_subtitles():
 
 
 def test__search_subtitles_unranked():
-    QUERIES = (
-        ((MEDIA1, "en"),),
-    )
+    QUERIES = (((MEDIA1, "en"),),)
     CALL = (
         Endpoints.SEARCH_SUBTITLES,
         [
