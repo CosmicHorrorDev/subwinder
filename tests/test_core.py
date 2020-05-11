@@ -350,8 +350,8 @@ def test_ping():
 
 
 def test_report_movie():
-    QUERY = (SEARCH_RESULT1,)
-    CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT1.subtitles.sub_to_movie_id)
+    QUERY = (SEARCH_RESULT2,)
+    CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
     _standard_asw_mock("report_movie", "_request", QUERY, RESP, CALL, None)

@@ -375,6 +375,14 @@ class AuthSubwinder(Subwinder):
             sub_container = sub_container.subtitles
         sub_to_movie_id = sub_container.sub_to_movie_id
 
+        # This endpoint should only be used when the subtitles were matched by hash
+        if sub_to_movie_id is None:
+            raise ValueError(
+                "`report_movie` can only be called if the subtitles were matched off a"
+                " search using a media files hash and size (This is done automatically"
+                " when searching with a `Media` object)."
+            )
+
         self._request(Endpoints.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
 
     def search_subtitles(
