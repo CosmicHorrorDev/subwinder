@@ -13,10 +13,12 @@ All functionality with the authenticated API is exposed from `subwinder` through
     * [`.download_subtitles()`](#download_subtitlesdownloads-download_dir-name_format)
     * [`.get_comments()`](#get_commentssub_containers)
     * [`.guess_media()`](#guess_mediaqueries-ranking_func-rank_args-rank_kwargs)
+    * [`.guess_media_unranked()`](#guess_media_unranked_queries)
     * [`.preview_subtitles`](#preview_subtitlessub_containers)
     * [`.ping()`](#ping)
     * [`.report_movie()`](#report_moviesub_container)
     * [`.search_subtitles()`](#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs)
+    * [`.search_subtitles_unranked()`](#search_subtitles_unrankedqueries)
     * [`.suggest_media()`](#suggest_mediaquery)
     * [`.user_info()`](#user_info)
     * [`.vote()`](#votesub_container-score)
@@ -163,6 +165,15 @@ guesses = asw.get_comments(
 )
 ```
 
+### `.guess_media_unranked(queries)`
+
+Same as `.guess_media(...)`, but returns the full [`GuessMediaResult`](Custom-Classes.md#guessmediaresult) from before the ranking function is used.
+
+| Param | Type | Description |
+| :---: | :---: | :--- |
+| `queries` | `List[str]` | The list of strings to guess media for |
+
+**Returns:** a list of `GuessMediaResult` objects for each query in `queries`.
 ### `.preview_subtitles(sub_containers)`
 
 Gets a preview for the given list of subtitles. This can be used to try and determine the quality of subtitles before downloading them.
@@ -231,6 +242,16 @@ search_results = asw.search_subtitles(
     queries, ranking_func=custom_search_subtitles_ranking, index=3
 )
 ```
+
+### `.search_subtitles_unranked(queries)`
+
+Same as `.search_subtitles(...)`, but returns the full list of `SearchResults` for each query without ranking them to find the "best" one.
+
+| Param | Type | Description |
+| :---: | :---: | :--- |
+| `queries` | [`List[Media or MovieInfo or EpisodeInfo]`](Custom-Classes.md) | The list of objects the you would like to search subtitles for |
+
+**Returns:** a list of `None` or lists of [`SearchResult`](Custom-Classes.md#searchresult) representing the full list of search result for each query in `queries`.
 
 ### `.suggest_media(query)`
 
