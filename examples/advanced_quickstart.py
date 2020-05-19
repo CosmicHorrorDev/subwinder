@@ -82,7 +82,7 @@ def main():
     else:
         saved_subs = []
 
-    ext_subs = [ExtSubtitlesInfo.from_search_result(result) for result in results]
+    ext_subs = [ExtSubtitlesInfo.from_subtitles(result) for result in results]
     saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
 
     with SAVED_SUBS_FILE.open("w") as file:
@@ -120,10 +120,11 @@ def rank_by_whitelist(results, query, author_whitelist):
     return None
 
 
-# So with the libraries API (due to the design of opensubtitles.org's API) there is no
+# So with the library's API (due to the design of opensubtitles.org's API) there is no
 # easy way to link a local subtitle file with a `SubtitlesInfo`. So if you want to do
 # anything that would require that `SubtitlesInfo` later you likely want to serialize it
-# to some form to store it. For this example we will just use JSON because it's easy.
+# to some form to store it (you can pickle it instead, this is mostly to show that you
+# can use extended classes). For this example we will just use JSON because it's easy.
 # The nice thing is we can just inherit from `SubtitlesInfo` while still being able to
 # pass in our extended class to things that would normally expect a `SubtitlesInfo`.
 class ExtSubtitlesInfo(info.SubtitlesInfo):
@@ -135,8 +136,8 @@ class ExtSubtitlesInfo(info.SubtitlesInfo):
 
         # We just want all the members from `sub_container` in our `ExtSubtitlesInfo`
         # Yes this seems hacky, python's classes are _interesting_, so were going to
-        # create a ExtSubtitlesInfo skipping __init__ by using __new__ then set our
-        # members (aka __dict__) to all of those from `subtitles`
+        # create a `ExtSubtitlesInfo` skipping `__init__` by using `__new__` then set
+        # our members (aka `__dict__`) to all of those from `subtitles`
         ext_subtitles = ExtSubtitlesInfo.__new__(ExtSubtitlesInfo)
         ext_subtitles.__dict__ = sub_container.__dict__
         return ext_subtitles
@@ -155,7 +156,7 @@ class ExtSubtitlesInfo(info.SubtitlesInfo):
         subtitles.filename = Path(subtitles.filename)
 
         # Now return the `ExtSubtitlesInfo` for our `SubtitlesInfo`
-        return ExtSubtitlesInfo.from_search_result(subtitles)
+        return ExtSubtitlesInfo.from_subtitles(subtitles)
 
 
 if __name__ == "__main__":
