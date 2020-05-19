@@ -64,6 +64,20 @@ $ pip install subwinder
 
 As always you are recommended to install into a virtual environment.
 
+#### Optional Dependencies
+
+One of the goals was to keep a small footprint so that installing without any dependencies would still be possible. To accomplish this some of the functionality is gated behind the optional dependencies listed below.
+
+| Dependency | Functionality |
+| :---: | :--- |
+| atomic_downloads | Attempts to download subtitles [atomically](https://pypi.org/project/atomicwrites/) to prevent partial downloads due to interruptions. Without this feature the library falls back to writing the file using normal `open` and `write` conventions. |
+
+Optional dependencies can be specified when installing the package. Consult the documentation if you're unsure how to specify optional dependencies (also referred to as _extras_). E.g. with pip it would be
+
+```text
+$ pip install subwinder[atomic_downloads]
+```
+
 ### Documentation
 
 There is pretty thorough documentation in the [docs directory](https://github.com/LovecraftianHorror/subwinder/blob/master/docs/README.md) that covers all the functionality currently exposed by the library. If anything in the docs are incorrect or confusing then please [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) to address this.
@@ -82,7 +96,8 @@ And beyond that there are some examples in the [examples directory](https://gith
     * If something will fail, try to detect it and raise an `Exception` as early as possible
     * Automatically retry requests using an exponential back-off to deal with rate-limiting
 * Small footprint
-    * Only one direct dependency is required.
+    * No required dependencies
+    * Optional dependency is listed under the installation heading
 
 ### Caveats from using `subwinder`
 

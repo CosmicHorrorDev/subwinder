@@ -1,4 +1,11 @@
-from atomicwrites import atomic_write
+# Optional dependency: atomic_downloads
+try:
+    from atomicwrites import atomic_write
+
+    atomic_downloads = True
+except ImportError:
+    atomic_downloads = False
+
 
 from pathlib import Path
 import os
@@ -282,8 +289,14 @@ class AuthSubwinder(Subwinder):
             # Create the directories if needed, then save the file
             dirpath = fpath.parent
             dirpath.mkdir(exist_ok=True)
-            with atomic_write(fpath) as f:
-                f.write(subtitles)
+
+            # Write atomically if possible, otherwise fall back to regular writing
+            if atomic_downloads:
+                with atomic_write(fpath) as f:
+                    f.write(subtitles)
+            else:
+                with fpath.open("w") as f:
+                    f.write(subtitles)
 
     def get_comments(self, sub_containers):
         """
