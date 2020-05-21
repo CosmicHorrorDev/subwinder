@@ -11,3 +11,7 @@ The main features for this example cover:
 - Showing a nice way to serialize/deserialize the `SubtitlesInfo`s to JSON (other formats would be a similar process) so that we keep the option to vote, comment, or report them after being able to view the subtitles first
 
 Hopefully you'll see from this example that it's surprisingly easy to do some complicated stuff with the API.
+
+### [Robust Searching](robust_search.py)
+
+This example covers how you can make searching for subtitles more robust by falling back to guessing based on the filename (this may look like a lot at first, but everything is heavily commented on why I'm doing what I'm doing to try and help out).
