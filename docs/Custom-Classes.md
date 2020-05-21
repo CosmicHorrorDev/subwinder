@@ -124,11 +124,94 @@ This is the base class used for representing several kinds of media returned by 
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `dirname` | `pathlib.Path` | The optional directory of the original media searched for |
-| `filename` | `pathlib.Path` | The optional filename of the original media file searched for |
+| `_dirname` | `pathlib.Path` | The optional directory of the original media searched for |
+| `_filename` | `pathlib.Path` | The optional filename of the original media file searched for |
 | `imdbid` | `str` | The imdbid for the media |
 | `name` | `str` | The name of the media |
 | `year` | `int` | The year the media was released |
+
+#### `.get_dirname()`
+
+Gets `_dirname`.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.get_filename()`
+
+Gets `_filename`.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.get_filepath()`
+
+Gets the path represented by `_dirname` and `_filename` or `None` if neither are set.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.set_filepath(filepath)`
+
+Sets the `filename` and `dirname` for the `Media`. Useful for when you can't initialize the `Media` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
+
+| Param | Type | Description |
+| :---: | :---: | :--- |
+| `filepath` | `str` or `pathlib.Path` | Path to associate this `Media` with |
+
+**Returns:** `None`
+
+```python
+from pathlib import Path
+
+# Assuming we have a `Media` with no `filename` and `dirname` info
+assert media.filename is None and media.dirname is None
+
+media.set_filepath("/path/to/movie.mkv")
+
+# Both `dirname` and `filename` are set now
+assert media.dirname == Path("/path/to")
+assert media.filename == Path("movie.mkv")
+```
+
+#### `.set_filename(filename)`
+
+Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
+
+| Param | Type | Description |
+| :---: | :---: | :--- |
+| `filename` | `str` or `pathlib.Path` | Filename to associate this `Media` with |
+
+**Returns:** `None`
+
+```python
+from pathlib import Path
+
+# Assume there is currently no `filename` for `media`
+assert media.filename is None
+
+media.set_filename("episode.mp4")
+# Now `filename` is the `Path` for the given `filename`
+assert media.filename == Path("episode.mp4")
+```
+
+### `.set_dirname(dirname)`
+
+Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want to automatically save the subtitles for this `Media` in `dirname`.
+
+| Param | Type | Description |
+| :---: | :---: | :--- |
+| `dirname` | `str` or `pathlib.Path` | Directory to associate this `Media` with |
+
+**Returns:** `None`
+
+```python
+from pathlib import Path
+
+# Assume there is currenly no `dirname` for `media`
+assert media.dirname is None
+
+media.set_dirname("/some/given/path")
+# Now `dirname` is the `Path` for the given directory
+assert media.dirname == Path("/some/given/path")
+```
 
 ### `MovieInfo` derived from `MediaInfo`
 
@@ -278,6 +361,25 @@ _All parameters match the members in the order `Media(hash, size, dirname=None, 
 # directory to download into like it would if you used the normal constructor
 movie = Media("<movie-hash>", <movie-filesize>)
 ```
+
+#### `.get_dirname()`
+
+Gets `_dirname`.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.get_filename()`
+
+Gets `_filename`.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.get_filepath()`
+
+Gets the path represented by `_dirname` and `_filename` or `None` if neither are set.
+
+**Returns:** `pathlib.Path` or `None`
+
 
 #### `.set_filepath(filepath)`
 
