@@ -13,6 +13,12 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`Comment`](#comment)
     * [`GuessMediaResult`](#guessmediaresult)
     * [`MediaInfo`](#mediainfo)
+        * [`.get_filepath()`](#get_filepath)
+        * [`.set_filepath()`](#set_filepathfilepath)
+        * [`.get_filename()`](#get_filename)
+        * [`.set_filename()`](#set_filenamefilename)
+        * [`.get_dirname()`](#get_dirname)
+        * [`.set_dirname()`](#set_dirnamedirname)
     * [`MovieInfo`](#movieinfo-derived-from-mediainfo)
     * [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo)
     * [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo)
@@ -24,9 +30,12 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
 * [`Media`](#media)
     * [Initialization](#initialization)
     * [`Media.from_parts()`](#mediafrom_partshash-size-dirname-filename)
-    * [`.set_filepath()`](#set_filepathfilepath)
-    * [`.set_filename()`](#set_filenamefilename)
-    * [`.set_dirname()`](#set_dirnamedirname)
+    * [`.get_filepath()`](#get_filepath-1)
+    * [`.set_filepath()`](#set_filepathfilepath-1)
+    * [`.get_filename()`](#get_filename-1)
+    * [`.set_filename()`](#set_filenamefilename-1)
+    * [`.get_dirname()`](#get_dirname-1)
+    * [`.set_dirname()`](#set_dirnamedirname-1)
 
 ---
 
@@ -130,18 +139,6 @@ This is the base class used for representing several kinds of media returned by 
 | `name` | `str` | The name of the media |
 | `year` | `int` | The year the media was released |
 
-#### `.get_dirname()`
-
-Gets `_dirname`.
-
-**Returns:** `pathlib.Path` or `None`
-
-#### `.get_filename()`
-
-Gets `_filename`.
-
-**Returns:** `pathlib.Path` or `None`
-
 #### `.get_filepath()`
 
 Gets the path represented by `_dirname` and `_filename` or `None` if neither are set.
@@ -171,6 +168,12 @@ assert media.dirname == Path("/path/to")
 assert media.filename == Path("movie.mkv")
 ```
 
+#### `.get_filename()`
+
+Gets `_filename`.
+
+**Returns:** `pathlib.Path` or `None`
+
 #### `.set_filename(filename)`
 
 Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
@@ -191,6 +194,12 @@ media.set_filename("episode.mp4")
 # Now `filename` is the `Path` for the given `filename`
 assert media.filename == Path("episode.mp4")
 ```
+
+#### `.get_dirname()`
+
+Gets `_dirname`.
+
+**Returns:** `pathlib.Path` or `None`
 
 ### `.set_dirname(dirname)`
 
@@ -362,18 +371,6 @@ _All parameters match the members in the order `Media(hash, size, dirname=None, 
 movie = Media("<movie-hash>", <movie-filesize>)
 ```
 
-#### `.get_dirname()`
-
-Gets `_dirname`.
-
-**Returns:** `pathlib.Path` or `None`
-
-#### `.get_filename()`
-
-Gets `_filename`.
-
-**Returns:** `pathlib.Path` or `None`
-
 #### `.get_filepath()`
 
 Gets the path represented by `_dirname` and `_filename` or `None` if neither are set.
@@ -404,6 +401,12 @@ assert media.dirname == Path("/path/to")
 assert media.filename == Path("movie.mkv")
 ```
 
+#### `.get_filename()`
+
+Gets `_filename`.
+
+**Returns:** `pathlib.Path` or `None`
+
 #### `.set_filename(filename)`
 
 Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
@@ -425,7 +428,13 @@ media.set_filename("episode.mp4")
 assert media.filename == Path("episode.mp4")
 ```
 
-### `.set_dirname(dirname)`
+#### `.get_dirname()`
+
+Gets `_dirname`.
+
+**Returns:** `pathlib.Path` or `None`
+
+#### `.set_dirname(dirname)`
 
 Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want to automatically save the subtitles for this `Media` in `dirname`.
 
