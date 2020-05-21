@@ -12,8 +12,8 @@ class Media:
 
     hash: str
     size: int
-    dirname: Path
-    filename: Path
+    _dirname: Path
+    _filename: Path
 
     def __init__(self, filepath):
         """
@@ -53,7 +53,19 @@ class Media:
         self.set_dirname(filepath.parent)
 
     def set_filename(self, filename):
-        self.filename = None if filename is None else Path(filename)
+        self._filename = None if filename is None else Path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = None if dirname is None else Path(dirname)
+        self._dirname = None if dirname is None else Path(dirname)
+
+    def get_filepath(self):
+        if self.get_filename() is None or self.get_dirname() is None:
+            return None
+
+        return self.get_dirname() / self.get_filename()
+
+    def get_filename(self):
+        return self._filename
+
+    def get_dirname(self):
+        return self._dirname

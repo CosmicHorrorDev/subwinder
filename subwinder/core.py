@@ -210,13 +210,13 @@ class AuthSubwinder(Subwinder):
                 media.filename = None
 
             # Make sure there is enough context to save subtitles
-            if media.dirname is None and download_dir is None:
+            if media.get_dirname() is None and download_dir is None:
                 raise SubDownloadError(
                     "Insufficient context. Need to set either the `dirname` in"
                     f" {download} or `download_dir` in `download_subtitles`"
                 )
 
-            if media.filename is None:
+            if media.get_filename() is None:
                 # Hacky way to see if `media_name` is used in `name_format`
                 try:
                     _ = name_format.format(
@@ -237,13 +237,16 @@ class AuthSubwinder(Subwinder):
             # Store the subtitle file next to the original media unless `download_dir`
             # was set
             if download_dir is None:
-                dir_path = media.dirname
+                dir_path = media.get_dirname()
             else:
                 dir_path = Path(download_dir)
 
             # Format the `filename` according to the `name_format` passed in
-            media_name = None if media.filename is None else media.filename.stem
             upload_name = subtitles.filename.stem
+            if media.get_filename() is None:
+                media_name = None
+            else:
+                media_name = media.get_filename().stem
 
             filename = name_format.format(
                 media_name=media_name,
@@ -453,8 +456,8 @@ class AuthSubwinder(Subwinder):
 
             # Go ahead and format the result as a `SearchResult`
             result = SearchResult.from_data(raw_result)
-            result.media.set_dirname(query.dirname)
-            result.media.set_filename(query.filename)
+            result.media.set_dirname(query.get_dirname())
+            result.media.set_filename(query.get_filename())
 
             groups[query_index].append(result)
 

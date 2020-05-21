@@ -188,7 +188,7 @@ def test_auto_update():
 
 # TODO: test this for batching
 def test_download_subtitles():
-    BARE_PATH = SEARCH_RESULT1.media.dirname / SEARCH_RESULT1.subtitles.filename
+    BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = ((SEARCH_RESULT1,),)
     BARE_CALL = (*BARE_QUERIES, [BARE_PATH])
     BARE_IDEAL = [BARE_PATH]
@@ -218,8 +218,8 @@ def test_download_subtitles():
     assert result == FULL_IDEAL
 
     # Test failing from no `download_dir`
-    temp_dirname = BARE_QUERIES[0][0].media.dirname
-    BARE_QUERIES[0][0].media.dirname = None
+    temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
+    BARE_QUERIES[0][0].media.set_dirname(None)
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
@@ -228,8 +228,8 @@ def test_download_subtitles():
     BARE_QUERIES[0][0].media.dirname = temp_dirname
 
     # Test failing from no `media_name` for `name_format`
-    temp_filename = BARE_QUERIES[0][0].media.filename
-    BARE_QUERIES[0][0].media.filename = None
+    temp_filename = BARE_QUERIES[0][0].media.get_filename()
+    BARE_QUERIES[0][0].media.set_filename(None)
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
@@ -237,7 +237,7 @@ def test_download_subtitles():
                 result = asw.download_subtitles(
                     *BARE_QUERIES, name_format="{media_name}"
                 )
-    BARE_QUERIES[0][0].media.filename = temp_filename
+    BARE_QUERIES[0][0].media.set_filename(temp_filename)
 
 
 def test__download_subtitles():

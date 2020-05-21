@@ -11,5 +11,6 @@ def test_Media():
 
     assert media.hash == "38516a7d01f4e37d"
     assert media.size == 128 * 1024
-    assert media.filename == Path("random_1")
-    assert media.dirname == HASH_DIR
+    assert media.get_filename() == Path("random_1")
+    assert media.get_dirname() == HASH_DIR
+    assert media.get_filepath() == HASH_LOCATION

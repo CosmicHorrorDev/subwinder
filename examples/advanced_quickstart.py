@@ -65,7 +65,7 @@ def main():
     #       `INPUT_DIR` in `OUTPUT_DIR`
     print(f"Moving matched media and subtitle files to {OUTPUT_DIR}... ", end="")
     for result, download in zip(results, download_paths):
-        from_media_path = result.media.dirname / result.media.filename
+        from_media_path = result.media.get_filepath()
         to_media_path = OUTPUT_DIR / from_media_path.name
         from_media_path.rename(to_media_path)
 

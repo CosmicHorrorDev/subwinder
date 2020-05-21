@@ -108,8 +108,15 @@ class MediaInfo:
     name: str
     year: int
     imdbid: str
-    dirname: Path
-    filename: Path
+    _dirname: Path
+    _filename: Path
+
+    def __init__(self, name, year, imdbid, dirname, filename):
+        self.name = name
+        self.year = year
+        self.imdbid = imdbid
+        self.set_dirname(dirname)
+        self.set_filename(filename)
 
     @classmethod
     def from_data(cls, data):
@@ -129,10 +136,22 @@ class MediaInfo:
         self.set_filename(filepath.name)
 
     def set_filename(self, filename):
-        self.filename = None if filename is None else Path(filename)
+        self._filename = None if filename is None else Path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = None if dirname is None else Path(dirname)
+        self._dirname = None if dirname is None else Path(dirname)
+
+    def get_filepath(self):
+        if self.get_filename() is None or self.get_dirname() is None:
+            return None
+
+        return self.get_dirname() / self.get_filename()
+
+    def get_filename(self):
+        return self._filename
+
+    def get_dirname(self):
+        return self._dirname
 
 
 class MovieInfo(MediaInfo):
@@ -156,6 +175,11 @@ class EpisodeInfo(TvSeriesInfo):
     season: int
     episode: int
 
+    def __init__(self, name, year, imdbid, dirname, filename, season, episode):
+        super().__init__(name, year, imdbid, dirname, filename)
+        self.season = season
+        self.episode = episode
+
     @classmethod
     def from_data(cls, data):
         tv_series = TvSeriesInfo.from_data(data)
@@ -167,7 +191,15 @@ class EpisodeInfo(TvSeriesInfo):
 
     @classmethod
     def from_tv_series(cls, tv_series, season, episode):
-        return cls(**tv_series.__dict__, season=season, episode=episode,)
+        return cls(
+            name=tv_series.name,
+            year=tv_series.year,
+            imdbid=tv_series.imdbid,
+            dirname=tv_series.get_dirname(),
+            filename=tv_series.get_filename(),
+            season=season,
+            episode=episode,
+        )
 
 
 # TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever different?
