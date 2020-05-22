@@ -370,6 +370,10 @@ class AuthSubwinder(Subwinder):
     def _guess_media_unranked(self, queries):
         data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
+        # Special case: so `""` is just silently excluded from the response so force it
+        if "" in queries and "" not in data:
+            data[""] = {}
+
         # Convert the raw results to `GuessMediaResult`
         return [GuessMediaResult.from_data(data[query]) for query in queries]
 

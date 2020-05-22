@@ -150,7 +150,7 @@ Tries to guess the movies or TV series that match the each of the `queries` stri
 | `**rank_args` | `args` | (Default `[]`) The `args` passed to `ranking_func` |
 | `**rank_kwargs` | `kwargs` | (Default `{}`) The `kwargs` passed to `ranking_func` |
 
-**Returns:** a list of either [`MovieInfo`](Custom-Classes.md#movieinfo-derived-from-mediainfo) or [`TvSeriesInfo`](Custom-Classes.md#tvseriesinfo-derived-from-mediainfo) objects matching the guess for each query in `queries`.
+**Returns:** a list of [`MovieInfo`](Custom-Classes.md#movieinfo-derived-from-mediainfo), [`TvSeriesInfo`](Custom-Classes.md#tvseriesinfo-derived-from-mediainfo), objects or `None` matching the guess for each query in `queries`.
 
 ```python
 def custom_guess_media_ranking(results, query, index=0):
@@ -174,6 +174,7 @@ Same as `.guess_media(...)`, but returns the full [`GuessMediaResult`](Custom-Cl
 | `queries` | `List[str]` | The list of strings to guess media for |
 
 **Returns:** a list of `GuessMediaResult` objects for each query in `queries`.
+
 ### `.preview_subtitles(sub_containers)`
 
 Gets a preview for the given list of subtitles. This can be used to try and determine the quality of subtitles before downloading them.

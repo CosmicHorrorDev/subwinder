@@ -341,6 +341,23 @@ def test_guess_media():
     assert guesses == IDEAL_RESULT
     mocked.assert_has_calls(CALLS)
 
+    # Now to test the edge cases
+    EDGE_QUERIES = [
+        "",
+        "adsfkljadsf",
+    ]
+    CALL = (Endpoints.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
+    IDEAL_RESULT = [None, None]
+    with open(SAMPLES_DIR / "guess_media_edge_cases.json") as f:
+        EDGE_RESP = json.load(f)
+
+    with patch.object(asw, "_request") as mocked:
+        mocked.side_effect = EDGE_RESP
+        guesses = asw.guess_media(EDGE_QUERIES)
+
+    assert guesses == IDEAL_RESULT
+    mocked.assert_called_once_with(*CALL)
+
 
 def test_ping():
     RESP = {"status": "200 OK", "seconds": "0.055"}

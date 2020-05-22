@@ -123,9 +123,9 @@ This stores all the information returned when guessing media (used by `guess_med
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `best_guess` | [`MovieInfo`](#movieinfo) or [`EpisodeInfo`](#episodeinfo) | The best guess for the provided query |
-| `from_string` | [`MovieInfo`](#movieinfo) or [`EpisodeInfo`](#episodeinfo) | The guess purely from the provided string |
-| `from_imdb` | `List[MovieInfo or EpisodeInfo]` [[0]](#movieinfo) [[1]](#episodeinfo) | List of results based off IMDB (I'm really just guessing at this point) |
+| `best_guess` | [`MovieInfo`](#movieinfo), [`EpisodeInfo`](#episodeinfo), or `None` | The best guess for the provided query |
+| `from_string` | [`MovieInfo`](#movieinfo), [`EpisodeInfo`](#episodeinfo), or `None` | The guess purely from the provided string |
+| `from_imdb` | `List[MovieInfo, EpisodeInfo, or None]` [[0]](#movieinfo) [[1]](#episodeinfo) | List of results based off IMDB (I'm really just guessing at this point) |
 
 ### `MediaInfo`
 
