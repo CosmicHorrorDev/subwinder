@@ -25,10 +25,7 @@ def main():
     # And now we'll start searching (assumes credentials are set with env vars)
     with AuthSubwinder() as asw:
         # (to simplify things I'm just doing one lang)
-        # TODO: it would be nice to be able to pass in `zip` and have it expand
-        #       internally just to make it a little nicer. Sadly there's no iterable
-        #       class that I can check for so guess I can add `zip` to the list
-        results = asw.search_subtitles(list(zip(media, repeat(LANG))))
+        results = asw.search_subtitles(zip(media, repeat(LANG)))
         # And now we'll assume that _at least one_ result didn't find an exact match
         # (peeking under the hood, the search above occurs with the file hash and size
         # to get an exact match which fails when no subtitles are linked to that exact
@@ -39,7 +36,7 @@ def main():
         # Now let's fallback to getting a `MediaInfo` match from the filenames (this
         # endpoint isn't supposed to be spammed so please only use it as a fall back)
         unmatched = [m for m, result in zip(media, results) if result is None]
-        unmatched_names = [media.filename for media in unmatched]
+        unmatched_names = [media.get_filename() for media in unmatched]
         guesses = asw.guess_media(unmatched_names)
 
         # Filter out any `None` since there isn't much else to fall back to
@@ -50,9 +47,7 @@ def main():
         # while iterating over them
         for rev_i in range(len(guesses) - 1, -1, -1):
             # `.guess_media(...)` loses file location context so let's get that back
-            # TODO: would be nice to include a `.get_filepath()` too
-            guesses[rev_i].set_filename(unmatched[rev_i].filename)
-            guesses[rev_i].set_dirname(unmatched[rev_i].dirname)
+            guesses[rev_i].set_filepath(unmatched[rev_i].get_filepath())
 
             # So now we run into a pretty minor issue. We want to search using these
             # guesses that we have now, and the guesses are either `MovieInfo` or
@@ -63,7 +58,7 @@ def main():
             #    `EpisodeInfo`. In this example I'm just gonna use a regex, but for your
             #    case you may have more context on what you're searching for already
             if isinstance(guesses[rev_i], info.TvSeriesInfo):
-                matches = EPISODE_REGEX.search(guesses[rev_i].filename)
+                matches = EPISODE_REGEX.search(guesses[rev_i].get_filename())
                 if matches is None:
                     # Remove this entry since the regex failed
                     guesses.pop(rev_i)
