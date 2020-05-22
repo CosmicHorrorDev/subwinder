@@ -108,8 +108,15 @@ class MediaInfo:
     name: str
     year: int
     imdbid: str
-    dirname: Path
-    filename: Path
+    _dirname: Path
+    _filename: Path
+
+    def __init__(self, name, year, imdbid, dirname, filename):
+        self.name = name
+        self.year = year
+        self.imdbid = imdbid
+        self.set_dirname(dirname)
+        self.set_filename(filename)
 
     @classmethod
     def from_data(cls, data):
@@ -129,10 +136,22 @@ class MediaInfo:
         self.set_filename(filepath.name)
 
     def set_filename(self, filename):
-        self.filename = None if filename is None else Path(filename)
+        self._filename = None if filename is None else Path(filename)
 
     def set_dirname(self, dirname):
-        self.dirname = None if dirname is None else Path(dirname)
+        self._dirname = None if dirname is None else Path(dirname)
+
+    def get_filepath(self):
+        if self.get_filename() is None or self.get_dirname() is None:
+            return None
+
+        return self.get_dirname() / self.get_filename()
+
+    def get_filename(self):
+        return self._filename
+
+    def get_dirname(self):
+        return self._dirname
 
 
 class MovieInfo(MediaInfo):
@@ -156,6 +175,11 @@ class EpisodeInfo(TvSeriesInfo):
     season: int
     episode: int
 
+    def __init__(self, name, year, imdbid, dirname, filename, season, episode):
+        super().__init__(name, year, imdbid, dirname, filename)
+        self.season = season
+        self.episode = episode
+
     @classmethod
     def from_data(cls, data):
         tv_series = TvSeriesInfo.from_data(data)
@@ -167,7 +191,15 @@ class EpisodeInfo(TvSeriesInfo):
 
     @classmethod
     def from_tv_series(cls, tv_series, season, episode):
-        return cls(**tv_series.__dict__, season=season, episode=episode,)
+        return cls(
+            name=tv_series.name,
+            year=tv_series.year,
+            imdbid=tv_series.imdbid,
+            dirname=tv_series.get_dirname(),
+            filename=tv_series.get_filename(),
+            season=season,
+            episode=episode,
+        )
 
 
 # TODO: are "global_24h_download_limit" and "client_24h_download_limit" ever different?
@@ -311,27 +343,38 @@ class GuessMediaResult:
 
     @classmethod
     def from_data(cls, data):
+        BEST_GUESS_KEY = "BestGuess"
+        FROM_STRING_KEY = "GuessMovieFromString"
+        IMDB_KEY = "GetIMDBSuggest"
+
+        # Deal with missing entries by filling with empty values
+        for key in [BEST_GUESS_KEY, FROM_STRING_KEY, IMDB_KEY]:
+            if key not in data:
+                data[key] = {}
+
         # So just in case you're wondering why there's all these hoops to jump
         # through. The API returns each value paired in a dict where the IMDB id is
         # the key, but since we don't know the key we have to do some extra work to
         # ignore it while still getting the value attached to it (Oh yeah, but
         # "BestGuess" is **not** returned this way, yet all the others are)
-        best_guess = data["BestGuess"]
+        best_guess = data[BEST_GUESS_KEY]
 
         # So this one is a bit complicated, from what I've seen sometimes this is a
         # `dict` where the key is the IMDB id, and sometimes its a `list` with length 1
-        from_string = data["GuessMovieFromString"]
+        from_string = data[FROM_STRING_KEY]
         if type(from_string) == dict:
             from_string = list(from_string.values())
-        from_string = from_string[0]
+
+        if len(from_string) > 0:
+            from_string = from_string[0]
 
         # When theres no results it's an empty `list`, when there are results it's a
         # `dict` so need to force the potentially empty `list` to a `dict` first
-        from_imdb = list(dict(data["GetIMDBSuggest"]).values())
+        from_imdb = list(dict(data[IMDB_KEY]).values())
 
         return cls(
             # Now that it's orgainzed build the appropriate `MediaInfo`
-            best_guess=build_media_info(best_guess),
-            from_string=build_media_info(from_string),
-            from_imdb=[build_media_info(media) for media in from_imdb],
+            best_guess=build_media_info(best_guess) if best_guess else None,
+            from_string=build_media_info(from_string) if from_string else None,
+            from_imdb=[build_media_info(m) for m in from_imdb],
         )
