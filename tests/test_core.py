@@ -366,12 +366,12 @@ def test_ping():
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
 
 
-def test_report_movie():
+def test_report_media():
     QUERY = (SEARCH_RESULT2,)
     CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
-    _standard_asw_mock("report_movie", "_request", QUERY, RESP, CALL, None)
+    _standard_asw_mock("report_media", "_request", QUERY, RESP, CALL, None)
 
 
 def test_search_subtitles():

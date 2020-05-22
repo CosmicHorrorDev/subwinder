@@ -380,7 +380,7 @@ class AuthSubwinder(Subwinder):
 
     # TODO: can we ensure that the `search_result` was matched using a file hash before
     #       calling this endpoint
-    def report_movie(self, sub_container):
+    def report_media(self, sub_container):
         """
         Reports the subtitles tied to the `search_result`. This can only be done if the
         match was done using a `Media` object so that the subtitles can be tied to a
@@ -400,7 +400,7 @@ class AuthSubwinder(Subwinder):
         # This endpoint should only be used when the subtitles were matched by hash
         if sub_to_movie_id is None:
             raise ValueError(
-                "`report_movie` can only be called if the subtitles were matched off a"
+                "`report_media` can only be called if the subtitles were matched off a"
                 " search using a media files hash and size (This is done automatically"
                 " when searching with a `Media` object)."
             )

@@ -16,7 +16,7 @@ All functionality with the authenticated API is exposed from `subwinder` through
     * [`.guess_media_unranked()`](#guess_media_unranked_queries)
     * [`.preview_subtitles`](#preview_subtitlessub_containers)
     * [`.ping()`](#ping)
-    * [`.report_movie()`](#report_moviesub_container)
+    * [`.report_media()`](#report_mediasub_container)
     * [`.search_subtitles()`](#search_subtitlesqueries-ranking_func-rank_args-rank_kwargs)
     * [`.search_subtitles_unranked()`](#search_subtitles_unrankedqueries)
     * [`.suggest_media()`](#suggest_mediaquery)
@@ -205,7 +205,7 @@ _No params, no return value_
 asw.ping()
 ```
 
-### `.report_movie(sub_container)`
+### `.report_media(sub_container)`
 
 **Note:** this can only be used for subtitles that were found by searching with a [`Media`](Custom-Classes.md#media) object since it's tied to that specific file.
 
@@ -217,7 +217,7 @@ This is used to hint to the API that the subtitles are wrong for this specific [
 
 
 ```python
-asw.report_movie(search_result)
+asw.report_media(search_result)
 ```
 
 ### `.search_subtitles(queries, ranking_func, *rank_args, **rank_kwargs)`
