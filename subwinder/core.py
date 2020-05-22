@@ -2,9 +2,9 @@
 try:
     from atomicwrites import atomic_write
 
-    atomic_downloads = True
+    ATOMIC_DOWNLOADS_SUPPORT = True
 except ImportError:
-    atomic_downloads = False
+    ATOMIC_DOWNLOADS_SUPPORT = False
 
 
 from pathlib import Path
@@ -13,11 +13,7 @@ import os
 from subwinder import utils
 from subwinder._internal_utils import type_check
 from subwinder._request import request, Endpoints
-from subwinder.exceptions import (
-    SubAuthError,
-    SubDownloadError,
-    SubLangError,
-)
+from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
 from subwinder.info import (
     build_media_info,
     Comment,
@@ -193,6 +189,8 @@ class AuthSubwinder(Subwinder):
         `download_dir` is provided. Files are automatically named according to the
         provided `name_format`.
         """
+        type_check(downloads, (list, tuple))
+
         # Get all the subtitle file_ids from `downloads`
         # List of paths where the subtitle files should be saved
         download_paths = []
@@ -294,7 +292,7 @@ class AuthSubwinder(Subwinder):
             dirpath.mkdir(exist_ok=True)
 
             # Write atomically if possible, otherwise fall back to regular writing
-            if atomic_downloads:
+            if ATOMIC_DOWNLOADS_SUPPORT:
                 with atomic_write(fpath) as f:
                     f.write(subtitles)
             else:
@@ -305,9 +303,12 @@ class AuthSubwinder(Subwinder):
         """
         Get all `Comment`s for the provided `search_results` if there are any.
         """
+        type_check(sub_containers, (list, tuple))
+
         ids = []
         for sub_container in sub_containers:
             type_check(sub_container, (SearchResult, SubtitlesInfo))
+
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
             ids.append(sub_container.id)
@@ -390,6 +391,7 @@ class AuthSubwinder(Subwinder):
         (`.add_comment("<meaningful-comment>", bad=True)`).
         """
         type_check(sub_container, (SearchResult, SubtitlesInfo))
+
         # Get subtitles file_id from `sub_container`
         if isinstance(sub_container, SearchResult):
             sub_container = sub_container.subtitles
@@ -430,8 +432,21 @@ class AuthSubwinder(Subwinder):
         gets passed the provided `*args` and `**kwargs`.
         """
         # Verify that all the queries are correct before doing any requests
+        type_check(queries, (list, tuple, zip))
+
+        # Expand out the `zip` to a `list`
+        if isinstance(queries, zip):
+            queries = list(zip)
+
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
-        for query, lang_2 in queries:
+        for query_pair in queries:
+            if not isinstance(query_pair, (list, tuple)) or len(query_pair) == 2:
+                raise ValueError(
+                    "The `search_subtitles` variants expect a list of pairs of the form"
+                    "(<queryable>, <2 letter language code>)"
+                )
+
+            query, lang_2 = query_pair
             type_check(query, VALID_CLASSES)
 
             if lang_2 not in lang_2s:
@@ -471,6 +486,8 @@ class AuthSubwinder(Subwinder):
         """
         Suggest results for guesses of what media is described by `query`.
         """
+        type_check(query, str)
+
         data = self._request(Endpoints.SUGGEST_MOVIE, query)["data"]
 
         # `data` is an empty list if there were no results
@@ -482,6 +499,7 @@ class AuthSubwinder(Subwinder):
         denote that the comment is due to the result being `bad`.
         """
         type_check(sub_container, (SearchResult, SubtitlesInfo))
+
         # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
@@ -493,10 +511,12 @@ class AuthSubwinder(Subwinder):
         """
         Votes for the `sub_id_obj` with a score of `score`.
         """
+        type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(score, int)
+
         if score < 1 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
-        type_check(sub_container, (SearchResult, SubtitlesInfo))
         # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
@@ -509,6 +529,8 @@ class AuthSubwinder(Subwinder):
         Returns information about `program_name` that is supposed to be useful for
         automatic updates. (Version info and download urls)
         """
+        type_check(program_name, str)
+
         # Not sure if I should return this information in a better format
         return self._request(Endpoints.AUTO_UPDATE, program_name)
 
@@ -517,6 +539,8 @@ class AuthSubwinder(Subwinder):
         Gets a preview for the subtitles represented by `results`. Useful for being able
         to see part of the subtitles without eating into your daily download limit.
         """
+        type_check(sub_containers, (list, tuple))
+
         # Get the subtitles file_ids from `sub_containers`
         file_ids = []
         for sub_container in sub_containers:
