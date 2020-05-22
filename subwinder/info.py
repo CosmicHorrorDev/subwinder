@@ -376,5 +376,5 @@ class GuessMediaResult:
             # Now that it's orgainzed build the appropriate `MediaInfo`
             best_guess=build_media_info(best_guess) if best_guess else None,
             from_string=build_media_info(from_string) if from_string else None,
-            from_imdb=[build_media_info(m) for m in from_imdb] if from_imdb else None,
+            from_imdb=[build_media_info(m) for m in from_imdb],
         )
