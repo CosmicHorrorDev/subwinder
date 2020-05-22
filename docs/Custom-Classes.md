@@ -147,25 +147,27 @@ Gets the path represented by `_dirname` and `_filename` or `None` if neither are
 
 #### `.set_filepath(filepath)`
 
-Sets the `filename` and `dirname` for the `Media`. Useful for when you can't initialize the `Media` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
+Sets the `filename` and `dirname` for the `MediaInfo`. Useful for when you can't initialize the `MediaInfo` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `filepath` | `str` or `pathlib.Path` | Path to associate this `Media` with |
+| `filepath` | `str` or `pathlib.Path` | Path to associate this `MediaInfo` with |
 
 **Returns:** `None`
 
 ```python
 from pathlib import Path
 
-# Assuming we have a `Media` with no `filename` and `dirname` info
-assert media.filename is None and media.dirname is None
+# Assuming we have a `MediaInfo` with no `_filename` and `_dirname` info
+assert media_info.get_filepath() is None
 
-media.set_filepath("/path/to/movie.mkv")
+media_info.set_filepath("/path/to/movie.mkv")
 
-# Both `dirname` and `filename` are set now
-assert media.dirname == Path("/path/to")
-assert media.filename == Path("movie.mkv")
+# Both `_dirname` and `_filename` are set now
+assert media_info.get_dirname() == Path("/path/to")
+assert media_info.get_filename() == Path("movie.mkv")
+# We can also get the full file path too
+assert media_info.get_filepath() == Path("/path/to/movie.mkv")
 ```
 
 #### `.get_filename()`
@@ -176,23 +178,23 @@ Gets `_filename`.
 
 #### `.set_filename(filename)`
 
-Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
+Sets the `filename` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `filename` | `str` or `pathlib.Path` | Filename to associate this `Media` with |
+| `filename` | `str` or `pathlib.Path` | Filename to associate this `MediaInfo` with |
 
 **Returns:** `None`
 
 ```python
 from pathlib import Path
 
-# Assume there is currently no `filename` for `media`
-assert media.filename is None
+# Assume there is currently no `_filename` for `media_info`
+assert media_info.get_filename() is None
 
-media.set_filename("episode.mp4")
-# Now `filename` is the `Path` for the given `filename`
-assert media.filename == Path("episode.mp4")
+media_info.set_filename("episode.mp4")
+# Now `_filename` is the `Path` for the given filename
+assert media_info.get_filename() == Path("episode.mp4")
 ```
 
 #### `.get_dirname()`
@@ -203,23 +205,23 @@ Gets `_dirname`.
 
 ### `.set_dirname(dirname)`
 
-Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want to automatically save the subtitles for this `Media` in `dirname`.
+Sets the `dirname` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want to automatically save the subtitles for this `MediaInfo` in `dirname`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `dirname` | `str` or `pathlib.Path` | Directory to associate this `Media` with |
+| `dirname` | `str` or `pathlib.Path` | Directory to associate this `MediaInfo` with |
 
 **Returns:** `None`
 
 ```python
 from pathlib import Path
 
-# Assume there is currenly no `dirname` for `media`
-assert media.dirname is None
+# Assume there is currenly no `_dirname` for `media_info`
+assert media_info.get_dirname() is None
 
-media.set_dirname("/some/given/path")
-# Now `dirname` is the `Path` for the given directory
-assert media.dirname == Path("/some/given/path")
+media_info.set_dirname("/some/given/path")
+# Now `_dirname` is the `Path` for the given directory
+assert media_info.get_dirname() == Path("/some/given/path")
 ```
 
 ### `MovieInfo` derived from `MediaInfo`
@@ -368,7 +370,7 @@ _All parameters match the members in the order `Media(hash, size, dirname=None, 
 # Build a movie to search from using the hash and filesize
 # Note: this will not have context for the original filename or what
 # directory to download into like it would if you used the normal constructor
-movie = Media("<movie-hash>", <movie-filesize>)
+movie = Media.from_parts("<movie-hash>", <movie-filesize>)
 ```
 
 #### `.get_filepath()`
@@ -391,14 +393,16 @@ Sets the `filename` and `dirname` for the `Media`. Useful for when you can't ini
 ```python
 from pathlib import Path
 
-# Assuming we have a `Media` with no `filename` and `dirname` info
-assert media.filename is None and media.dirname is None
+# Assuming we have a `Media` with no `_filename` and `_dirname` info
+assert media.get_filename() is None and media.get_dirname() is None
 
 media.set_filepath("/path/to/movie.mkv")
 
-# Both `dirname` and `filename` are set now
-assert media.dirname == Path("/path/to")
-assert media.filename == Path("movie.mkv")
+# Both `_dirname` and `_filename` are set now
+assert media.get_dirname() == Path("/path/to")
+assert media.get_filename() == Path("movie.mkv")
+# We can also get the full path back
+assert media.get_filepath() == Path("/path/to/movie.mkv")
 ```
 
 #### `.get_filename()`
@@ -420,12 +424,12 @@ Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is usef
 ```python
 from pathlib import Path
 
-# Assume there is currently no `filename` for `media`
-assert media.filename is None
+# Assume there is currently no `_filename` for `media`
+assert media.get_filename() is None
 
 media.set_filename("episode.mp4")
-# Now `filename` is the `Path` for the given `filename`
-assert media.filename == Path("episode.mp4")
+# Now `_filename` is the `Path` for the given filename
+assert media.get_filename() == Path("episode.mp4")
 ```
 
 #### `.get_dirname()`
@@ -447,10 +451,10 @@ Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is usefu
 ```python
 from pathlib import Path
 
-# Assume there is currenly no `dirname` for `media`
-assert media.dirname is None
+# Assume there is currenly no `_dirname` for `media`
+assert media.get_dirname() is None
 
 media.set_dirname("/some/given/path")
-# Now `dirname` is the `Path` for the given directory
-assert media.dirname == Path("/some/given/path")
+# Now `_dirname` is the `Path` for the given directory
+assert media.get_dirname() == Path("/some/given/path")
 ```
