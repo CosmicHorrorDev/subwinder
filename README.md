@@ -35,7 +35,7 @@ with AuthSubwinder("<username>", "<password>", "<useragent>") as asw:
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     results_comments = asw.get_comments(results)
     for result, result_comments in zip(results, results_comments):
-        print(f"{result.media.filename} Comments:")
+        print(f"{result.media.get_filename()} Comments:")
         for comment in result_comments:
             date = dt.strftime(comment.date, TIME_FORMAT)
             print(f"{date} {comment.author.name}: {comment.text}")

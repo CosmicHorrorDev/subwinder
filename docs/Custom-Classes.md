@@ -13,12 +13,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
     * [`Comment`](#comment)
     * [`GuessMediaResult`](#guessmediaresult)
     * [`MediaInfo`](#mediainfo)
-        * [`.get_filepath()`](#get_filepath)
-        * [`.set_filepath()`](#set_filepathfilepath)
-        * [`.get_filename()`](#get_filename)
-        * [`.set_filename()`](#set_filenamefilename)
-        * [`.get_dirname()`](#get_dirname)
-        * [`.set_dirname()`](#set_dirnamedirname)
+        * [Getters and Setters](#getters-and-setters)
     * [`MovieInfo`](#movieinfo-derived-from-mediainfo)
     * [`TvSeriesInfo`](#tvseriesinfo-derived-from-mediainfo)
     * [`EpisodeInfo`](#episodeinfo-derived-from-tvseriesinfo)
@@ -30,12 +25,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
 * [`Media`](#media)
     * [Initialization](#initialization)
     * [`Media.from_parts()`](#mediafrom_partshash-size-dirname-filename)
-    * [`.get_filepath()`](#get_filepath-1)
-    * [`.set_filepath()`](#set_filepathfilepath-1)
-    * [`.get_filename()`](#get_filename-1)
-    * [`.set_filename()`](#set_filenamefilename-1)
-    * [`.get_dirname()`](#get_dirname-1)
-    * [`.set_dirname()`](#set_dirnamedirname-1)
+    * [Getters and Setters](#getters-and-setters-1)
 
 ---
 
@@ -138,6 +128,33 @@ This is the base class used for representing several kinds of media returned by 
 | `imdbid` | `str` | The imdbid for the media |
 | `name` | `str` | The name of the media |
 | `year` | `int` | The year the media was released |
+
+#### Getters and Setters
+
+All the getters and setters should be pretty self explanatory. These all deal with `_dirname` and `_filename`.
+
+| Method | Input | Output | Desc. |
+| :---: | :---: | :---: | :--- |
+| `.get_filename()` `.set_filename(filename)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get `_filename` |
+| `.get_dirname()` `.set_dirname(dirname)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get `_dirname` |
+| `.get_filepath()` `.set_filepath(filepath)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get path given by `_dirname` and `_filename` |
+
+```python
+from pathlib import Path
+
+# Assuming we have a `Media` with no `_filename` and `_dirname` info
+assert media.get_filename() is None and media.get_dirname() is None
+
+# Equivalent to `media.set_filepath("/path/to/movie.mkv")`
+media.set_filename("movie.mkv")
+media.set_dirname("/path/to")
+
+# Both `_dirname` and `_filename` are set now
+assert media.get_dirname() == Path("/path/to")
+assert media.get_filename() == Path("movie.mkv")
+# We can also get the full path back
+assert media.get_filepath() == Path("/path/to/movie.mkv")
+```
 
 #### `.get_filepath()`
 
@@ -373,22 +390,15 @@ _All parameters match the members in the order `Media(hash, size, dirname=None, 
 movie = Media.from_parts("<movie-hash>", <movie-filesize>)
 ```
 
-#### `.get_filepath()`
+#### Getters and Setters
 
-Gets the path represented by `_dirname` and `_filename` or `None` if neither are set.
+All the getters and setters should be pretty self explanatory. These all deal with `_dirname` and `_filename`.
 
-**Returns:** `pathlib.Path` or `None`
-
-
-#### `.set_filepath(filepath)`
-
-Sets the `filename` and `dirname` for the `Media`. Useful for when you can't initialize the `Media` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
-
-| Param | Type | Description |
-| :---: | :---: | :--- |
-| `filepath` | `str` or `pathlib.Path` | Path to associate this `Media` with |
-
-**Returns:** `None`
+| Method | Input | Output | Desc. |
+| :---: | :---: | :---: | :--- |
+| `.get_filename()` `.set_filename(filename)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get `_filename` |
+| `.get_dirname()` `.set_dirname(dirname)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get `_dirname` |
+| `.get_filepath()` `.set_filepath(filepath)` | path-like value or `None` | `pathlib.Path` or `None` | Set\Get path given by `_dirname` and `_filename` |
 
 ```python
 from pathlib import Path
@@ -396,65 +406,13 @@ from pathlib import Path
 # Assuming we have a `Media` with no `_filename` and `_dirname` info
 assert media.get_filename() is None and media.get_dirname() is None
 
-media.set_filepath("/path/to/movie.mkv")
+# Equivalent to `media.set_filepath("/path/to/movie.mkv")`
+media.set_filename("movie.mkv")
+media.set_dirname("/path/to")
 
 # Both `_dirname` and `_filename` are set now
 assert media.get_dirname() == Path("/path/to")
 assert media.get_filename() == Path("movie.mkv")
 # We can also get the full path back
 assert media.get_filepath() == Path("/path/to/movie.mkv")
-```
-
-#### `.get_filename()`
-
-Gets `_filename`.
-
-**Returns:** `pathlib.Path` or `None`
-
-#### `.set_filename(filename)`
-
-Sets the `filename` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
-
-| Param | Type | Description |
-| :---: | :---: | :--- |
-| `filename` | `str` or `pathlib.Path` | Filename to associate this `Media` with |
-
-**Returns:** `None`
-
-```python
-from pathlib import Path
-
-# Assume there is currently no `_filename` for `media`
-assert media.get_filename() is None
-
-media.set_filename("episode.mp4")
-# Now `_filename` is the `Path` for the given filename
-assert media.get_filename() == Path("episode.mp4")
-```
-
-#### `.get_dirname()`
-
-Gets `_dirname`.
-
-**Returns:** `pathlib.Path` or `None`
-
-#### `.set_dirname(dirname)`
-
-Sets the `dirname` for the `Media`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `Media` using the normal constructor, but you want to automatically save the subtitles for this `Media` in `dirname`.
-
-| Param | Type | Description |
-| :---: | :---: | :--- |
-| `dirname` | `str` or `pathlib.Path` | Directory to associate this `Media` with |
-
-**Returns:** `None`
-
-```python
-from pathlib import Path
-
-# Assume there is currenly no `_dirname` for `media`
-assert media.get_dirname() is None
-
-media.set_dirname("/some/given/path")
-# Now `_dirname` is the `Path` for the given directory
-assert media.get_dirname() == Path("/some/given/path")
 ```
