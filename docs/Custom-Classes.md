@@ -142,18 +142,18 @@ All the getters and setters should be pretty self explanatory. These all deal wi
 ```python
 from pathlib import Path
 
-# Assuming we have a `Media` with no `_filename` and `_dirname` info
-assert media.get_filename() is None and media.get_dirname() is None
+# Assuming we have a `MediaInfo` with no `_filename` and `_dirname` info
+assert media_info.get_filename() is None and media_info.get_dirname() is None
 
 # Equivalent to `media.set_filepath("/path/to/movie.mkv")`
-media.set_filename("movie.mkv")
-media.set_dirname("/path/to")
+media_info.set_filename("movie.mkv")
+media_info.set_dirname("/path/to")
 
 # Both `_dirname` and `_filename` are set now
-assert media.get_dirname() == Path("/path/to")
-assert media.get_filename() == Path("movie.mkv")
+assert media_info.get_dirname() == Path("/path/to")
+assert media_info.get_filename() == Path("movie.mkv")
 # We can also get the full path back
-assert media.get_filepath() == Path("/path/to/movie.mkv")
+assert media_info.get_filepath() == Path("/path/to/movie.mkv")
 ```
 
 #### `.get_filepath()`
