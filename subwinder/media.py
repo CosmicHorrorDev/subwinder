@@ -47,10 +47,14 @@ class Media:
         return self
 
     def set_filepath(self, filepath):
-        filepath = Path(filepath)
+        if filepath is None:
+            self.set_filename(None)
+            self.set_dirname(None)
+        else:
+            filepath = Path(filepath)
 
-        self.set_filename(filepath.name)
-        self.set_dirname(filepath.parent)
+            self.set_filename(filepath.name)
+            self.set_dirname(filepath.parent)
 
     def set_filename(self, filename):
         self._filename = None if filename is None else Path(filename)

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from subwinder._constants import TIME_FORMAT
+from subwinder._constants import REPO_URL, TIME_FORMAT
 from subwinder.exceptions import SubLibError
 from subwinder.lang import LangFormat, lang_3s
 
@@ -27,7 +27,10 @@ def build_media_info(data, dirname=None, filename=None):
         media.set_filename(filename)
         return media
 
-    raise SubLibError(f"Undefined MovieKind: '{data['MovieKind']}'")
+    raise SubLibError(
+        f'The library encounterd an undefined MovieKind: "{kind}". You can raise an'
+        f" issue at the library repo to address this {REPO_URL}"
+    )
 
 
 @dataclass
@@ -131,9 +134,14 @@ class MediaInfo:
         return cls(name, year, imdbid, dirname=None, filename=None)
 
     def set_filepath(self, filepath):
-        filepath = Path(filepath)
-        self.set_dirname(filepath.parent)
-        self.set_filename(filepath.name)
+        if filepath is None:
+            self.set_dirname(None)
+            self.set_filename(None)
+        else:
+            filepath = Path(filepath)
+
+            self.set_dirname(filepath.parent)
+            self.set_filename(filepath.name)
 
     def set_filename(self, filename):
         self._filename = None if filename is None else Path(filename)
