@@ -32,6 +32,17 @@ class _LangConverter:
         # Separate list for each of the lang types
         self._langs = [[] for _ in list(LangFormat)]
 
+    def __getattribute__(self, name):
+        """
+        Automatically tries updating the lang list on any public method call
+        """
+        # Make sure it's public and not a variable
+        if name[0] != "_" and name not in self.__dict__:
+            self._update()
+
+        # Return the desired value by getting it from the base class
+        return super(_LangConverter, self).__getattribute__(name)
+
     def _fetch(self):
         return request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
 
@@ -56,9 +67,6 @@ class _LangConverter:
         self._last_updated = datetime.now()
 
     def convert(self, lang, from_format, to_format):
-        # Update `_langs` listing if needed
-        self._update()
-
         # Hopefully no one tries to convert this way, but included just in case
         if from_format == to_format:
             return lang
@@ -74,9 +82,6 @@ class _LangConverter:
         return self._langs[to_format.value][lang_index]
 
     def list(self, lang_format):
-        # Update if needed
-        self._update()
-
         return self._langs[lang_format.value]
 
 
@@ -94,12 +99,6 @@ class _Lang:
     """
 
     _format: LangFormat
-
-    def __contains__(self, lang):
-        return lang in _converter.list(self._format)
-
-    def __getitem__(self, i):
-        return list(self)[i]
 
     def __iter__(self):
         return iter(_converter.list(self._format))
