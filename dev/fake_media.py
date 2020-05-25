@@ -7,7 +7,7 @@ from pathlib import Path
 def main():
     HASH_SIZE = 8
     MAX_HASH = 2 ** (HASH_SIZE * 8) - 1
-    MIN_FILE_SIZE = 128 * 10224
+    MIN_FILE_SIZE = 128 * 1024
 
     args = parse_args()
 
