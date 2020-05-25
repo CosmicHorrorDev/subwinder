@@ -1,6 +1,7 @@
 # Optional dependency: atomic_downloads
 try:
     from atomicwrites import atomic_write
+    from hashlib import md5
 
     ATOMIC_DOWNLOADS_SUPPORT = True
 except ImportError:
@@ -141,6 +142,8 @@ class AuthSubwinder(Subwinder):
                 "missing `password`, set when initializing `AuthSubwinder` or set the"
                 " OPEN_SUBTITLES_PASSWORD env var"
             )
+        else:
+            password = md5(password)
 
         if useragent is None:
             raise SubAuthError(
