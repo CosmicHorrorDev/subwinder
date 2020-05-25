@@ -4,7 +4,7 @@ Hello there! So this directory just houses some tools that might come in handy f
 
 ### `fake_media.py`
 
-So this little script manages creating a fake media given the expected hash and size (note this will create a file with that given size). This is useful to generate files that seem to be the desired media for searching with `Media`. This script takes the entries from `media_entries.json` and generates the media to the specified output location (**Note:** this produces a GBs of data so just take that into account).
+So this little script manages creating a fake media given the expected hash and size (note this will create a file with that given size). This is useful to generate files that seem to be the desired media for searching with `Media`. This script takes the entries from `media_entries.json` and generates the media to the specified output location (**Note:** this produces a GBs of data so just take that into account). This is mostly meant to be used where you need to test off of physical files, if this is not the case then you can build the media using `Media.from_parts(...)` instead.
 
 ```text
 Example Usages:

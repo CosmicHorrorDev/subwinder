@@ -9,3 +9,7 @@ This library uses both `black` and `flake8` to lint and format code and for this
 ### Tests
 
 Unit testing is done with the help of `pytest` (also one of the `dev-dependencies`). Make sure any changes you contribute pass the test suite, or fix the issue if the test suite is inaccurate. Preferably any new features should include tests to ensure the behavior is correct.
+
+## Tools
+
+If you run into wanting to generate fake files to use with `Media` then you can look under the `dev` directory where `fake_media.py` can help you.

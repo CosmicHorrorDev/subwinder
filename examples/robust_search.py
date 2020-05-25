@@ -72,7 +72,7 @@ def main():
                     )
 
         # Now we can search for all the missing media that we have guesses for
-        new_results = asw.search_subtitles(list(zip(guesses, repeat(LANG))))
+        new_results = asw.search_subtitles(zip(guesses, repeat(LANG)))
 
     # And now here is our final list of results that we can use, if you wanted you could
     # do a little more to keep track of the `Media` these are associated with, but
