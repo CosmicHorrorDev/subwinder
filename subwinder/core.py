@@ -440,7 +440,7 @@ class AuthSubwinder(Subwinder):
 
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query_pair in queries:
-            if not isinstance(query_pair, (list, tuple)) or len(query_pair) == 2:
+            if not isinstance(query_pair, (list, tuple)) or len(query_pair) != 2:
                 raise ValueError(
                     "The `search_subtitles` variants expect a list of pairs of the form"
                     "(<queryable>, <2 letter language code>)"

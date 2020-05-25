@@ -390,7 +390,7 @@ def test_search_subtitles():
     ]
 
     _standard_asw_mock(
-        "search_subtitles", "search_subtitles_unranked", QUERIES, RESP, CALL, IDEAL
+        "search_subtitles", "_search_subtitles_unranked", QUERIES, RESP, CALL, IDEAL
     )
 
 
