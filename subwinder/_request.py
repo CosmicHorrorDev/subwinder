@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 import time
+from xml.parsers.expat import ExpatError
 from xmlrpc.client import ServerProxy, Transport, ProtocolError
 
 from subwinder._constants import API_BASE, REPO_URL
@@ -112,6 +113,13 @@ def request(endpoint, token, *params):
             else:
                 # Use the token if it's defined
                 resp = getattr(_client, endpoint.value)(token, *params)
+        except ExpatError:
+            # So an expat error was an error parsing the xml response. I believe this is
+            # hit when the API is having problems and sends a plaintext message instead
+            # of valid XML
+            raise SubServerError(
+                "The server sent invalid XML. Likely due to temporary server issues."
+            )
         except ProtocolError as err:
             # Try handling the `ProtocolError` appropriately
             if err.errcode in _API_PROTOCOL_ERR_MAP:
