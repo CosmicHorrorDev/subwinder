@@ -7,7 +7,7 @@ This consists of the classes defined in the [`subwinder.info`](#subwinderinfo-mo
 ## Table of Contents
 
 * [`subwinder.info` module](#subwinderinfo-module)
-    * [`build_media_info()`](#build_media_infodata-dirname-filename)
+    * [`build_media_info()`](#build_media_infodata)
     * [`UserInfo`](#userinfo)
     * [`FullUserInfo`](#fulluserinfo-derived-from-userinfo)
     * [`Comment`](#comment)
@@ -50,7 +50,7 @@ from subwinder.info import (
 )
 ```
 
-### `build_media_info(data, dirname, filename)`
+### `build_media_info(data)`
 
 This function is used to automatically create the correct [`MediaInfo`](#mediainfo) object from `data`. This of course requires the information for the correct [`MediaInfo`](#mediainfo) to be built.
 

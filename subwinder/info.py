@@ -9,7 +9,7 @@ from subwinder.lang import LangFormat, lang_3s
 
 
 # Build the right info object from the "MovieKind"
-def build_media_info(data, dirname=None, filename=None):
+def build_media_info(data):
     """
     Automatically builds `data` into the correct `MediaInfo` class. `dirname` and
     `filename` can be set to tie the resulting object to some local file.
@@ -22,10 +22,7 @@ def build_media_info(data, dirname=None, filename=None):
 
     kind = data["MovieKind"]
     if kind in MEDIA_MAP:
-        media = MEDIA_MAP[kind].from_data(data)
-        media.set_dirname(dirname)
-        media.set_filename(filename)
-        return media
+        return MEDIA_MAP[kind].from_data(data)
 
     raise SubLibError(
         f'The library encounterd an undefined MovieKind: "{kind}". You can raise an'
