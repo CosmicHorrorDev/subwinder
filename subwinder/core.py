@@ -193,6 +193,7 @@ class AuthSubwinder(Subwinder):
 
         # Get all the subtitle file_ids from `downloads`
         # List of paths where the subtitle files should be saved
+        sub_containers = []
         download_paths = []
         for download in downloads:
             # All downloads should be some container for `SubtitlesInfo`
@@ -206,6 +207,9 @@ class AuthSubwinder(Subwinder):
                 media = MediaInfo.__new__(MediaInfo)
                 media.dirname = None
                 media.filename = None
+
+            # Get a list of the `SubtitlesInfo` to pass along
+            sub_containers.append(subtitles)
 
             # Make sure there is enough context to save subtitles
             if media.get_dirname() is None and download_dir is None:
@@ -267,18 +271,18 @@ class AuthSubwinder(Subwinder):
             )
 
         # Download the subtitles in batches of 20, per api spec
-        _batch(self._download_subtitles, 20, [downloads, download_paths])
+        _batch(self._download_subtitles, 20, [sub_containers, download_paths])
 
         # Return the list of paths where subtitle files were saved
         return download_paths
 
-    def _download_subtitles(self, downloads, filepaths):
+    def _download_subtitles(self, sub_containers, filepaths):
         encodings = []
         sub_file_ids = []
         # Unpack stored info
-        for search_result in downloads:
-            encodings.append(search_result.subtitles.encoding)
-            sub_file_ids.append(search_result.subtitles.file_id)
+        for sub_container in sub_containers:
+            encodings.append(sub_container.encoding)
+            sub_file_ids.append(sub_container.file_id)
 
         data = self._request(Endpoints.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
 
