@@ -44,11 +44,14 @@ class UserInfo:
 
     @classmethod
     def from_data(cls, data):
-        return cls(
-            # Different keys for the same data again :/
-            id=data.get("UserID") or data["IDUser"],
-            name=data["UserNickName"],
-        )
+        # Different keys for the same data again :/
+        id = data.get("UserID") or data["IDUser"]
+
+        # Special case of no user (like anonymously uploaded subtitles)
+        if id == "0":
+            return None
+
+        return cls(id=id, name=data["UserNickName"],)
 
 
 @dataclass
@@ -71,10 +74,8 @@ class FullUserInfo(UserInfo):
             if lang:
                 preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
-        user_info = UserInfo.from_data(data)
-
         return cls(
-            **user_info.__dict__,
+            **UserInfo.from_data(data).__dict__,
             rank=data["UserRank"],
             num_uploads=int(data["UploadCnt"]),
             num_downloads=int(data["DownloadCnt"]),
@@ -325,7 +326,7 @@ class SearchResult:
     @classmethod
     def from_data(cls, data):
         return cls(
-            author=None if data["UserID"] == "0" else UserInfo.from_data(data),
+            author=UserInfo.from_data(data),
             media=build_media_info(data),
             subtitles=SubtitlesInfo.from_data(data),
             upload_date=datetime.strptime(data["SubAddDate"], TIME_FORMAT),
