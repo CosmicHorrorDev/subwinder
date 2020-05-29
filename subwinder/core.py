@@ -20,7 +20,6 @@ from subwinder.info import (
     EpisodeInfo,
     FullUserInfo,
     GuessMediaResult,
-    MediaInfo,
     MovieInfo,
     SearchResult,
     ServerInfo,
@@ -84,7 +83,7 @@ class Subwinder:
     _token = None
 
     def __repr__(self):
-        return f"{self.__class__.__name__}"
+        return f"{self.__class__.__name__}()"
 
     def _request(self, endpoint, *params):
         """
@@ -193,28 +192,34 @@ class AuthSubwinder(Subwinder):
 
         # Get all the subtitle file_ids from `downloads`
         # List of paths where the subtitle files should be saved
+        sub_containers = []
         download_paths = []
         for download in downloads:
             # All downloads should be some container for `SubtitlesInfo`
             type_check(download, (SearchResult, SubtitlesInfo))
+
+            # Assume minimal info to begin
+            media_dirname = None
+            media_filename = None
+            subtitles = download
+
             if isinstance(download, SearchResult):
-                media = download.media
+                # `SearchResult` holds more info than `SubtitlesInfo`
                 subtitles = download.subtitles
-            else:
-                subtitles = download
-                # There's no original media so fake it
-                media = MediaInfo.__new__(MediaInfo)
-                media.dirname = None
-                media.filename = None
+                media_dirname = download.media.get_dirname()
+                media_filename = download.media.get_filename()
+
+            # Get a list of the `SubtitlesInfo` to pass along
+            sub_containers.append(subtitles)
 
             # Make sure there is enough context to save subtitles
-            if media.get_dirname() is None and download_dir is None:
+            if media_dirname is None and download_dir is None:
                 raise SubDownloadError(
                     "Insufficient context. Need to set either the `dirname` in"
                     f" {download} or `download_dir` in `download_subtitles`"
                 )
 
-            if media.get_filename() is None:
+            if media_filename is None:
                 # Hacky way to see if `media_name` is used in `name_format`
                 try:
                     _ = name_format.format(
@@ -235,16 +240,13 @@ class AuthSubwinder(Subwinder):
             # Store the subtitle file next to the original media unless `download_dir`
             # was set
             if download_dir is None:
-                dir_path = media.get_dirname()
+                dir_path = media_dirname
             else:
                 dir_path = Path(download_dir)
 
             # Format the `filename` according to the `name_format` passed in
             upload_name = subtitles.filename.stem
-            if media.get_filename() is None:
-                media_name = None
-            else:
-                media_name = media.get_filename().stem
+            media_name = None if media_filename is None else media_filename.stem
 
             filename = name_format.format(
                 media_name=media_name,
@@ -267,18 +269,18 @@ class AuthSubwinder(Subwinder):
             )
 
         # Download the subtitles in batches of 20, per api spec
-        _batch(self._download_subtitles, 20, [downloads, download_paths])
+        _batch(self._download_subtitles, 20, [sub_containers, download_paths])
 
         # Return the list of paths where subtitle files were saved
         return download_paths
 
-    def _download_subtitles(self, downloads, filepaths):
+    def _download_subtitles(self, sub_containers, filepaths):
         encodings = []
         sub_file_ids = []
         # Unpack stored info
-        for search_result in downloads:
-            encodings.append(search_result.subtitles.encoding)
-            sub_file_ids.append(search_result.subtitles.file_id)
+        for sub_container in sub_containers:
+            encodings.append(sub_container.encoding)
+            sub_file_ids.append(sub_container.file_id)
 
         data = self._request(Endpoints.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
 

@@ -190,12 +190,12 @@ def test_auto_update():
 def test_download_subtitles():
     BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = ((SEARCH_RESULT1,),)
-    BARE_CALL = (*BARE_QUERIES, [BARE_PATH])
+    BARE_CALL = ([SEARCH_RESULT1.subtitles], [BARE_PATH])
     BARE_IDEAL = [BARE_PATH]
 
     FULL_PATH = Path("test dir") / "test file"
-    FULL_QUERIES = ((SEARCH_RESULT1,), "test dir", "test file")
-    FULL_CALL = ((SEARCH_RESULT1,), [FULL_PATH])
+    FULL_QUERIES = ((SEARCH_RESULT1.subtitles,), "test dir", "test file")
+    FULL_CALL = ([SEARCH_RESULT1.subtitles], [FULL_PATH])
     FULL_IDEAL = [FULL_PATH]
     RESP = None
 
@@ -266,7 +266,7 @@ def test__download_subtitles():
         sub_path = Path(temp_dir) / "test download.txt"
 
         with patch.object(asw, "_request", return_value=RESP) as mocked:
-            asw._download_subtitles([SEARCH_RESULT1], [sub_path])
+            asw._download_subtitles([SEARCH_RESULT1.subtitles], [sub_path])
 
         mocked.assert_called_with(
             Endpoints.DOWNLOAD_SUBTITLES, [SEARCH_RESULT1.subtitles.file_id]
