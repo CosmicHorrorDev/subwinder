@@ -61,7 +61,7 @@ def main():
         result = ext_results[resp]
         preview = asw.preview_subtitles([result])[0]
         # Limit preview size
-        print(f"Preview: {preview[:200]}\n")
+        print(f"Preview:\n{preview[:200]}\n")
 
         resp = input("Do you want to download these subtitles? (Y/n) ").strip().lower()
         if resp == "n":
@@ -76,12 +76,30 @@ def main():
 
 
 # And now we can extend all the `MediaInfo` classes we care about
-class ExtMovieInfo(info.MediaInfo):
+class ExtMovieInfo(info.MovieInfo):
+    def __init__(self, movie):
+        super().__init__(
+            movie.name,
+            movie.year,
+            movie.imdbid,
+            movie.get_dirname(),
+            movie.get_filename(),
+        )
+
     def __str__(self):
         return f"(Movie)\t{self.name}\t({self.year})\t(imdb: {self.imdbid})"
 
 
 class ExtTvSeriesInfo(info.TvSeriesInfo):
+    def __init__(self, tv_series):
+        super().__init__(
+            tv_series.name,
+            tv_series.year,
+            tv_series.imdbid,
+            tv_series.get_dirname(),
+            tv_series.get_filename(),
+        )
+
     def __str__(self):
         return f"(TV Series)\t{self.name}\t({self.year})\t(imdb: {self.imdbid})"
 
@@ -93,26 +111,19 @@ def build_extended_mediainfo(obj):
         info.TvSeriesInfo: ExtTvSeriesInfo,
     }
 
-    # Skip the constructor and add all the members since they should be the same
+    # Use the correct extended class for `obj`
     class_type = CLASS_MAP[type(obj)]
-    ext_media = class_type.__new__(class_type)
-    ext_media.__dict__ = obj.__dict__
-
-    return ext_media
+    return class_type(obj)
 
 
 class ExtSearchResult(info.SearchResult):
-    TIME_FMT = "%Y-%m-%d %H:%M:%S"
-
-    @classmethod
-    def from_search_result(cls, search_result):
-        ext_result = ExtSearchResult.__new__(ExtSearchResult)
-        ext_result.__dict__ = search_result.__dict__
-
-        return ext_result
+    def __init__(self, search_result):
+        # All of the members are named the same the params so we can just pass in
+        super().__init__(**search_result.__dict__)
 
     def __str__(self):
-        upload = dt.strftime(self.upload_date, self.TIME_FMT)
+        TIME_FMT = "%Y-%m-%d %H:%M:%S"
+        upload = dt.strftime(self.upload_date, TIME_FMT)
         sub = self.subtitles
         author = "NA" if self.author is None else self.author.name
         return f"[{upload} | by {author} | {sub.ext}] {sub.filename}"
