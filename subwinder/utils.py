@@ -10,6 +10,8 @@ def extract(bytes, encoding):
     Extract `bytes` from being gzip'd and base64 encoded.
     """
     compressed = base64.b64decode(bytes)
+    # TODO: only previewing cares about getting this as a string. downloading can take
+    #       it directly as bytes
     return gzip.decompress(compressed).decode(encoding)
 
 

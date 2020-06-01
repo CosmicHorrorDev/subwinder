@@ -46,7 +46,7 @@ def main():
             print()
             desired = info.EpisodeInfo.from_tv_series(desired, season, episode)
         results = asw.search_subtitles_unranked([(desired, LANG)])[0]
-        ext_results = [ExtSearchResult.from_search_result(result) for result in results]
+        ext_results = [ExtSearchResult(result) for result in results]
 
         print("Results:")
         for i, ext_result in enumerate(ext_results):
