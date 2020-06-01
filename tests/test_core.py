@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime
 import json
 from tempfile import TemporaryDirectory
+import os
 from pathlib import Path
 from unittest.mock import call, patch
 
@@ -124,13 +125,25 @@ def test_server_info():
 # TODO: assert that _request isn't called for bad params?
 # TODO: test correct case as well (assert token as well)
 def test_authsubwinder__init__():
+    # Clear out env vars if set
+    ENV_VARS = [
+        "OPEN_SUBTITLES_USERAGENT",
+        "OPEN_SUBTITLES_USERNAME",
+        "OPEN_SUBTITLES_PASSWORD",
+    ]
+
+    for var in ENV_VARS:
+        del os.environ[var]
+
     bad_params = [
-        # Missing both username and password
-        ["<useragent"],
-        # Missing password
-        ["<useragent>", "<username>"],
+        # Empty creds
+        [],
+        # Missing both password and useragent
+        ["<username>"],
+        # Missing useragent
+        ["<username>", "<password>"],
         # Invalid useragent
-        [None, "<username>", "<password>"],
+        ["<username>", "<password>", None],
     ]
 
     for params in bad_params:
