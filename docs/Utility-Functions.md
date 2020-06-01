@@ -13,12 +13,12 @@ from subwinder.utils import extract, special_hash
 * [`extract()`](#extractbytes-encoding)
 * [`special_hash()`](#special_hashfilepath)
 
-### `extract(bytes, encoding)`
+### `extract(bytes)`
 
-Small helper function that base64 decodes and gzip decompresses `bytes` into from an `encoding` encoded string to a python `str`. This likely won't be useful to many people, but this is the format used to transfer subtitles and previews from the opensubtitles API.
+Small helper function that base64 decodes and gzip decompresses `bytes`. This likely won't be useful to many people, but this is the format used to transfer subtitles and previews from the opensubtitles API.
 
 ```python
-assert "Hi!" == extract(b"H4sIAIjurl4C//PIVAQA2sWeeQMAAAA=", "UTF-8")
+assert b"Hi!" == extract(b"H4sIAIjurl4C//PIVAQA2sWeeQMAAAA=")
 ```
 
 ### `special_hash(filepath)`

@@ -275,19 +275,14 @@ class AuthSubwinder(Subwinder):
         return download_paths
 
     def _download_subtitles(self, sub_containers, filepaths):
-        encodings = []
         sub_file_ids = []
-        # Unpack stored info
-        for sub_container in sub_containers:
-            encodings.append(sub_container.encoding)
-            sub_file_ids.append(sub_container.file_id)
+        # Get all the file ids
+        sub_file_ids = [sub_container.file_id for sub_container in sub_containers]
 
         data = self._request(Endpoints.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
 
-        for encoding, result, fpath in zip(encodings, data, filepaths):
-            # Currently pray that python supports all the encodings and is called the
-            # same as what opensubtitles returns
-            subtitles = utils.extract(result["data"], encoding)
+        for result, fpath in zip(data, filepaths):
+            subtitles = utils.extract(result["data"])
 
             # Create the directories if needed, then save the file
             dirpath = fpath.parent
@@ -295,10 +290,10 @@ class AuthSubwinder(Subwinder):
 
             # Write atomically if possible, otherwise fall back to regular writing
             if ATOMIC_DOWNLOADS_SUPPORT:
-                with atomic_write(fpath) as f:
+                with atomic_write(fpath, mode="wb") as f:
                     f.write(subtitles)
             else:
-                with fpath.open("w") as f:
+                with fpath.open("wb") as f:
                     f.write(subtitles)
 
     def get_comments(self, sub_containers):
@@ -563,6 +558,7 @@ class AuthSubwinder(Subwinder):
             encoding = preview["encoding"]
             contents = preview["contents"]
 
-            previews.append(utils.extract(contents, encoding))
+            # Extract and decode the previews
+            previews.append(utils.extract(contents).decode(encoding))
 
         return previews

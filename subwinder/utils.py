@@ -5,14 +5,12 @@ from pathlib import Path
 from subwinder.exceptions import SubHashError
 
 
-def extract(bytes, encoding):
+def extract(bytes):
     """
     Extract `bytes` from being gzip'd and base64 encoded.
     """
     compressed = base64.b64decode(bytes)
-    # TODO: only previewing cares about getting this as a string. downloading can take
-    #       it directly as bytes
-    return gzip.decompress(compressed).decode(encoding)
+    return gzip.decompress(compressed)
 
 
 # As per API spec with some tweaks to make it a bit nicer

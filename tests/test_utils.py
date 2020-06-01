@@ -8,11 +8,11 @@ def test_extract():
         "wa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSMFps5/4WhRKSPvwBzf2OXZqAAAA"
     )
     IDEAL = (
-        "Hello there, I'm that good ole compressed and encoded subtitle information"
-        " that you so dearly want to save"
+        b"Hello there, I'm that good ole compressed and encoded subtitle information"
+        b" that you so dearly want to save"
     )
 
-    assert extract(COMPRESSED, "UTF-8") == IDEAL
+    assert extract(COMPRESSED) == IDEAL
 
 
 def test_special_hash():
