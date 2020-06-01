@@ -133,7 +133,8 @@ def test_authsubwinder__init__():
     ]
 
     for var in ENV_VARS:
-        del os.environ[var]
+        if var in os.environ:
+            del os.environ[var]
 
     bad_params = [
         # Empty creds
