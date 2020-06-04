@@ -16,6 +16,9 @@ def test__request():
         assert request(Endpoints.SERVER_INFO, None) == RESP
         mocked.assert_called_once_with()
 
+
+@pytest.mark.slow
+def test_retry_on_fail():
     CALLS = [
         call("<token>", "arg1", "arg2"),
         call("<token>", "arg1", "arg2"),
@@ -30,6 +33,7 @@ def test__request():
         mocked.assert_has_calls(CALLS)
 
 
+@pytest.mark.slow
 def test_request_timeout():
 
     # Reqquests take a bit to timeout so were just gonna run all of them simulatneously

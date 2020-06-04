@@ -84,11 +84,6 @@ def test__build_search_query():
         assert _build_search_query(*args) == ideal_result
 
 
-@pytest.mark.skip(reason="Only passes the values onto `_request`")
-def test__request():
-    pass
-
-
 def test_daily_download_info():
     with open(SAMPLES_DIR / "server_info.json") as f:
         RESP = json.load(f)
@@ -150,11 +145,6 @@ def test_authsubwinder__init__():
     for params in bad_params:
         with pytest.raises(SubAuthError):
             AuthSubwinder(*params)
-
-
-@pytest.mark.skip()
-def test_with():
-    pass
 
 
 def test__login():
