@@ -12,7 +12,11 @@ import os
 
 from subwinder import utils
 from subwinder._internal_utils import type_check
-from subwinder._request import request, Endpoints
+
+# See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
+# if you want to know why `request` isn't imported with `from`
+import subwinder._request
+from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
 from subwinder.info import (
     build_media_info,
@@ -90,7 +94,7 @@ class Subwinder:
         Call the API `Endpoint` represented by `method` with any of the given `params`.
         """
         # Call the `request` function with our token
-        return request(endpoint, self._token, *params)
+        return subwinder._request.request(endpoint, self._token, *params)
 
     def daily_download_info(self):
         """

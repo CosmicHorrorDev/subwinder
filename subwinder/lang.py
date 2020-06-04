@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from subwinder._request import Endpoints, request
+# See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
+# if you want to know why `request` isn't imported with `from`
+import subwinder._request
+from subwinder._request import Endpoints
 from subwinder.exceptions import SubLangError
 
 
@@ -44,7 +47,7 @@ class _LangConverter:
         return super(_LangConverter, self).__getattribute__(name)
 
     def _fetch(self):
-        return request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
+        return subwinder._request.request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
 
     def _update(self, force=False):
         # Language list should refresh every hour, return early if still fresh unless
