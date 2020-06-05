@@ -6,8 +6,12 @@ import sys
 
 
 def main():
+    # Language of our desired subtitles
     LANG = "en"
+    interative(LANG)
 
+
+def interative(lang):
     # Assumes all the credentials are set using environment variables
     with AuthSubwinder() as asw:
         # Give a nice friendly prompt
@@ -45,7 +49,7 @@ def main():
             episode = int(input("What episode do you want? "))
             print()
             desired = info.EpisodeInfo.from_tv_series(desired, season, episode)
-        results = asw.search_subtitles_unranked([(desired, LANG)])[0]
+        results = asw.search_subtitles_unranked([(desired, lang)])[0]
         ext_results = [ExtSearchResult(result) for result in results]
 
         print("Results:")

@@ -2,9 +2,9 @@ import pytest
 
 from datetime import datetime
 import json
-from tempfile import TemporaryDirectory
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
 from subwinder import AuthSubwinder, Subwinder
