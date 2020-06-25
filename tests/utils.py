@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import random
 from tempfile import NamedTemporaryFile
@@ -8,7 +9,7 @@ class RandomTempFile:
         CHUNK_SIZE = 4096  # 4KiB
         random.seed(seed)
 
-        self.temp_file = NamedTemporaryFile()
+        self.temp_file = NamedTemporaryFile(delete=False)
 
         # Write in `size` bytes of psuedo-random data
         while size > CHUNK_SIZE:
@@ -24,7 +25,8 @@ class RandomTempFile:
             remaining = random.getrandbits(size * 8).to_bytes(size, byteorder="big")
             self.temp_file.write(remaining)
 
-        self.temp_file.seek(0)
+        # self.temp_file.seek(0)
+        self.temp_file.close()
 
     def __enter__(self):
         # Just return the path for the file
@@ -33,4 +35,4 @@ class RandomTempFile:
     def __exit__(self, exc_type, exc_value, traceback):
         # Just like in real life even when stuff isn't going great, just ignore all the
         # problems and keep moving on
-        self.temp_file.close()
+        os.remove(self.temp_file.name)
