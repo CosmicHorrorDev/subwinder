@@ -16,14 +16,21 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(autouse=True)
-def skip_non_default(request):
+def _skip_non_default(request):
     node = request.node
-    run_all = request.config.getoption("--run-all")
-    mark = request.config.getoption("-m")
 
-    # Skip any tests with a marker set unless a marker or run all arg is passed in
-    if not mark and not run_all and node.own_markers:
+    # IF we are skipping non default and we have a mark
+    # TODO: check for specific mark values
+    if skip_non_default(request) and request.node.own_markers:
         pytest.skip(
             f"Skipping mark for reason {node.own_markers[0].name}. Run with option"
             " --run-all to run this"
         )
+
+
+def skip_non_default(request):
+    run_all = request.config.getoption("--run-all")
+    mark = request.config.getoption("-m")
+
+    # skip tests if mark value isn't given and run all is not specified
+    return not mark and not run_all
