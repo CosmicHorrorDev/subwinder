@@ -23,15 +23,21 @@ def main():
     # The language we want to search for
     LANG = "en"
 
+    adv_quickstart(
+        INPUT_DIR, OUTPUT_DIR, SAVED_SUBS_FILE, LANG, AUTHOR_WHITELIST, SUB_EXTS
+    )
+
+
+def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_exts):
     # So now let's get all the files in `INPUT_DIR` as `Media` objects
-    print(f"Scanning {INPUT_DIR}... ", end="")
+    print(f"Scanning {input_dir}... ", end="")
     queries = []
-    for item in INPUT_DIR.iterdir():
+    for item in input_dir.iterdir():
         # We only care about files
         if item.is_file():
             # Hashing can fail if the file is too small (under 128 KiB)
             try:
-                queries.append((Media(item), LANG))
+                queries.append((Media(item), lang))
             except SubHashError:
                 pass
     print(f"Found {len(queries)} files")
@@ -43,7 +49,7 @@ def main():
         # Now we can search for all of our `media` using our custom ranking function
         print("Searching... ", end="")
         results = asw.search_subtitles(
-            queries, custom_rank_func, AUTHOR_WHITELIST, SUB_EXTS,
+            queries, custom_rank_func, author_whitelist, sub_exts,
         )
         # Filter out items that didn't get any matches
         results = [result for result in results if result is not None]
@@ -57,27 +63,26 @@ def main():
             results, name_format="{media_name}.{lang_3}.{ext}"
         )
         print("Downloaded")
-
     # And at this point we're done with the API. Exiting the `with` logs out of the API
 
     # Move all the media that we have subtitles for now
     # Note: that this does not retain any special directory structure from
     #       `INPUT_DIR` in `OUTPUT_DIR`
-    print(f"Moving matched media and subtitle files to {OUTPUT_DIR}... ", end="")
+    print(f"Moving matched media and subtitle files to {output_dir}... ", end="")
     for result, download in zip(results, download_paths):
         from_media_path = result.media.get_filepath()
-        to_media_path = OUTPUT_DIR / from_media_path.name
+        to_media_path = output_dir / from_media_path.name
         from_media_path.rename(to_media_path)
 
         from_sub_path = download
-        to_sub_path = OUTPUT_DIR / from_sub_path.name
+        to_sub_path = output_dir / from_sub_path.name
         from_sub_path.rename(to_sub_path)
     print("Moved")
 
     # Save the search results to a file in case we want them later
-    print(f"Updating index of saved files {SAVED_SUBS_FILE}... ", end="")
-    if SAVED_SUBS_FILE.is_file():
-        with SAVED_SUBS_FILE.open() as file:
+    print(f"Updating index of saved files {ledger}... ", end="")
+    if ledger.is_file():
+        with ledger.open() as file:
             saved_subs = json.load(file)
     else:
         saved_subs = []
@@ -85,7 +90,7 @@ def main():
     ext_subs = [ExtSubtitlesInfo.from_subtitles(result) for result in results]
     saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
 
-    with SAVED_SUBS_FILE.open("w") as file:
+    with ledger.open("w") as file:
         json.dump(saved_subs, file)
     print("Updated")
 

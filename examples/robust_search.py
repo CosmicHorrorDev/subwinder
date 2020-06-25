@@ -8,14 +8,19 @@ import re
 
 def main():
     LANG = "en"
-    # Match on a s<num>e<num> snippet for `TvSeriesInfo`
-    EPISODE_REGEX = re.compile(r"s(\d{1,})e(\d{1,})", re.IGNORECASE)
     # So let's start off assuming we have two files like in the original Quickstart
     MEDIA_FILEPATHS = ["/path/to/movie.mkv", "/path/to/episode.avi"]
 
+    robust_search(LANG, MEDIA_FILEPATHS)
+
+
+def robust_search(lang, media_filepaths):
+    # Match on a s<num>e<num> snippet for `TvSeriesInfo`
+    EPISODE_REGEX = re.compile(r"s(\d{1,})e(\d{1,})", re.IGNORECASE)
+
     # First thing is to get `Media` objects for the files we want subtitles for
     media = []
-    for filepath in MEDIA_FILEPATHS:
+    for filepath in media_filepaths:
         # Hashing fails if the file is too small (under 128 KiB)
         try:
             media.append(Media(filepath))
@@ -25,7 +30,7 @@ def main():
     # And now we'll start searching (assumes credentials are set with env vars)
     with AuthSubwinder() as asw:
         # (to simplify things I'm just doing one lang)
-        results = asw.search_subtitles(zip(media, repeat(LANG)))
+        results = asw.search_subtitles(zip(media, repeat(lang)))
         # And now we'll assume that _at least one_ result didn't find an exact match
         # (peeking under the hood, the search above occurs with the file hash and size
         # to get an exact match which fails when no subtitles are linked to that exact
@@ -72,7 +77,7 @@ def main():
                     )
 
         # Now we can search for all the missing media that we have guesses for
-        new_results = asw.search_subtitles(zip(guesses, repeat(LANG)))
+        new_results = asw.search_subtitles(zip(guesses, repeat(lang)))
 
     # And now here is our final list of results that we can use, if you wanted you could
     # do a little more to keep track of the `Media` these are associated with, but
