@@ -15,7 +15,8 @@ from subwinder.info import (
 from subwinder.media import Media
 
 
-TEST_DIR = Path(__file__).parent
+TEST_DIR = Path(__file__).resolve().parent
+REPO_DIR = TEST_DIR.parent
 SAMPLES_DIR = TEST_DIR / "sample_responses"
 
 MEDIA1 = Media.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
