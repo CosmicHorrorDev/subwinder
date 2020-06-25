@@ -61,6 +61,7 @@ def fake_media(entry_file, output_dir, entry_indicies=[]):
             )
 
     # Generate the fake media for each of the entries
+    output_paths = []
     for entry_index in entry_indicies:
         entry = entries[entry_index]
         output_file = output_dir / entry["name"]
@@ -89,6 +90,11 @@ def fake_media(entry_file, output_dir, entry_indicies=[]):
                 remaining -= chunk
 
             file.write((0).to_bytes(remaining, byteorder="little"))
+
+        output_paths.append(output_file)
+
+    # Return the paths to all the dummy files
+    return output_paths
 
 
 if __name__ == "__main__":
