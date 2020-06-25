@@ -1,16 +1,16 @@
 from pathlib import Path
 
 from subwinder import Media
-from tests.constants import TEST_DIR
+from tests.utils import RandomTempFile
 
 
 def test_Media():
-    HASH_DIR = Path(TEST_DIR) / "hash_files"
-    HASH_LOCATION = HASH_DIR / "random_1"
-    media = Media(HASH_LOCATION)
+    # TODO: mock out the hash here with a random file with known seed too
+    with RandomTempFile(128 * 1024, seed=1) as rand_file:
+        media = Media(rand_file)
 
-    assert media.hash == "38516a7d01f4e37d"
-    assert media.size == 128 * 1024
-    assert media.get_filename() == Path("random_1")
-    assert media.get_dirname() == HASH_DIR
-    assert media.get_filepath() == HASH_LOCATION
+        assert media.hash == "25182dd38c3b3793"
+        assert media.size == 128 * 1024
+        assert media.get_filename() == Path(rand_file.name)
+        assert media.get_dirname() == rand_file.parent
+        assert media.get_filepath() == rand_file

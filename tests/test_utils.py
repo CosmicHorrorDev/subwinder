@@ -1,5 +1,9 @@
+import pytest
+
 from subwinder.utils import extract, special_hash
-from tests.constants import TEST_DIR
+from tests.utils import RandomTempFile
+
+from subwinder.exceptions import SubHashError
 
 
 def test_extract():
@@ -16,9 +20,19 @@ def test_extract():
 
 
 def test_special_hash():
-    # Maps filename to hash
-    hashes = {"random_1": "38516a7d01f4e37d", "random_2": "a16ad3dbbe8037fa"}
+    # Make sure fails on too small of size
+    with RandomTempFile(128 * 1024 - 1) as rand_file:
+        with pytest.raises(SubHashError):
+            special_hash(rand_file)
 
-    for file, ideal_hash in hashes.items():
-        hash = special_hash(TEST_DIR / "hash_files" / file)
-        assert hash == ideal_hash
+    # Test for matching hashes
+    HASHES = [
+        "a7abc175960dcada",
+        "25182dd38c3b3793",
+        "51cbe0f797fcf0b2",
+        "3a947b73b070ea20",
+        "2503835efd3d3c59",
+    ]
+    for i, hash in zip(range(5), HASHES):
+        with RandomTempFile(128 * 1024, seed=i) as rand_file:
+            assert hash == special_hash(rand_file)
