@@ -1,9 +1,11 @@
 import pytest
 
-from subwinder.utils import extract, special_hash
-from tests.utils import RandomTempFile
+import os
+from tempfile import NamedTemporaryFile
 
 from subwinder.exceptions import SubHashError
+from subwinder.utils import extract, special_hash
+from tests.utils import RandomTempFile
 
 
 def test_extract():
@@ -20,10 +22,27 @@ def test_extract():
 
 
 def test_special_hash():
+    CHUNK_SIZE = 64 * 1024  # 64KiB
+    HASHED_SIZE = CHUNK_SIZE * 2
+
     # Make sure fails on too small of size
-    with RandomTempFile(128 * 1024 - 1) as rand_file:
+    with RandomTempFile(HASHED_SIZE - 1) as rand_file:
         with pytest.raises(SubHashError):
             special_hash(rand_file)
+
+    # Ensure hash doesn't just run over the whole file
+    temp_file = NamedTemporaryFile(delete=False)
+    temp_file.write(bytes(CHUNK_SIZE))
+    temp_file.write((1).to_bytes(1, byteorder="big"))
+    temp_file.write(bytes(CHUNK_SIZE))
+    temp_file.close()
+
+    # Hash should be 0x0 (sum) + 0x2001 (file size), if the middle byte was included
+    # then it would be 0x1 (sum) instead
+    assert "0000000000020001" == special_hash(temp_file.name)
+
+    # Cleanup our mess since we needed `delete=False` for `NamedTemporaryFile`
+    os.remove(temp_file.name)
 
     # Test for matching hashes
     HASHES = [
@@ -34,5 +53,5 @@ def test_special_hash():
         "2503835efd3d3c59",
     ]
     for i, hash in zip(range(5), HASHES):
-        with RandomTempFile(128 * 1024, seed=i) as rand_file:
+        with RandomTempFile(HASHED_SIZE, seed=i) as rand_file:
             assert hash == special_hash(rand_file)
