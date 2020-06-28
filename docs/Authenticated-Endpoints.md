@@ -103,17 +103,17 @@ Download subtitles will download the subtitles for all the `downloads` either be
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
-| `downloads`| `List[SearchResult or SubtitlesInfo]` [[1]](Custom-Classes.md#searchresult) [[2]](Custom-Classes.md#subtitlesinfo) | Subtitles to download. Note that `SubtitlesInfo` will be more limited since there isn't information to any original media it's linked to like a filename or dirname |
-| `download_dir` | `str`, `pathlib.Path`, or `None` | (Default `None`) The directory the subtitles are downloaded into. If `None` it will attempt to download next to the original [`Media`](Custom-Classes.md#media) file: however, some [`SearchResult`s](Custom-Classes.md#searchresult) will not be associated to a media (`.media.dirname is None`) so this will raise a [`SubDownloadError`](Exceptions.md#subdownloaderror). This can be fixed by either setting `download_dir` or by setting any missing `.media.dirname` |
+| `downloads`| `List[SearchResult or SubtitlesInfo]` [[1]](Custom-Classes.md#searchresult) [[2]](Custom-Classes.md#subtitlesinfo) | Subtitles to download. Note that `SubtitlesInfo` will be more limited since there isn't information to any original media it's linked to like a filename or directory |
+| `download_dir` | `str`, `pathlib.Path`, or `None` | (Default `None`) The directory the subtitles are downloaded into. If `None` it will attempt to download next to the original [`Media`](Custom-Classes.md#media) file: however, some [`SearchResult`s](Custom-Classes.md#searchresult) will not be associated to a media (`.media.get_dirname() is None`) so this will raise a [`SubDownloadError`](Exceptions.md#subdownloaderror). This can be fixed by either setting `download_dir` or by setting any missing `.media.get_dirname()` |
 | `name_format` | `str` | (Default `"{upload_filename}"`) is the format used to name the downloaded subtitles. It defaults to the uploaded filename for the subtitles: however, it gets `format`ed with possible values including `media_name` for the name of the [`Media`](Custom-Classes.md#media) without the file extension that was searched for (same situation as `download_dir`, may have to set `.media.filename`), `lang_2`, `lang_2`, `ext` for the extension, `upload_name`, `upload_filename`. A popular format would be `"{media_name}.{lang_3}.{ext}"` |
 
 **Returns:** the full `pathlib.Path`s of where subtitles were downloaded.
 
 ```python
-# If the `dirname is None` then we can avoid an exception by either setting the
-# `dirname` or specifying the `download_dir` for `download_subtitles`
-assert downloads[0].media.dirname is None
-downloads[0].media.dirname = "/path/to/subtitles"
+# If the `_dirname is None` then we can avoid an exception by either setting the
+# `_dirname` or specifying the `download_dir` for `download_subtitles`
+assert downloads[0].media.get_dirname() is None
+downloads[0].media.get_dirname("/path/to/subtitles")
 download_paths = asw.download_subtitles(
     downloads, name_format="{upload_name}-{media_name}-{lang_2}.{ext}"
 )

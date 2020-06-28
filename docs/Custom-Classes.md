@@ -164,7 +164,7 @@ Gets the path represented by `_dirname` and `_filename` or `None` if neither are
 
 #### `.set_filepath(filepath)`
 
-Sets the `filename` and `dirname` for the `MediaInfo`. Useful for when you can't initialize the `MediaInfo` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
+Sets the `_filename` and `_dirname` for the `MediaInfo`. Useful for when you can't initialize the `MediaInfo` using the normal constructor, but you want to have subtitles downloaded using the directory and filename from `filepath`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
@@ -195,7 +195,7 @@ Gets `_filename`.
 
 #### `.set_filename(filename)`
 
-Sets the `filename` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want the context of the `filename` when downloading the subtitles.
+Sets the `_filename` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want the context of the `_filename` when downloading the subtitles.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
@@ -222,7 +222,7 @@ Gets `_dirname`.
 
 ### `.set_dirname(dirname)`
 
-Sets the `dirname` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want to automatically save the subtitles for this `MediaInfo` in `dirname`.
+Sets the `_dirname` for the `MediaInfo`. Like `.set_filepath(filepath)` this is useful when you can't initialize the `MediaInfo` using the normal constructor, but you want to automatically save the subtitles for this `MediaInfo` in `_dirname`.
 
 | Param | Type | Description |
 | :---: | :---: | :--- |
@@ -348,8 +348,8 @@ This class is used to get the `special_hash` and filesize of a media file which 
 
 | Member | Type | Description |
 | :---: | :---: | :--- |
-| `dirname` | `pathlib.Path` or `None` | (Default `None`) Optional directory of the local media file |
-| `filename` | `pathlib.Path` or `None` | (Default `None`) Optional file name of the local media file |
+| `_dirname` | `pathlib.Path` or `None` | (Default `None`) Optional directory of the local media file |
+| `_filename` | `pathlib.Path` or `None` | (Default `None`) Optional file name of the local media file |
 | `hash` | `str` | The hexadecimal `special_hash` of the media |
 | `size` | `int` | The size of the media in bytes |
 
