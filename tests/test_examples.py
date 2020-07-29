@@ -50,6 +50,7 @@ def gen_fake_media(request):
 
 
 # TODO: verify stdout looks good too
+# XXX: don't have to remove lang stuff from here now
 @patch("subwinder._request.request")
 def test_interactive(mock_request, tmp_path):
     SAMPLE_INPUTS = [
@@ -101,6 +102,7 @@ def test_interactive(mock_request, tmp_path):
 
 
 # FIXME: likely don't use `tmp_path` here, it doesn't automatically get cleaned up
+# XXX: don't have to remove lang stuff from here now
 @pytest.mark.io_heavy
 def test_adv_quickstart(gen_fake_media, tmp_path):
     fake_media_paths = gen_fake_media

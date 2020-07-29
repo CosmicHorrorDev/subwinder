@@ -16,7 +16,6 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
-from subwinder.lang import _converter
 from tests.constants import (
     EPISODE_INFO1,
     FULL_USER_INFO1,
@@ -25,14 +24,6 @@ from tests.constants import (
     SEARCH_RESULT2,
     SUBTITLES_INFO1,
 )
-
-# Fake already updated langs to prevent API requests
-_converter._langs = [
-    ["de", "en", "fr"],
-    ["ger", "eng", "fre"],
-    ["German", "English", "French"],
-]
-_converter._last_updated = datetime.now()
 
 
 def test_build_media_info():
@@ -57,12 +48,14 @@ def test_build_media_info():
 
 
 def test_UserInfo():
+    # TODO: Is there any better place to get this information?
     DATA = {"UserID": "1332962", "UserNickName": "elderman"}
 
     assert UserInfo.from_data(DATA) == USER_INFO1
 
 
 def test_FullUserInfo():
+    # TODO: Is there any better place to get this information?
     DATA = {
         "UserID": "6",
         "UserNickName": "os",
@@ -77,6 +70,7 @@ def test_FullUserInfo():
 
 
 def test_Comment():
+    # TODO: Is there any better place to get this information?
     DATA = {
         "UserID": "<id>",
         "UserNickName": "<name>",
@@ -90,6 +84,7 @@ def test_Comment():
 
 
 def test_MediaInfo():
+    # TODO: Is there any better place to get this information?
     DATA = {
         "MovieName": "<name>",
         "MovieYear": "2000",
@@ -112,6 +107,7 @@ def test_TvSeriesInfo():
 
 
 def test_EpisodeInfo():
+    # TODO: Is there any better place to get this information?
     DATA = {
         "MovieName": '"Fringe" Alone in the World',
         "MovieYear": "2011",
@@ -131,6 +127,7 @@ def test_EpisodeInfo():
 
 
 def test_SubtitlesInfo():
+    # TODO: Is there any better place to get this information?
     DATA = {
         "SubSize": "71575",
         "SubDownloadsCnt": "22322",
@@ -150,9 +147,11 @@ def test_SubtitlesInfo():
 
 
 def test_SearchResult():
+    # XXX: switch this to pathlib style open
     with open(SAMPLES_DIR / "search_subtitles.json") as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
     search_result = SearchResult.from_data(SAMPLE_RESP)
+    # XXX: can I get rid of this?
     search_result.media.set_filepath("/path/to/file.mkv")
     assert SEARCH_RESULT2 == search_result

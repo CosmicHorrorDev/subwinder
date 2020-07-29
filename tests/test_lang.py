@@ -12,6 +12,7 @@ from subwinder.lang import (
 
 
 # Snippet of the GetSubLanguages response
+# XXX: get this from somewhere else or move it to it's own file?
 RESP = [
     {"ISO639": "de", "SubLanguageID": "ger", "LanguageName": "German"},
     {"ISO639": "en", "SubLanguageID": "eng", "LanguageName": "English"},
@@ -46,11 +47,7 @@ def test_LangConverter():
         mocked.assert_has_calls([call(), call()])
 
 
-def test_globals():
-    # Reset converter if needed (this is due to testing in test_auth)
-    _converter._last_updated = None
-    _converter.langs = None
-
+def test_globals(no_fake_langs):
     with patch.object(_converter, "_fetch", return_value=RESP) as mocked:
         # Check all the conversions
         assert "eng" == lang_2s.convert("en", LangFormat.LANG_3)

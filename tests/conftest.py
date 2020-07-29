@@ -5,6 +5,10 @@ documented for it, so enjoy this pytest black magic.
 
 import pytest
 
+from datetime import datetime as dt
+
+from subwinder.lang import _converter
+
 
 def pytest_addoption(parser):
     # Add a command line option to run all tests
@@ -34,3 +38,36 @@ def skip_non_default(request):
 
     # skip tests if mark value isn't given and run all is not specified
     return not mark and not run_all
+
+
+@pytest.fixture(autouse=True)
+def _fake_langs():
+    store_langs = _converter._langs
+    store_last_updated = _converter._last_updated
+
+    _converter._langs = [
+        ["de", "en", "fr"],
+        ["ger", "eng", "fre"],
+        ["German", "English", "French"],
+    ]
+    _converter._last_updated = dt.now()
+
+    yield
+
+    _converter._langs = store_langs
+    _converter._last_updated = store_last_updated
+
+
+# Negates `_fake_langs` which by default fakes the language listing
+@pytest.fixture
+def no_fake_langs():
+    store_langs = _converter._langs
+    store_last_updated = _converter._last_updated
+
+    _converter._langs = [[], [], []]
+    _converter._last_updated = None
+
+    yield
+
+    _converter._langs = store_langs
+    _converter._last_updated = store_last_updated

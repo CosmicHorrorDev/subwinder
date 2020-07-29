@@ -8,7 +8,6 @@ from subwinder.exceptions import SubServerError
 import pytest
 
 
-# Note: this test takes a bit of time because of the delayed API request retry
 def test__request():
     RESP = {"status": "200 OK", "data": "The data!", "seconds": "0.15"}
     with patch.object(_client, "ServerInfo", return_value=RESP) as mocked:
@@ -17,6 +16,7 @@ def test__request():
         mocked.assert_called_once_with()
 
 
+# Note: this test takes a bit of time because of the delayed API request retry
 @pytest.mark.slow
 def test_retry_on_fail():
     CALLS = [
@@ -35,8 +35,7 @@ def test_retry_on_fail():
 
 @pytest.mark.slow
 def test_request_timeout():
-
-    # Reqquests take a bit to timeout so were just gonna run all of them simulatneously
+    # Requests take a bit to timeout so were just gonna run all of them simulatneously
     with Pool(len(Endpoints)) as pool:
         pool.map(_test_request_timeout, list(Endpoints))
 
@@ -52,6 +51,8 @@ def _test_request_timeout(endpoint):
         {"status": "429 Too many requests", "seconds": "0.10"},
     ]
 
+    # XXX: does calling a patched object several times just return the same response
+    #      already?
     with patch.object(_client, endpoint.value) as mocked:
         mocked.side_effect = RESPS
         start = dt.now()

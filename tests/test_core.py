@@ -17,7 +17,6 @@ from subwinder.info import (
     TvSeriesInfo,
     UserInfo,
 )
-from subwinder.lang import _converter
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -31,19 +30,12 @@ from tests.constants import (
 )
 
 
-# Fake already updated langs to prevent API requests
-_converter._langs = [
-    ["de", "en", "fr"],
-    ["ger", "eng", "fre"],
-    ["German", "English", "French"],
-]
-_converter._last_updated = datetime.now()
-
-
+# TODO: do this with a fixture too?
 def _dummy_auth_subwinder():
     return AuthSubwinder.__new__(AuthSubwinder)
 
 
+# TODO: is this really required
 def _standard_asw_mock(
     method, mocked_method, method_args, response, expected_call, ideal_result
 ):
@@ -56,6 +48,7 @@ def _standard_asw_mock(
     assert result == ideal_result
 
 
+# XXX: rip me out, not part of public api
 def test__build_search_query():
     # Setup the queries to the intended responses
     PARAM_TO_IDEAL_RESULT = [
@@ -119,6 +112,7 @@ def test_server_info():
 
 # TODO: assert that _request isn't called for bad params?
 # TODO: test correct case as well (assert token as well)
+# XXX: ENV_VARS stuff is a bit messy here. try to clean up logic if possible
 def test_authsubwinder__init__():
     # Clear out env vars if set
     ENV_VARS = [
@@ -147,6 +141,7 @@ def test_authsubwinder__init__():
             AuthSubwinder(*params)
 
 
+# Test creating an AuthSubwinder instead
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
@@ -155,6 +150,7 @@ def test__login():
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
 
+# This should be tested with `with` instead
 def test__logout():
     QUERIES = ()
     RESP = {"status": "200 OK", "seconds": 0.055}
@@ -173,6 +169,7 @@ def test_add_comment():
 
 def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
+    # XXX: switch out the tuple here with putting it down below or make it a list?
     QUERIES = (PROGRAM_NAME,)
     RESP = {
         "version": "1.2.3",
@@ -191,6 +188,7 @@ def test_auto_update():
 
 
 # TODO: test this for batching
+# TODO: ^^^ no, test batch separately. Too large for me to care
 def test_download_subtitles():
     BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = ((SEARCH_RESULT1,),)
@@ -224,29 +222,36 @@ def test_download_subtitles():
     # Test failing from no `download_dir`
     temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
     BARE_QUERIES[0][0].media.set_dirname(None)
+    # XXX: this mock isn't needed if _download_subtitles is never reached
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
+        # XXX: can I moved this mocked call to be used by all of these tests here?
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             with pytest.raises(SubDownloadError):
+                # XXX: result isn't used here so why is it assigned
                 result = asw.download_subtitles(*BARE_QUERIES)
     BARE_QUERIES[0][0].media.dirname = temp_dirname
 
     # Test failing from no `media_name` for `name_format`
     temp_filename = BARE_QUERIES[0][0].media.get_filename()
     BARE_QUERIES[0][0].media.set_filename(None)
+    # XXX: this mock isn't needed if _download_subtitles is never reached
     with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
         # Mock out the call to get remaining downloads as 200
         with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
             with pytest.raises(SubDownloadError):
+                # XXX: result isn't used here so why do we care
                 result = asw.download_subtitles(
                     *BARE_QUERIES, name_format="{media_name}"
                 )
     BARE_QUERIES[0][0].media.set_filename(temp_filename)
 
 
+# TODO: combine the logic up above with down here
 def test__download_subtitles():
     asw = _dummy_auth_subwinder()
 
+    # XXX: move this to a sample file?
     RESP = {
         "status": "200 OK",
         "data": [
@@ -277,6 +282,7 @@ def test__download_subtitles():
         )
 
         # Check the contents for the correct result
+        # XXX: switch this over to pathlib style opening
         with open(sub_path) as f:
             assert f.read() == IDEAL_CONTENTS
 
@@ -335,9 +341,11 @@ def test_guess_media():
         MovieInfo("Nochnoy dozor", 2004, "0403358", None, None),
         MovieInfo("Aliens", 1986, "0090605", None, None),
     ]
+    # XXX: Switch to pathlib style
     with open(SAMPLES_DIR / "guess_media.json") as f:
         SAMPLE_RESP = json.load(f)
 
+    # TODO: why not set the resp directly
     with patch.object(asw, "_request") as mocked:
         mocked.side_effect = SAMPLE_RESP
         guesses = asw.guess_media(QUERIES)
@@ -352,6 +360,7 @@ def test_guess_media():
     ]
     CALL = (Endpoints.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
     IDEAL_RESULT = [None, None]
+    # XXX: switch this to pathlib style
     with open(SAMPLES_DIR / "guess_media_edge_cases.json") as f:
         EDGE_RESP = json.load(f)
 
@@ -364,6 +373,7 @@ def test_guess_media():
 
 
 def test_ping():
+    # Move this to it's own file?
     RESP = {"status": "200 OK", "seconds": "0.055"}
     CALL = (Endpoints.NO_OPERATION,)
 
@@ -373,6 +383,7 @@ def test_ping():
 def test_report_media():
     QUERY = (SEARCH_RESULT2,)
     CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
+    # XXX: Same here? could be shared with ping
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
     _standard_asw_mock("report_media", "_request", QUERY, RESP, CALL, None)
@@ -393,11 +404,13 @@ def test_search_subtitles():
         SEARCH_RESULT2,
     ]
 
+    # XXX: Test through to _request, not just to _search_subtitles_unranked
     _standard_asw_mock(
         "search_subtitles", "_search_subtitles_unranked", QUERIES, RESP, CALL, IDEAL
     )
 
 
+# XXX: combine this with the above
 def test__search_subtitles_unranked():
     QUERIES = (((MEDIA1, "en"),),)
     CALL = (
@@ -423,6 +436,7 @@ def test__search_subtitles_unranked():
 def test_suggest_media():
     QUERY = ("matrix",)
     CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
+    # XXX: move this to it's own file
     RESP = {
         "status": "200 OK",
         "data": {
@@ -451,6 +465,7 @@ def test_suggest_media():
 
 
 def test_user_info():
+    # XXX: move it
     RESP = {
         "status": "200 OK",
         "data": {
@@ -473,6 +488,7 @@ def test_user_info():
 def test_vote():
     INVALID_SCORES = [0, 11]
     VALID_SCORES = [1, 10]
+    # XXX: move it
     SAMPLE_RESP = {
         "status": "200 OK",
         "data": {
@@ -501,6 +517,7 @@ def test_vote():
                 asw.vote(*query)
 
 
+# XXX: this should really test to _request, not just _preview_subtitles
 def test_preview_subtitles():
     QUERIES = ([SEARCH_RESULT1, SEARCH_RESULT2],)
     CALL = ([SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],)
@@ -512,6 +529,7 @@ def test_preview_subtitles():
     )
 
 
+# XXX: combine with the above
 def test__preview_subtitles():
     QUERIES = (["1951976245"],)
     CALL = (Endpoints.PREVIEW_SUBTITLES, QUERIES[0])
