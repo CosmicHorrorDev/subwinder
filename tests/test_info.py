@@ -27,7 +27,7 @@ from tests.constants import (
 
 
 def test_build_media_info():
-    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
         RESP = json.load(f)
     data = RESP["data"][0]
 
@@ -148,7 +148,7 @@ def test_SubtitlesInfo():
 
 def test_SearchResult():
     # XXX: switch this to pathlib style open
-    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
     search_result = SearchResult.from_data(SAMPLE_RESP)

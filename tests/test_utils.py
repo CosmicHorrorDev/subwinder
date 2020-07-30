@@ -20,5 +20,4 @@ def test_special_hash():
     hashes = {"random_1": "38516a7d01f4e37d", "random_2": "a16ad3dbbe8037fa"}
 
     for file, ideal_hash in hashes.items():
-        hash = special_hash(TEST_DIR / "hash_files" / file)
-        assert hash == ideal_hash
+        assert ideal_hash == special_hash(TEST_DIR / "hash_files" / file)

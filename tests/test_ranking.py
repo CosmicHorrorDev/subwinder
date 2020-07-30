@@ -17,19 +17,13 @@ def test_rank_search_subtitles():
         SEARCH_RESULT2,
     ]
 
-    # Format is (<args>, <kwargs>, <result>)
-    PARAM_TO_IDEAL_RESULT = [
-        # Empty results means nothing matched the query
-        (([], 0), {}, None),
-        # Exludes `DUMMY_RESULTS[0]` because it's _bad_
-        ((DUMMY_RESULTS, 0), {}, DUMMY_RESULTS[1]),
-        # Prefers `DUMMY_RESULTS[0]` because there's a higher score
-        ((DUMMY_RESULTS, 0), {"exclude_bad": False}, DUMMY_RESULTS[0]),
-        # Ecludes `DUMMY_RESULTS[0]` because of format
-        ((DUMMY_RESULTS, 0), {"sub_exts": ["SRT"]}, DUMMY_RESULTS[1]),
-        # What happens when nothing matches the parameters?
-        ((DUMMY_RESULTS, 0), {"exclude_bad": True, "sub_exts": ["ass"]}, None,),
-    ]
-
-    for args, kwargs, ideal_result in PARAM_TO_IDEAL_RESULT:
-        assert rank_search_subtitles(*args, **kwargs) == ideal_result
+    # Empty results means nothing matched the query
+    assert rank_search_subtitles([], 0) is None
+    # Exludes `SEARCH_RESULT1` because it's _bad_
+    assert rank_search_subtitles(DUMMY_RESULTS, 0) == SEARCH_RESULT2
+    # Prefers `SEARCH_RESULT1` because there's a higher score
+    assert rank_search_subtitles(DUMMY_RESULTS, 0, exclude_bad=False) == SEARCH_RESULT1
+    # Excludes `SEARCH_RESULT1` because of format
+    assert rank_search_subtitles(DUMMY_RESULTS, 0, sub_exts=["SRT"]) == SEARCH_RESULT2
+    # `None` when nothing matches
+    assert rank_search_subtitles(DUMMY_RESULTS, 0, sub_exts=["ass"]) is None

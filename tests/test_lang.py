@@ -22,7 +22,6 @@ RESP = [
 
 def test_LangConverter():
     converter = _LangConverter()
-    assert converter._last_updated is None
 
     with patch.object(converter, "_fetch", return_value=RESP) as mocked:
         # After first update converter shouldn't request again for an hour

@@ -42,19 +42,10 @@ def test_request_timeout():
 
 def _test_request_timeout(endpoint):
     RATE_LIMIT_SECONDS = 10
+    BAD_RESP = {"status": "429 Too many requests", "seconds": "0.10"}
 
-    # Due to the exponential backoff this should be enough errors to trigger a timeout
-    RESPS = [
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-    ]
-
-    # XXX: does calling a patched object several times just return the same response
-    #      already?
-    with patch.object(_client, endpoint.value) as mocked:
-        mocked.side_effect = RESPS
+    # Only returns a bad response so keeps retrying till timeout
+    with patch.object(_client, endpoint.value, return_value=BAD_RESP):
         start = dt.now()
         with pytest.raises(SubServerError):
             request(endpoint, "<token>")
