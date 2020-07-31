@@ -1,0 +1,7 @@
+{
+    "version": "1.2.3",
+    "url_windows": "http://forja.rediris.es/frs/download.php/123/subdownloader1.2.3.exe",
+    "url_linux": "http://forja.rediris.es/frs/download.php/124/SubDownloader1.2.3.src.zip",
+    "comments": "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed",
+    "status": "200 OK"
+}

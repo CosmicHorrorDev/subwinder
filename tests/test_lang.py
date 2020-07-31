@@ -12,7 +12,6 @@ from subwinder.lang import (
 
 
 # Snippet of the GetSubLanguages response
-# XXX: get this from somewhere else or move it to it's own file?
 RESP = [
     {"ISO639": "de", "SubLanguageID": "ger", "LanguageName": "German"},
     {"ISO639": "en", "SubLanguageID": "eng", "LanguageName": "English"},

@@ -141,24 +141,14 @@ def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
     # XXX: switch out the tuple here with putting it down below or make it a list?
     QUERIES = [PROGRAM_NAME]
-    RESP = {
-        "version": "1.2.3",
-        "url_windows": (
-            "http://forja.rediris.es/frs/download.php/123/subdownloader1.2.3.exe"
-        ),
-        "url_linux": (
-            "http://forja.rediris.es/frs/download.php/124/SubDownloader1.2.3.src.zip"
-        ),
-        "comments": "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed",
-        "status": "200 OK",
-    }
     CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
+    with (SAMPLES_DIR / "auto_update.json").open() as f:
+        RESP = json.load(f)
 
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
 
 
-# TODO: test this for batching
-# TODO: ^^^ no, test batch separately. Too large for me to care
+# TODO: combine together these patches where possible
 def test_download_subtitles():
     BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = [[SEARCH_RESULT1]]
@@ -221,21 +211,8 @@ def test_download_subtitles():
 def test__download_subtitles():
     asw = _dummy_auth_subwinder()
 
-    # XXX: move this to a sample file?
-    RESP = {
-        "status": "200 OK",
-        "data": [
-            {
-                "idsubtitlefile": SEARCH_RESULT1.subtitles.file_id,
-                "data": (
-                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N/Yu1JuTV9"
-                    "wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSMFps5/4WhRKSPvwBzf2"
-                    "OXZqAAAA"
-                ),
-            },
-        ],
-        "seconds": "0.397",
-    }
+    with (SAMPLES_DIR / "download_subtitles.json").open() as f:
+        RESP = json.load(f)
     IDEAL_CONTENTS = (
         "Hello there, I'm that good ole compressed and encoded subtitle information"
         " that you so dearly want to save"
@@ -339,7 +316,6 @@ def test_guess_media():
 
 
 def test_ping():
-    # Move this to it's own file?
     RESP = {"status": "200 OK", "seconds": "0.055"}
     CALL = [Endpoints.NO_OPERATION]
 
@@ -349,7 +325,6 @@ def test_ping():
 def test_report_media():
     QUERY = [SEARCH_RESULT2]
     CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
-    # XXX: Same here? could be shared with ping
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
     _standard_asw_mock("report_media", "_request", QUERY, RESP, CALL, None)
@@ -402,26 +377,8 @@ def test__search_subtitles_unranked():
 def test_suggest_media():
     QUERY = ["matrix"]
     CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
-    # XXX: move this to it's own file
-    RESP = {
-        "status": "200 OK",
-        "data": {
-            "matrix": [
-                {
-                    "MovieName": "The Matrix",
-                    "MovieYear": "1999",
-                    "MovieKind": "movie",
-                    "IDMovieIMDB": "0133093",
-                },
-                {
-                    "MovieName": "The Matrix Reloaded",
-                    "MovieYear": "2003",
-                    "MovieKind": "movie",
-                    "IDMovieIMDB": "0234215",
-                },
-            ]
-        },
-    }
+    with (SAMPLES_DIR / "suggest_media.json").open() as f:
+        RESP = json.load(f)
     IDEAL = [
         MovieInfo("The Matrix", 1999, "0133093", None, None),
         MovieInfo("The Matrix Reloaded", 2003, "0234215", None, None),
@@ -431,21 +388,9 @@ def test_suggest_media():
 
 
 def test_user_info():
-    # XXX: move it
-    RESP = {
-        "status": "200 OK",
-        "data": {
-            "IDUser": "6",
-            "UserNickName": "os",
-            "UserRank": "super admin",
-            "UploadCnt": "296",
-            "UserPreferedLanguages": "ger,eng,fre",
-            "DownloadCnt": "1215",
-            "UserWebLanguage": "en",
-        },
-        "seconds": "0.241",
-    }
     CALL = [Endpoints.GET_USER_INFO]
+    with (SAMPLES_DIR / "user_info.json").open() as f:
+        RESP = json.load(f)
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
@@ -454,22 +399,14 @@ def test_user_info():
 def test_vote():
     INVALID_SCORES = [0, 11]
     VALID_SCORES = [1, 10]
-    # XXX: move it
-    SAMPLE_RESP = {
-        "status": "200 OK",
-        "data": {
-            "SubRating": "8.0",
-            "SubSumVotes": "1",
-            "IDSubtitle": SEARCH_RESULT1.subtitles.id,
-        },
-        "seconds": "0.075",
-    }
+    with (SAMPLES_DIR / "vote.json").open() as f:
+        RESP = json.load(f)
 
     # Test valid scores
     for score in VALID_SCORES:
         query = (SEARCH_RESULT1, score)
         call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
-        _standard_asw_mock("vote", "_request", query, SAMPLE_RESP, call, None)
+        _standard_asw_mock("vote", "_request", query, RESP, call, None)
 
     # Test invalid scores
     for score in INVALID_SCORES:
@@ -478,7 +415,7 @@ def test_vote():
 
         asw = _dummy_auth_subwinder()
 
-        with patch.object(asw, "_request", return_value=SAMPLE_RESP):
+        with patch.object(asw, "_request", return_value=RESP):
             with pytest.raises(ValueError):
                 asw.vote(*query)
 

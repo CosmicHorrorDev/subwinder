@@ -35,7 +35,7 @@ def test_retry_on_fail():
 
 @pytest.mark.slow
 def test_request_timeout():
-    # Requests take a bit to timeout so were just gonna run all of them simulatneously
+    # Requests take a bit to timeout so we're just gonna run all of them simultaneously
     with Pool(len(Endpoints)) as pool:
         pool.map(_test_request_timeout, list(Endpoints))
 

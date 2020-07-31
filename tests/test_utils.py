@@ -15,6 +15,7 @@ def test_extract():
     assert extract(COMPRESSED) == IDEAL
 
 
+# TODO: test this more thoroughly (too small, and ignores middle)
 def test_special_hash():
     # Maps filename to hash
     hashes = {"random_1": "38516a7d01f4e37d", "random_2": "a16ad3dbbe8037fa"}
