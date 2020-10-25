@@ -31,25 +31,12 @@ class _LangConverter:
     """
 
     def __init__(self):
-        self._last_updated = None
-        # Separate list for each of the lang types
-        self._langs = [[] for _ in list(LangFormat)]
-
-    def __getattribute__(self, name):
-        """
-        Automatically tries updating the lang list on any public method call
-        """
-        # Make sure it's public and not a variable
-        if name[0] != "_" and name not in self.__dict__:
-            self._update()
-
-        # Return the desired value by getting it from the base class
-        return super(_LangConverter, self).__getattribute__(name)
+        self.default()
 
     def _fetch(self):
         return subwinder._request.request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
 
-    def _update(self, force=False):
+    def _maybe_update(self, force=False):
         # Language list should refresh every hour, return early if still fresh unless
         # update is `force`d
         if not force and self._last_updated is not None:
@@ -59,8 +46,8 @@ class _LangConverter:
         # Get language list from api
         lang_sets = self._fetch()
 
-        # Reset any of the info currently in `_lang`
-        self._langs = [[] for _ in list(LangFormat)]
+        # Reset then recollect info
+        self.default()
         for lang_set in lang_sets:
             self._langs[LangFormat.LANG_2.value].append(lang_set[_LANG_2_KEY])
             self._langs[LangFormat.LANG_3.value].append(lang_set[_LANG_3_KEY])
@@ -69,10 +56,23 @@ class _LangConverter:
         # Refresh updated time
         self._last_updated = datetime.now()
 
+    def default(self):
+        self.set(None, [[] for _ in list(LangFormat)])
+
+    def dump(self):
+        last_updated = self._last_updated
+        langs = self._langs
+
+        self.default()
+
+        return last_updated, langs
+
+    def set(self, last_updated, langs):
+        self._last_updated = last_updated
+        self._langs = langs
+
     def convert(self, lang, from_format, to_format):
-        # Hopefully no one tries to convert this way, but included just in case
-        if from_format == to_format:
-            return lang
+        self._maybe_update()
 
         try:
             lang_index = self._langs[from_format.value].index(lang)
@@ -85,6 +85,8 @@ class _LangConverter:
         return self._langs[to_format.value][lang_index]
 
     def list(self, lang_format):
+        self._maybe_update()
+
         return self._langs[lang_format.value]
 
 

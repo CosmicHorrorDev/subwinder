@@ -24,10 +24,10 @@ def test_LangConverter():
 
     with patch.object(converter, "_fetch", return_value=RESP) as mocked:
         # After first update converter shouldn't request again for an hour
-        converter._update()
+        converter._maybe_update()
 
         # These will not call `_get_languages`
-        converter._update()
+        converter._maybe_update()
         assert "eng" == converter.convert("en", LangFormat.LANG_2, LangFormat.LANG_3)
         assert "English" == converter.convert(
             "eng", LangFormat.LANG_3, LangFormat.LANG_LONG

@@ -49,7 +49,6 @@ def test_build_media_info():
 
 
 def test_UserInfo():
-    # TODO: Is there any better place to get this information?
     DATA = {"UserID": "1332962", "UserNickName": "elderman"}
 
     assert UserInfo.from_data(DATA) == USER_INFO1

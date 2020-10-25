@@ -42,32 +42,22 @@ def skip_non_default(request):
 
 @pytest.fixture(autouse=True)
 def _fake_langs():
-    store_langs = _converter._langs
-    store_last_updated = _converter._last_updated
-
-    _converter._langs = [
-        ["de", "en", "fr"],
-        ["ger", "eng", "fre"],
-        ["German", "English", "French"],
-    ]
-    _converter._last_updated = dt.now()
+    stored = _converter.dump()
+    _converter.set(
+        dt.now(),
+        [["de", "en", "fr"], ["ger", "eng", "fre"], ["German", "English", "French"]],
+    )
 
     yield
 
-    _converter._langs = store_langs
-    _converter._last_updated = store_last_updated
+    _converter.set(*stored)
 
 
 # Negates `_fake_langs` which by default fakes the language listing
 @pytest.fixture
 def no_fake_langs():
-    store_langs = _converter._langs
-    store_last_updated = _converter._last_updated
-
-    _converter._langs = [[], [], []]
-    _converter._last_updated = None
+    stored = _converter.dump()
 
     yield
 
-    _converter._langs = store_langs
-    _converter._last_updated = store_last_updated
+    _converter.set(*stored)

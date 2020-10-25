@@ -83,6 +83,8 @@ def test_server_info():
 # TODO: assert that _request isn't called for bad params?
 # TODO: test correct case as well (assert token as well)
 # XXX: ENV_VARS stuff is a bit messy here. try to clean up logic if possible
+#      should probably be a fixture that wipes env vars in the beginning of all testing
+# TODO: add the env vars as library constants in an enum maybe?
 def test_authsubwinder__init__():
     # Clear out env vars if set
     ENV_VARS = [
@@ -111,7 +113,7 @@ def test_authsubwinder__init__():
             AuthSubwinder(*params)
 
 
-# Test creating an AuthSubwinder instead
+# TODO: Test creating an AuthSubwinder instead
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
@@ -120,7 +122,7 @@ def test__login():
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
 
-# This should be tested with `with` instead
+# TODO: This should be tested with `with` instead
 def test__logout():
     QUERIES = ()
     RESP = {"status": "200 OK", "seconds": 0.055}
@@ -139,7 +141,6 @@ def test_add_comment():
 
 def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
-    # XXX: switch out the tuple here with putting it down below or make it a list?
     QUERIES = [PROGRAM_NAME]
     CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
     with (SAMPLES_DIR / "auto_update.json").open() as f:
@@ -148,7 +149,6 @@ def test_auto_update():
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
 
 
-# TODO: combine together these patches where possible
 def test_download_subtitles():
     BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = [[SEARCH_RESULT1]]
@@ -163,47 +163,31 @@ def test_download_subtitles():
 
     asw = _dummy_auth_subwinder()
 
-    # Test sucessfully downloading with bare params
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+    # Mock out the call to get remaining downloads as 200
+    with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+        # Test sucessfully downloading with bare params
+        with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
             result = asw.download_subtitles(*BARE_QUERIES)
-    mocked.assert_called_with(*BARE_CALL)
-    assert result == BARE_IDEAL
+            mocked.assert_called_with(*BARE_CALL)
+            assert result == BARE_IDEAL
 
-    # Test successfully downloading with full params
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+            # Test successfully downloading with full params
             result = asw.download_subtitles(*FULL_QUERIES)
-    mocked.assert_called_with(*FULL_CALL)
-    assert result == FULL_IDEAL
+            mocked.assert_called_with(*FULL_CALL)
+            assert result == FULL_IDEAL
 
-    # Test failing from no `download_dir`
-    temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
-    BARE_QUERIES[0][0].media.set_dirname(None)
-    # XXX: this mock isn't needed if _download_subtitles is never reached
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        # XXX: can I moved this mocked call to be used by all of these tests here?
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
-            with pytest.raises(SubDownloadError):
-                # XXX: result isn't used here so why is it assigned
-                result = asw.download_subtitles(*BARE_QUERIES)
-    BARE_QUERIES[0][0].media.dirname = temp_dirname
+        # Test failing from no `download_dir`
+        temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
+        BARE_QUERIES[0][0].media.set_dirname(None)
+        with pytest.raises(SubDownloadError):
+            _ = asw.download_subtitles(*BARE_QUERIES)
+        BARE_QUERIES[0][0].media.dirname = temp_dirname
 
-    # Test failing from no `media_name` for `name_format`
-    temp_filename = BARE_QUERIES[0][0].media.get_filename()
-    BARE_QUERIES[0][0].media.set_filename(None)
-    # XXX: this mock isn't needed if _download_subtitles is never reached
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
-            with pytest.raises(SubDownloadError):
-                # XXX: result isn't used here so why do we care
-                result = asw.download_subtitles(
-                    *BARE_QUERIES, name_format="{media_name}"
-                )
+        # Test failing from no `media_name` for `name_format`
+        temp_filename = BARE_QUERIES[0][0].media.get_filename()
+        BARE_QUERIES[0][0].media.set_filename(None)
+        with pytest.raises(SubDownloadError):
+            _ = asw.download_subtitles(*BARE_QUERIES, name_format="{media_name}")
     BARE_QUERIES[0][0].media.set_filename(temp_filename)
 
 
@@ -398,7 +382,7 @@ def test_user_info():
 
 def test_vote():
     INVALID_SCORES = [0, 11]
-    VALID_SCORES = [1, 10]
+    VALID_SCORES = range(1, 10 + 1)
     with (SAMPLES_DIR / "vote.json").open() as f:
         RESP = json.load(f)
 
@@ -422,7 +406,7 @@ def test_vote():
 
 # XXX: this should really test to _request, not just _preview_subtitles
 def test_preview_subtitles():
-    QUERIES = [[SEARCH_RESULT1, SEARCH_RESULT2]]
+    QUERIES = [[SEARCH_RESULT1, SEARCH_RESULT2.subtitles]]
     CALL = [[SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id]]
     RESP = ["preview 1", "preview 2"]
     IDEAL = RESP
