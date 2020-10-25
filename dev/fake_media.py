@@ -81,15 +81,12 @@ def fake_media(entry_file, output_dir, entry_indicies=[]):
 
         with output_file.open("wb") as file:
             file.write(contents.to_bytes(HASH_SIZE, byteorder="little"))
-
-            # Write the remaining as zeros, chunked to avoid crazy RAM usage
-            remaining = size - HASH_SIZE
-            chunk = 16 * 1024
-            while remaining > chunk:
-                file.write((0).to_bytes(chunk, byteorder="little"))
-                remaining -= chunk
-
-            file.write((0).to_bytes(remaining, byteorder="little"))
+            # Use truncate to set the remaining file size. On file systems that support
+            # it this will create a sparse file which takes less space on disk
+            # Note: even if the filesystem supports sparse files, copying or moving
+            #       the file may not keep it as a sparse file if the program used is not
+            #       aware
+            file.truncate(size)
 
         output_paths.append(output_file)
 
