@@ -7,8 +7,8 @@ If you have any good ideas for more examples that would be helpful then don't he
 The main features for this example cover:
 
 - Searching for a large amount of subtitles for local files by walking the file tree
-- Using a custom ranking function when searching to try and get yield better search results (and because we can)
-- Showing a nice way to serialize/deserialize the `SubtitlesInfo`s to JSON (other formats would be a similar process) so that we keep the option to vote, comment, or report them after being able to view the subtitles first
+- Using a custom ranking function when searching to try and yield better search results (and because we can)
+- Showing a nice way to serialize/deserialize the `SubtitlesInfo`s to JSON (other formats would be a similar process) so that we keep the option to vote on, comment on, or report them after being able to view the subtitles first
 
 Hopefully you'll see from this example that it's surprisingly easy to do some complicated stuff with the API.
 
