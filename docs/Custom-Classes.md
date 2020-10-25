@@ -304,7 +304,7 @@ This class represents a result returned by [`AuthSubwinder`'s `search_subtitles`
 | `num_downloads` | `int` | The number of times these subtitles were downloaded |
 | `score` | `float` | How well the API judged this as a match for the provided query (I'm guessing higher is better, I don't think this value is even mentioned in the API :upside_down_face:) |
 | `subtitles` | [`SubtitlesInfo`](#subtitlesinfo) | The object representing information about these subtitles |
-| `rating` | `float` or `None` | If no ratings are left then `rating` is `None` otherwise its the average rating left on the subtitles |
+| `rating` | `float` or `None` | If no ratings are left then `rating` is `None` otherwise it's the average rating left on the subtitles |
 | `upload_date` | `datetime.datetime` | The date the subtitles were uploaded |
 
 ### `ServerInfo`
