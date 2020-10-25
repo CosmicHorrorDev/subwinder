@@ -4,6 +4,7 @@ from subwinder.exceptions import SubHashError
 from subwinder import info
 from subwinder.ranking import rank_search_subtitles
 
+from itertools import repeat
 import json
 from pathlib import Path
 
@@ -31,16 +32,16 @@ def main():
 def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_exts):
     # So now let's get all the files in `INPUT_DIR` as `Media` objects
     print(f"Scanning {input_dir}... ", end="")
-    queries = []
+    media = []
     for item in input_dir.iterdir():
         # We only care about files
         if item.is_file():
             # Hashing can fail if the file is too small (under 128 KiB)
             try:
-                queries.append((Media(item), lang))
+                media.append(Media(item))
             except SubHashError:
                 pass
-    print(f"Found {len(queries)} files")
+    print(f"Found {len(media)} files")
 
     # And now onto using the API, so I'm going to assume that all the credentials are
     # set with `OPEN_SUBTITLES_USERNAME`, `OPEN_SUBTITLES_PASSWORD`, and
@@ -49,7 +50,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
         # Now we can search for all of our `media` using our custom ranking function
         print("Searching... ", end="")
         results = asw.search_subtitles(
-            queries, custom_rank_func, author_whitelist, sub_exts,
+            zip(media, repeat(lang)), custom_rank_func, author_whitelist, sub_exts,
         )
         # Filter out items that didn't get any matches
         results = [result for result in results if result is not None]
@@ -96,42 +97,32 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
 
 
 # Lets setup our custom ranking function
-# So the goal of this ranking function is to prefer uploads from a whitelist of authors
-# and if no results are found from that whitelist fallback to the default ranking
-# function, finally if no results are found by that either the just fallback to picking
-# the first result found.
+# Prefer `rank_by_whitelist` and keep the default ranking function as a fallback
 def custom_rank_func(results, query, author_whitelist, sub_exts=None):
-    # No results :(
-    if len(results) == 0:
-        return None
-
     return (
         rank_by_whitelist(results, query, author_whitelist)
         # Fallback to default ranking, but we decide not to `exclude_bad`
         or rank_search_subtitles(results, query, exclude_bad=False, sub_exts=sub_exts)
-        # Fallback to the first result
-        or results[0]
     )
 
 
 def rank_by_whitelist(results, query, author_whitelist):
     # Search all the results for a known-good author
     for result in results:
-        for author in author_whitelist:
-            if author == result.author.name:
-                return result
+        if result.author.name in author_whitelist:
+            return result
 
     # No matching result
     return None
 
 
-# So with the library's API (due to the design of opensubtitles.org's API) there is no
-# easy way to link a local subtitle file with a `SubtitlesInfo`. So if you want to do
-# anything that would require that `SubtitlesInfo` later you likely want to serialize it
-# to some form to store it (you can pickle it instead, this is mostly to show that you
-# can use extended classes). For this example we will just use JSON because it's easy.
-# The nice thing is we can just inherit from `SubtitlesInfo` while still being able to
-# pass in our extended class to things that would normally expect a `SubtitlesInfo`.
+# So the reason storing this makes sense is that there is no way to go from a local
+# subtitle file to the id for it on opensubtitles, so if you're doing anything with
+# the result later (commenting on it, etc.) you would want to store the attributes.
+# And yes you can just pickle the `SubtitlesInfo`. This is really just showing off
+# that you can extend `SubtitlesInfo` while still using it in places that expect a
+# `SubtitlesInfo` (maybe you're storing and retrieving the information from a database
+# or something).
 class ExtSubtitlesInfo(info.SubtitlesInfo):
     @classmethod
     def from_subtitles(cls, sub_container):
