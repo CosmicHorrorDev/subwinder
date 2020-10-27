@@ -10,6 +10,9 @@ from datetime import datetime as dt
 from subwinder.lang import _converter
 
 
+NON_DEFAULT_MARKERS = ["io_heavy", "slow"]
+
+
 def pytest_addoption(parser):
     # Add a command line option to run all tests
     parser.addoption(
@@ -25,11 +28,13 @@ def _skip_non_default(request):
 
     # IF we are skipping non default and we have a mark
     # TODO: check for specific mark values
-    if skip_non_default(request) and request.node.own_markers:
-        pytest.skip(
-            f"Skipping mark for reason {node.own_markers[0].name}. Run with option"
-            " --run-all to run this"
-        )
+    if skip_non_default(request) and len(node.own_markers) > 0:
+        for marker in node.own_markers:
+            if marker.name in NON_DEFAULT_MARKERS:
+                pytest.skip(
+                    f"Skipping mark for reason: {node.own_markers[0].name}. Run with"
+                    " option --run-all to run this"
+                )
 
 
 def skip_non_default(request):
