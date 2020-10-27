@@ -1,6 +1,6 @@
 # Unauthenticated Endpoints
 
-All functionality with the unauthenticated API are exposed directly from the [`Subwinder Object`](#subwinderbase-module) and the [`subwinder.lang`](#subwinderlang-module) module.
+All functionality with the unauthenticated API are exposed directly from the [`Subwinder Object`](#subwinder) and the [`subwinder.lang`](#subwinderlang-module) module.
 
 ---
 
