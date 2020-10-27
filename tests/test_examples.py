@@ -1,17 +1,18 @@
 import pytest
 
-from dev.fake_media import fake_media
-from examples.advanced_quickstart import adv_quickstart
-from examples.interactive import interative
-from subwinder._request import Endpoints
-from tests.constants import REPO_DIR, SAMPLES_DIR
-from tests.conftest import skip_non_default
-
 import json
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
+
+from dev.fake_media import fake_media
+from examples.advanced_quickstart import adv_quickstart
+from examples.interactive import interative
+from subwinder._constants import Env
+from subwinder._request import Endpoints
+from tests.constants import REPO_DIR, SAMPLES_DIR
+from tests.conftest import skip_non_default
 
 
 USERNAME = "<username>"
@@ -22,18 +23,19 @@ USERAGENT = "<useragent>"
 @pytest.fixture(scope="module", autouse=True)
 def set_credentials():
     # Set the fake credentials
-    os.environ["OPEN_SUBTITLES_USERNAME"] = USERNAME
-    os.environ["OPEN_SUBTITLES_PASSWORD"] = PASSWORD
-    os.environ["OPEN_SUBTITLES_USERAGENT"] = USERAGENT
+    os.environ[Env.USERNAME.value] = USERNAME
+    os.environ[Env.PASSWORD.value] = PASSWORD
+    os.environ[Env.USERAGENT.value] = USERAGENT
 
     yield  # <-- All the tests in this module run here
 
     # Remove the fake credentials
-    del os.environ["OPEN_SUBTITLES_USERNAME"]
-    del os.environ["OPEN_SUBTITLES_PASSWORD"]
-    del os.environ["OPEN_SUBTITLES_USERAGENT"]
+    for variant in Env:
+        if variant.value in os.environ:
+            del os.environ[variant.value]
 
 
+# TODO: calling it in the test and doing this without a fixture as gen still could work
 @pytest.fixture(scope="module")
 def gen_fake_media(request):
     # Generating media is expensive so only run if we're running io_heavy tests
@@ -47,9 +49,13 @@ def gen_fake_media(request):
             fake_media_paths = fake_media(entries_file, Path(temp_dir))
             assert fake_media_paths, "Tests should have at least one dummy file"
             yield fake_media_paths  # <-- Run all tests
+            # TODO: if this was done as a plain generator then we can get rid of the
+            #       hacky check to see if this is used and also verify that the media
+            #       files are back in the right spot between runs
 
 
 # TODO: verify stdout looks good too
+# TODO: don't use tmp_path, it doesn't actually remove the directory for some reason
 # XXX: don't have to remove lang stuff from here now
 @patch("subwinder._request.request")
 def test_interactive(mock_request, tmp_path):

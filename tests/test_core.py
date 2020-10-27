@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
 from subwinder import AuthSubwinder, Subwinder
+from subwinder._constants import Env
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError
 from subwinder.info import (
@@ -87,15 +88,9 @@ def test_server_info():
 # TODO: add the env vars as library constants in an enum maybe?
 def test_authsubwinder__init__():
     # Clear out env vars if set
-    ENV_VARS = [
-        "OPEN_SUBTITLES_USERAGENT",
-        "OPEN_SUBTITLES_USERNAME",
-        "OPEN_SUBTITLES_PASSWORD",
-    ]
-
-    for var in ENV_VARS:
-        if var in os.environ:
-            del os.environ[var]
+    for variant in Env:
+        if variant.value in os.environ:
+            del os.environ[variant.value]
 
     bad_params = [
         # Empty creds

@@ -11,6 +11,7 @@ from pathlib import Path
 import os
 
 from subwinder import utils
+from subwinder._constants import Env
 from subwinder._internal_utils import type_check
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
@@ -129,26 +130,26 @@ class AuthSubwinder(Subwinder):
         parameter is used.
         """
         # Try to get any info from env vars if not passed in
-        useragent = useragent or os.environ.get("OPEN_SUBTITLES_USERAGENT")
-        username = username or os.environ.get("OPEN_SUBTITLES_USERNAME")
-        password = password or os.environ.get("OPEN_SUBTITLES_PASSWORD")
+        useragent = useragent or os.environ.get(Env.USERAGENT.value)
+        username = username or os.environ.get(Env.USERNAME.value)
+        password = password or os.environ.get(Env.PASSWORD.value)
 
         if username is None:
             raise SubAuthError(
                 "missing `username`, set when initializing `AuthSubwinder` or with the"
-                " OPEN_SUBTITLES_USERNAME env var"
+                f" {Env.USERNAME.value} env var"
             )
 
         if password is None:
             raise SubAuthError(
                 "missing `password`, set when initializing `AuthSubwinder` or set the"
-                " OPEN_SUBTITLES_PASSWORD env var"
+                f" {Env.PASSWORD.value} env var"
             )
 
         if useragent is None:
             raise SubAuthError(
                 "missing `useragent`, set when initializing `AuthSubwinder` or set the"
-                " OPEN_SUBTITLES_USERAGENT env var. `useragent` must be specified for"
+                f" {Env.USERAGENT.value} env var. `useragent` must be specified for"
                 " your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"
