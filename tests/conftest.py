@@ -6,6 +6,7 @@ documented for it, so enjoy this pytest black magic.
 import pytest
 
 from datetime import datetime as dt
+import logging
 
 from subwinder.lang import _converter
 
@@ -20,6 +21,13 @@ def pytest_addoption(parser):
         action="store_true",
         help="Run all tests (some are skipped by default because they're slow)",
     )
+
+
+# XXX: Temporary workaround till mccabe has a new release
+#      https://github.com/PyCQA/mccabe/pull/83
+def pytest_configure(config):
+    # Make flake8 less verbose
+    logging.getLogger("flake8").setLevel(logging.CRITICAL)
 
 
 @pytest.fixture(autouse=True)
