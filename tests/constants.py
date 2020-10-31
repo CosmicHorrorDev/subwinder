@@ -7,13 +7,12 @@ from subwinder.info import (
     FullUserInfo,
     GuessMediaResult,
     MovieInfo,
-    ServerInfo,
     SearchResult,
+    ServerInfo,
     SubtitlesInfo,
     UserInfo,
 )
 from subwinder.media import Media
-
 
 TEST_DIR = Path(__file__).resolve().parent
 REPO_DIR = TEST_DIR.parent

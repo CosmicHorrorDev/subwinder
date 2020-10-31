@@ -3,13 +3,12 @@ I just wanted the option to have some tests run by default, but I couldn't find 
 documented for it, so enjoy this pytest black magic.
 """
 
+import logging
+from datetime import datetime as dt
+
 import pytest
 
-from datetime import datetime as dt
-import logging
-
 from subwinder.lang import _converter
-
 
 NON_DEFAULT_MARKERS = ["io_heavy", "slow"]
 

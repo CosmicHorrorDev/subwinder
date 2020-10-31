@@ -1,11 +1,10 @@
-import pytest
-
-from datetime import datetime
 import json
+from datetime import datetime
 from unittest.mock import patch
 
+import pytest
+
 from subwinder.info import (
-    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -15,15 +14,16 @@ from subwinder.info import (
     SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
+    build_media_info,
 )
 from tests.constants import (
     EPISODE_INFO1,
     FULL_USER_INFO1,
     INFO_DIR,
-    USER_INFO1,
     SAMPLES_DIR,
     SEARCH_RESULT2,
     SUBTITLES_INFO1,
+    USER_INFO1,
 )
 
 

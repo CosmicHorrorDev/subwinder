@@ -2,14 +2,13 @@ from datetime import timedelta
 from unittest.mock import call, patch
 
 from subwinder.lang import (
-    _LangConverter,
     LangFormat,
     _converter,
+    _LangConverter,
     lang_2s,
     lang_3s,
     lang_longs,
 )
-
 
 # Snippet of the GetSubLanguages response
 RESP = [

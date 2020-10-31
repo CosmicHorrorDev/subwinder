@@ -1,19 +1,18 @@
-import pytest
-
 import json
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
+import pytest
+
 from dev.fake_media import fake_media
 from examples.advanced_quickstart import adv_quickstart
 from examples.interactive import interative
 from subwinder._constants import Env
 from subwinder._request import Endpoints
-from tests.constants import REPO_DIR, SAMPLES_DIR
 from tests.conftest import skip_non_default
-
+from tests.constants import REPO_DIR, SAMPLES_DIR
 
 USERNAME = "<username>"
 PASSWORD = "<password>"

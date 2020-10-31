@@ -7,20 +7,18 @@ except ImportError:
     ATOMIC_DOWNLOADS_SUPPORT = False
 
 
-from pathlib import Path
 import os
-
-from subwinder import utils
-from subwinder._constants import Env
-from subwinder._internal_utils import type_check
+from pathlib import Path
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
 import subwinder._request
+from subwinder import utils
+from subwinder._constants import Env
+from subwinder._internal_utils import type_check
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
 from subwinder.info import (
-    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -29,8 +27,9 @@ from subwinder.info import (
     SearchResult,
     ServerInfo,
     SubtitlesInfo,
+    build_media_info,
 )
-from subwinder.lang import lang_2s, lang_3s, lang_longs, LangFormat
+from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
 from subwinder.media import Media
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
 

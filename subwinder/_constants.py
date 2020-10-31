@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 API_BASE = "https://api.opensubtitles.org/xml-rpc"
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"

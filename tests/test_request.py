@@ -1,11 +1,11 @@
-from unittest.mock import call, patch
-from multiprocessing.dummy import Pool
 from datetime import datetime as dt
-
-from subwinder._request import _client, request, Endpoints
-from subwinder.exceptions import SubServerError
+from multiprocessing.dummy import Pool
+from unittest.mock import call, patch
 
 import pytest
+
+from subwinder._request import Endpoints, _client, request
+from subwinder.exceptions import SubServerError
 
 
 def test__request():

@@ -10,7 +10,6 @@ import subwinder._request
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubLangError
 
-
 _LANG_2_KEY = "ISO639"
 _LANG_3_KEY = "SubLanguageID"
 _LANG_LONG_KEY = "LanguageName"

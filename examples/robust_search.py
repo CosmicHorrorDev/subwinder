@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from subwinder import info, AuthSubwinder, Media
-from subwinder.exceptions import SubHashError
-
-from itertools import repeat
 import re
+from itertools import repeat
+
+from subwinder import AuthSubwinder, Media, info
+from subwinder.exceptions import SubHashError
 
 
 def main():

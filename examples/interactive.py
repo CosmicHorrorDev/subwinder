@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from subwinder import info, AuthSubwinder
-
-from datetime import datetime as dt
 import sys
+from datetime import datetime as dt
+
+from subwinder import AuthSubwinder, info
 
 
 def main():

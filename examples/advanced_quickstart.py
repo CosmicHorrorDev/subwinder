@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-from subwinder import AuthSubwinder, Media
-from subwinder.exceptions import SubHashError
-from subwinder import info
-from subwinder.ranking import rank_search_subtitles
-
-from itertools import repeat
 import json
+from itertools import repeat
 from pathlib import Path
+
+from subwinder import AuthSubwinder, Media, info
+from subwinder.exceptions import SubHashError
+from subwinder.ranking import rank_search_subtitles
 
 
 def main():

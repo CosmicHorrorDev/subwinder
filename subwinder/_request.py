@@ -1,8 +1,8 @@
+import time
 from datetime import datetime
 from enum import Enum
-import time
 from xml.parsers.expat import ExpatError
-from xmlrpc.client import ServerProxy, Transport, ProtocolError
+from xmlrpc.client import ProtocolError, ServerProxy, Transport
 
 from subwinder._constants import API_BASE, REPO_URL
 from subwinder.exceptions import (
