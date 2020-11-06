@@ -4,7 +4,9 @@ If you want to help with the development of `subwinder` then feel free to pick u
 
 ### Style Guidelines
 
-This library uses both `black` and `flake8` to lint and format code and for this reason these are both listed under the `tool.poetry.dev-dependencies` in the `pyproject.toml`. Please ensure any code contributed follows both of these (there are some incompatible rules between the two that are ignored in either the `.flake8` file or under `tool.black` in the `pyproject.toml`).
+This library uses both `black`, `flake8`, and `isort` to lint and format code and for this reason these are all listed under the `tool.poetry.dev-dependencies` in the `pyproject.toml`. Please ensure any code contributed follows both of these (there are some incompatible rules between them that are ignored in either the `.flake8` file or under `tool.black` and `tool.isor` in the `pyproject.toml`).
+
+After making changes running `flake8 .`, `black .`, and `isort --atomic .` in the root of the repo should be enough to automatically format and make changes or nag. Testing with `pytest` will also flag if any of these are not up to date, so running the test suite should be enough to notice any problems.
 
 ### Tests
 

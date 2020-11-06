@@ -1,11 +1,10 @@
-import pytest
-
-from datetime import datetime
 import json
+from datetime import datetime
 from unittest.mock import patch
 
+import pytest
+
 from subwinder.info import (
-    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -15,28 +14,21 @@ from subwinder.info import (
     SubtitlesInfo,
     TvSeriesInfo,
     UserInfo,
+    build_media_info,
 )
-from subwinder.lang import _converter
 from tests.constants import (
     EPISODE_INFO1,
     FULL_USER_INFO1,
-    USER_INFO1,
+    INFO_DIR,
     SAMPLES_DIR,
     SEARCH_RESULT2,
     SUBTITLES_INFO1,
+    USER_INFO1,
 )
-
-# Fake already updated langs to prevent API requests
-_converter._langs = [
-    ["de", "en", "fr"],
-    ["ger", "eng", "fre"],
-    ["German", "English", "French"],
-]
-_converter._last_updated = datetime.now()
 
 
 def test_build_media_info():
-    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
         RESP = json.load(f)
     data = RESP["data"][0]
 
@@ -63,26 +55,15 @@ def test_UserInfo():
 
 
 def test_FullUserInfo():
-    DATA = {
-        "UserID": "6",
-        "UserNickName": "os",
-        "UserRank": "super admin",
-        "UploadCnt": "296",
-        "DownloadCnt": "1215",
-        "UserPreferedLanguages": "ger,eng,fre",
-        "UserWebLanguage": "en",
-    }
+    with (INFO_DIR / "full_user_info.json").open() as f:
+        DATA = json.load(f)
 
     assert FullUserInfo.from_data(DATA) == FULL_USER_INFO1
 
 
 def test_Comment():
-    DATA = {
-        "UserID": "<id>",
-        "UserNickName": "<name>",
-        "Created": "2000-01-02 03:04:05",
-        "Comment": "<comment>",
-    }
+    with (INFO_DIR / "comment.json").open() as f:
+        DATA = json.load(f)
 
     assert Comment.from_data(DATA) == Comment(
         UserInfo("<id>", "<name>"), datetime(2000, 1, 2, 3, 4, 5), "<comment>",
@@ -90,11 +71,8 @@ def test_Comment():
 
 
 def test_MediaInfo():
-    DATA = {
-        "MovieName": "<name>",
-        "MovieYear": "2000",
-        "IDMovieImdb": "<imdbid>",
-    }
+    with (INFO_DIR / "media_info.json").open() as f:
+        DATA = json.load(f)
 
     assert MediaInfo.from_data(DATA) == MediaInfo(
         "<name>", 2000, "<imdbid>", None, None
@@ -112,13 +90,8 @@ def test_TvSeriesInfo():
 
 
 def test_EpisodeInfo():
-    DATA = {
-        "MovieName": '"Fringe" Alone in the World',
-        "MovieYear": "2011",
-        "IDMovieImdb": "1998676",
-        "Season": "4",
-        "Episode": "3",
-    }
+    with (INFO_DIR / "episode_info.json").open() as f:
+        DATA = json.load(f)
 
     tv_series = TvSeriesInfo.from_data(DATA)
     tv_series.set_filepath("/path/to/file.mkv")
@@ -131,26 +104,14 @@ def test_EpisodeInfo():
 
 
 def test_SubtitlesInfo():
-    DATA = {
-        "SubSize": "71575",
-        "SubDownloadsCnt": "22322",
-        "SubComments": "0",
-        "SubRating": "0.0",
-        "IDSubtitle": "3387112",
-        "IDSubtitleFile": "<file-id>",
-        "IDSubMovieFile": "0",
-        "SubFileName": "sub-filename.sub-ext",
-        "ISO639": "<lang-2>",
-        "SubLanguageID": "<lang-3>",
-        "SubFormat": "<ext>",
-        "SubEncoding": "UTF-8",
-    }
+    with (INFO_DIR / "subtitles_info.json").open() as f:
+        DATA = json.load(f)
 
     assert SubtitlesInfo.from_data(DATA) == SUBTITLES_INFO1
 
 
 def test_SearchResult():
-    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
     search_result = SearchResult.from_data(SAMPLE_RESP)

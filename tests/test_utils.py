@@ -21,6 +21,7 @@ def test_extract():
     assert extract(COMPRESSED) == IDEAL
 
 
+# TODO: test this more thoroughly (too small, and ignores middle)
 def test_special_hash():
     CHUNK_SIZE = 64 * 1024  # 64KiB
     HASHED_SIZE = CHUNK_SIZE * 2

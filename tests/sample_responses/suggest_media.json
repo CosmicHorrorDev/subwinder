@@ -1,0 +1,19 @@
+{
+    "status": "200 OK",
+    "data": {
+        "matrix": [
+            {
+                "MovieName": "The Matrix",
+                "MovieYear": "1999",
+                "MovieKind": "movie",
+                "IDMovieIMDB": "0133093"
+            },
+            {
+                "MovieName": "The Matrix Reloaded",
+                "MovieYear": "2003",
+                "MovieKind": "movie",
+                "IDMovieIMDB": "0234215"
+            }
+        ]
+    }
+}

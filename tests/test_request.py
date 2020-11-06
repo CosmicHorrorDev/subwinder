@@ -1,14 +1,13 @@
-from unittest.mock import call, patch
-from multiprocessing.dummy import Pool
 from datetime import datetime as dt
-
-from subwinder._request import _client, request, Endpoints
-from subwinder.exceptions import SubServerError
+from multiprocessing.dummy import Pool
+from unittest.mock import call, patch
 
 import pytest
 
+from subwinder._request import Endpoints, _client, request
+from subwinder.exceptions import SubServerError
 
-# Note: this test takes a bit of time because of the delayed API request retry
+
 def test__request():
     RESP = {"status": "200 OK", "data": "The data!", "seconds": "0.15"}
     with patch.object(_client, "ServerInfo", return_value=RESP) as mocked:
@@ -16,6 +15,10 @@ def test__request():
         assert request(Endpoints.SERVER_INFO, None) == RESP
         mocked.assert_called_once_with()
 
+
+# Note: this test takes a bit of time because of the delayed API request retry
+@pytest.mark.slow
+def test_retry_on_fail():
     CALLS = [
         call("<token>", "arg1", "arg2"),
         call("<token>", "arg1", "arg2"),
@@ -30,26 +33,19 @@ def test__request():
         mocked.assert_has_calls(CALLS)
 
 
+@pytest.mark.slow
 def test_request_timeout():
-
-    # Reqquests take a bit to timeout so were just gonna run all of them simulatneously
+    # Requests take a bit to timeout so we're just gonna run all of them simultaneously
     with Pool(len(Endpoints)) as pool:
         pool.map(_test_request_timeout, list(Endpoints))
 
 
 def _test_request_timeout(endpoint):
     RATE_LIMIT_SECONDS = 10
+    BAD_RESP = {"status": "429 Too many requests", "seconds": "0.10"}
 
-    # Due to the exponential backoff this should be enough errors to trigger a timeout
-    RESPS = [
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-        {"status": "429 Too many requests", "seconds": "0.10"},
-    ]
-
-    with patch.object(_client, endpoint.value) as mocked:
-        mocked.side_effect = RESPS
+    # Only returns a bad response so keeps retrying till timeout
+    with patch.object(_client, endpoint.value, return_value=BAD_RESP):
         start = dt.now()
         with pytest.raises(SubServerError):
             request(endpoint, "<token>")

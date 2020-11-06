@@ -4,17 +4,68 @@ import json
 from pathlib import Path
 
 
-def main():
+def _main():
+    args = _parse_args()
+    fake_media(args.entry_file, args.output_dir, args.entry)
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-e",
+        "--entry",
+        action="append",
+        help="[Default: all] Then entry index to generate a media for",
+        # Empty list is the magic value for all entries
+        default=[],
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        help="[Default: current directory] Directory to store generated media in",
+        default=Path.cwd(),
+    )
+    parser.add_argument("entry_file", type=Path, help="Location of the entry file")
+
+    args = parser.parse_args()
+
+    # Make sure all entries are ints
+    for i in range(len(args.entry)):
+        try:
+            args.entry[i] = int(args.entry[i])
+        except ValueError:
+            raise ValueError(f'Entry should be an int, got "{args.entry[i]}"')
+
+    return args
+
+
+# TODO: test that the hashes are right in unit testing
+def fake_media(entry_file, output_dir, entry_indicies=[]):
     HASH_SIZE = 8
     MAX_HASH = 2 ** (HASH_SIZE * 8) - 1
     MIN_FILE_SIZE = 128 * 1024
 
-    args = parse_args()
+    # Attempt to read the entry file
+    with entry_file.open() as f:
+        entries = json.load(f)
+
+    # Empty `entry_indicies` means all entries
+    if len(entry_indicies) == 0:
+        entry_indicies = range(len(entries))
+
+    for index in entry_indicies:
+        # Make sure all entries are within bounds
+        if index >= len(entries) or index < 0:
+            raise ValueError(
+                f"Entry {index} extends outside entries' bounds (0, {len(entries) - 1})"
+            )
 
     # Generate the fake media for each of the entries
-    for entry_index in args.entry:
-        entry = args.entry_file[entry_index]
-        output_file = args.output_dir / entry["name"]
+    output_paths = []
+    for entry_index in entry_indicies:
+        entry = entries[entry_index]
+        output_file = output_dir / entry["name"]
         hash = int(entry["hash"], 16)
         size = entry["size"]
 
@@ -31,70 +82,18 @@ def main():
 
         with output_file.open("wb") as file:
             file.write(contents.to_bytes(HASH_SIZE, byteorder="little"))
+            # Use truncate to set the remaining file size. On file systems that support
+            # it this will create a sparse file which takes less space on disk
+            # Note: even if the filesystem supports sparse files, copying or moving
+            #       the file may not keep it as a sparse file if the program used is not
+            #       aware
+            file.truncate(size)
 
-            # Write the remaining as zeros, chunked to avoid crazy RAM usage
-            remaining = size - HASH_SIZE
-            chunk = 16 * 1024
-            while remaining > chunk:
-                file.write((0).to_bytes(chunk, byteorder="little"))
-                remaining -= chunk
+        output_paths.append(output_file)
 
-            file.write((0).to_bytes(remaining, byteorder="little"))
-
-
-def _json_file_arg(file):
-    with open(file) as f:
-        return json.load(f)
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-e",
-        "--entry",
-        action="append",
-        help="[Default: all] Then entry file index to generate a media for",
-        # Empty list is the magic value for all entries
-        default=[],
-    )
-    parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=Path,
-        help="[Default: current directory] Directory to store generated media in",
-        default=Path.cwd(),
-    )
-    parser.add_argument(
-        "entry_file", type=_json_file_arg, help="Location of the entry file"
-    )
-
-    args = parser.parse_args()
-
-    # Deal with entries
-    if len(args.entry) == 0:
-        # Empty list means all entries
-        args.entry = range(len(args.entry_file))
-    else:
-        entries = []
-        for entry in args.entry:
-            # Ensure entry is an int
-            try:
-                entry = int(entry)
-            except ValueError:
-                raise ValueError(f"Entry should be an int, got {entry}")
-
-            # And within bounds
-            if entry >= len(args.entry_file) or entry < 0:
-                raise ValueError(
-                    f"Entry {entry} extends outside entry_file bounds"
-                    f" (0, {len(args.entry_file) - 1}"
-                )
-
-            entries.append(entry)
-        args.entry = entries
-
-    return args
+    # Return the paths to all the dummy files
+    return output_paths
 
 
 if __name__ == "__main__":
-    main()
+    _main()

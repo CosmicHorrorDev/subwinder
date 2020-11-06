@@ -1,0 +1,13 @@
+{
+    "status": "200 OK",
+    "data": {
+        "IDUser": "6",
+        "UserNickName": "os",
+        "UserRank": "super admin",
+        "UploadCnt": "296",
+        "UserPreferedLanguages": "ger,eng,fre",
+        "DownloadCnt": "1215",
+        "UserWebLanguage": "en"
+    },
+    "seconds": "0.241"
+}

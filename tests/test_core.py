@@ -1,23 +1,17 @@
-import pytest
-
-from datetime import datetime
 import json
-from tempfile import TemporaryDirectory
 import os
+from datetime import datetime
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
 
+import pytest
+
 from subwinder import AuthSubwinder, Subwinder
+from subwinder._constants import Env
 from subwinder._request import Endpoints
-from subwinder.core import _build_search_query
 from subwinder.exceptions import SubAuthError, SubDownloadError
-from subwinder.info import (
-    Comment,
-    MovieInfo,
-    TvSeriesInfo,
-    UserInfo,
-)
-from subwinder.lang import _converter
+from subwinder.info import Comment, MovieInfo, TvSeriesInfo, UserInfo
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -31,19 +25,12 @@ from tests.constants import (
 )
 
 
-# Fake already updated langs to prevent API requests
-_converter._langs = [
-    ["de", "en", "fr"],
-    ["ger", "eng", "fre"],
-    ["German", "English", "French"],
-]
-_converter._last_updated = datetime.now()
-
-
+# TODO: do this with a fixture too?
 def _dummy_auth_subwinder():
     return AuthSubwinder.__new__(AuthSubwinder)
 
 
+# TODO: is this really required
 def _standard_asw_mock(
     method, mocked_method, method_args, response, expected_call, ideal_result
 ):
@@ -56,41 +43,8 @@ def _standard_asw_mock(
     assert result == ideal_result
 
 
-def test__build_search_query():
-    # Setup the queries to the intended responses
-    PARAM_TO_IDEAL_RESULT = [
-        (
-            (MEDIA1, "en"),
-            {
-                "sublanguageid": "eng",
-                "moviehash": str(MEDIA1.hash),
-                "moviebytesize": str(MEDIA1.size),
-            },
-        ),
-        ((MOVIE_INFO1, "fr"), {"sublanguageid": "fre", "imdbid": MOVIE_INFO1.imdbid},),
-        (
-            (EPISODE_INFO1, "de"),
-            {
-                "sublanguageid": "ger",
-                "imdbid": EPISODE_INFO1.imdbid,
-                "season": EPISODE_INFO1.season,
-                "episode": EPISODE_INFO1.episode,
-            },
-        ),
-    ]
-
-    # `assert` that all of the queries get the intended responses
-    for args, ideal_result in PARAM_TO_IDEAL_RESULT:
-        assert _build_search_query(*args) == ideal_result
-
-
-@pytest.mark.skip(reason="Only passes the values onto `_request`")
-def test__request():
-    pass
-
-
 def test_daily_download_info():
-    with open(SAMPLES_DIR / "server_info.json") as f:
+    with (SAMPLES_DIR / "server_info.json").open() as f:
         RESP = json.load(f)
     IDEAL = DOWNLOAD_INFO
 
@@ -111,7 +65,7 @@ def test_get_languages():
 
 
 def test_server_info():
-    with open(SAMPLES_DIR / "server_info.json") as f:
+    with (SAMPLES_DIR / "server_info.json").open() as f:
         RESP = json.load(f)
     IDEAL = SERVER_INFO
 
@@ -124,17 +78,14 @@ def test_server_info():
 
 # TODO: assert that _request isn't called for bad params?
 # TODO: test correct case as well (assert token as well)
+# XXX: ENV_VARS stuff is a bit messy here. try to clean up logic if possible
+#      should probably be a fixture that wipes env vars in the beginning of all testing
+# TODO: add the env vars as library constants in an enum maybe?
 def test_authsubwinder__init__():
     # Clear out env vars if set
-    ENV_VARS = [
-        "OPEN_SUBTITLES_USERAGENT",
-        "OPEN_SUBTITLES_USERNAME",
-        "OPEN_SUBTITLES_PASSWORD",
-    ]
-
-    for var in ENV_VARS:
-        if var in os.environ:
-            del os.environ[var]
+    for variant in Env:
+        if variant.value in os.environ:
+            del os.environ[variant.value]
 
     bad_params = [
         # Empty creds
@@ -152,11 +103,7 @@ def test_authsubwinder__init__():
             AuthSubwinder(*params)
 
 
-@pytest.mark.skip()
-def test_with():
-    pass
-
-
+# TODO: Test creating an AuthSubwinder instead
 def test__login():
     QUERIES = ("<username>", "<password>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
@@ -165,10 +112,11 @@ def test__login():
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
 
+# TODO: This should be tested with `with` instead
 def test__logout():
     QUERIES = ()
     RESP = {"status": "200 OK", "seconds": 0.055}
-    CALL = (Endpoints.LOG_OUT,)
+    CALL = [Endpoints.LOG_OUT]
 
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
@@ -183,94 +131,62 @@ def test_add_comment():
 
 def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
-    QUERIES = (PROGRAM_NAME,)
-    RESP = {
-        "version": "1.2.3",
-        "url_windows": (
-            "http://forja.rediris.es/frs/download.php/123/subdownloader1.2.3.exe"
-        ),
-        "url_linux": (
-            "http://forja.rediris.es/frs/download.php/124/SubDownloader1.2.3.src.zip"
-        ),
-        "comments": "MultiUpload CDs supported(more than 2CDs)|Lots of bugs fixed",
-        "status": "200 OK",
-    }
+    QUERIES = [PROGRAM_NAME]
     CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
+    with (SAMPLES_DIR / "auto_update.json").open() as f:
+        RESP = json.load(f)
 
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
 
 
-# TODO: test this for batching
 def test_download_subtitles():
     BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
-    BARE_QUERIES = ((SEARCH_RESULT1,),)
+    BARE_QUERIES = [[SEARCH_RESULT1]]
     BARE_CALL = ([SEARCH_RESULT1.subtitles], [BARE_PATH])
     BARE_IDEAL = [BARE_PATH]
 
     FULL_PATH = Path("test dir") / "test file"
-    FULL_QUERIES = ((SEARCH_RESULT1.subtitles,), "test dir", "test file")
+    FULL_QUERIES = [[SEARCH_RESULT1.subtitles], "test dir", "test file"]
     FULL_CALL = ([SEARCH_RESULT1.subtitles], [FULL_PATH])
     FULL_IDEAL = [FULL_PATH]
     RESP = None
 
     asw = _dummy_auth_subwinder()
 
-    # Test sucessfully downloading with bare params
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+    # Mock out the call to get remaining downloads as 200
+    with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+        # Test sucessfully downloading with bare params
+        with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
             result = asw.download_subtitles(*BARE_QUERIES)
-    mocked.assert_called_with(*BARE_CALL)
-    assert result == BARE_IDEAL
+            mocked.assert_called_with(*BARE_CALL)
+            assert result == BARE_IDEAL
 
-    # Test successfully downloading with full params
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
+            # Test successfully downloading with full params
             result = asw.download_subtitles(*FULL_QUERIES)
-    mocked.assert_called_with(*FULL_CALL)
-    assert result == FULL_IDEAL
+            mocked.assert_called_with(*FULL_CALL)
+            assert result == FULL_IDEAL
 
-    # Test failing from no `download_dir`
-    temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
-    BARE_QUERIES[0][0].media.set_dirname(None)
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
-            with pytest.raises(SubDownloadError):
-                result = asw.download_subtitles(*BARE_QUERIES)
-    BARE_QUERIES[0][0].media.dirname = temp_dirname
+        # Test failing from no `download_dir`
+        temp_dirname = BARE_QUERIES[0][0].media.get_dirname()
+        BARE_QUERIES[0][0].media.set_dirname(None)
+        with pytest.raises(SubDownloadError):
+            _ = asw.download_subtitles(*BARE_QUERIES)
+        BARE_QUERIES[0][0].media.dirname = temp_dirname
 
-    # Test failing from no `media_name` for `name_format`
-    temp_filename = BARE_QUERIES[0][0].media.get_filename()
-    BARE_QUERIES[0][0].media.set_filename(None)
-    with patch.object(asw, "_download_subtitles", return_value=RESP) as mocked:
-        # Mock out the call to get remaining downloads as 200
-        with patch.object(asw, "daily_download_info", return_value=DOWNLOAD_INFO):
-            with pytest.raises(SubDownloadError):
-                result = asw.download_subtitles(
-                    *BARE_QUERIES, name_format="{media_name}"
-                )
+        # Test failing from no `media_name` for `name_format`
+        temp_filename = BARE_QUERIES[0][0].media.get_filename()
+        BARE_QUERIES[0][0].media.set_filename(None)
+        with pytest.raises(SubDownloadError):
+            _ = asw.download_subtitles(*BARE_QUERIES, name_format="{media_name}")
     BARE_QUERIES[0][0].media.set_filename(temp_filename)
 
 
+# TODO: combine the logic up above with down here
 def test__download_subtitles():
     asw = _dummy_auth_subwinder()
 
-    RESP = {
-        "status": "200 OK",
-        "data": [
-            {
-                "idsubtitlefile": SEARCH_RESULT1.subtitles.file_id,
-                "data": (
-                    "H4sIAIXHxV0C/yXLwQ0CMQxE0VbmxoVCoAyzHiBS4lnFXtB2TyRuT/r6N/Yu1JuTV9"
-                    "wvY9EKL8mhTmwa+2QmHRYOxiZfzuNRrVZv8dQcVk3xP08dSMFps5/4WhRKSPvwBzf2"
-                    "OXZqAAAA"
-                ),
-            },
-        ],
-        "seconds": "0.397",
-    }
+    with (SAMPLES_DIR / "download_subtitles.json").open() as f:
+        RESP = json.load(f)
     IDEAL_CONTENTS = (
         "Hello there, I'm that good ole compressed and encoded subtitle information"
         " that you so dearly want to save"
@@ -287,14 +203,14 @@ def test__download_subtitles():
         )
 
         # Check the contents for the correct result
-        with open(sub_path) as f:
+        with sub_path.open() as f:
             assert f.read() == IDEAL_CONTENTS
 
 
 def test_get_comments():
     # Build up the empty `SearchResult`s and add the `subtitles.id`
-    queries = ([SEARCH_RESULT1, SEARCH_RESULT2],)
-    with open(SAMPLES_DIR / "get_comments.json") as f:
+    queries = [[SEARCH_RESULT1, SEARCH_RESULT2]]
+    with (SAMPLES_DIR / "get_comments.json").open() as f:
         RESP = json.load(f)
     ideal_result = [
         [
@@ -345,11 +261,11 @@ def test_guess_media():
         MovieInfo("Nochnoy dozor", 2004, "0403358", None, None),
         MovieInfo("Aliens", 1986, "0090605", None, None),
     ]
-    with open(SAMPLES_DIR / "guess_media.json") as f:
-        SAMPLE_RESP = json.load(f)
+    with (SAMPLES_DIR / "guess_media.json").open() as f:
+        RESP = json.load(f)
 
     with patch.object(asw, "_request") as mocked:
-        mocked.side_effect = SAMPLE_RESP
+        mocked.side_effect = RESP
         guesses = asw.guess_media(QUERIES)
 
     assert guesses == IDEAL_RESULT
@@ -362,7 +278,7 @@ def test_guess_media():
     ]
     CALL = (Endpoints.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
     IDEAL_RESULT = [None, None]
-    with open(SAMPLES_DIR / "guess_media_edge_cases.json") as f:
+    with (SAMPLES_DIR / "guess_media_edge_cases.json").open() as f:
         EDGE_RESP = json.load(f)
 
     with patch.object(asw, "_request") as mocked:
@@ -375,13 +291,13 @@ def test_guess_media():
 
 def test_ping():
     RESP = {"status": "200 OK", "seconds": "0.055"}
-    CALL = (Endpoints.NO_OPERATION,)
+    CALL = [Endpoints.NO_OPERATION]
 
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
 
 
 def test_report_media():
-    QUERY = (SEARCH_RESULT2,)
+    QUERY = [SEARCH_RESULT2]
     CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
@@ -389,8 +305,8 @@ def test_report_media():
 
 
 def test_search_subtitles():
-    QUERIES = (((MEDIA1, "en"), (MOVIE_INFO1, "fr"), (EPISODE_INFO1, "de"),),)
-    CALL = (*QUERIES,)
+    QUERIES = [[(MEDIA1, "en"), (MOVIE_INFO1, "fr"), (EPISODE_INFO1, "de")]]
+    CALL = [*QUERIES]
     # Just testing that the correct amount of `SearchResult`s are returned
     RESP = [
         [SEARCH_RESULT2],
@@ -403,13 +319,15 @@ def test_search_subtitles():
         SEARCH_RESULT2,
     ]
 
+    # XXX: Test through to _request, not just to _search_subtitles_unranked
     _standard_asw_mock(
         "search_subtitles", "_search_subtitles_unranked", QUERIES, RESP, CALL, IDEAL
     )
 
 
+# XXX: combine this with the above
 def test__search_subtitles_unranked():
-    QUERIES = (((MEDIA1, "en"),),)
+    QUERIES = [[(MEDIA1, "en")]]
     CALL = (
         Endpoints.SEARCH_SUBTITLES,
         [
@@ -420,7 +338,7 @@ def test__search_subtitles_unranked():
             },
         ],
     )
-    with open(SAMPLES_DIR / "search_subtitles.json") as f:
+    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
         RESP = json.load(f)
 
     IDEAL = [[SEARCH_RESULT2]]
@@ -431,27 +349,10 @@ def test__search_subtitles_unranked():
 
 
 def test_suggest_media():
-    QUERY = ("matrix",)
+    QUERY = ["matrix"]
     CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
-    RESP = {
-        "status": "200 OK",
-        "data": {
-            "matrix": [
-                {
-                    "MovieName": "The Matrix",
-                    "MovieYear": "1999",
-                    "MovieKind": "movie",
-                    "IDMovieIMDB": "0133093",
-                },
-                {
-                    "MovieName": "The Matrix Reloaded",
-                    "MovieYear": "2003",
-                    "MovieKind": "movie",
-                    "IDMovieIMDB": "0234215",
-                },
-            ]
-        },
-    }
+    with (SAMPLES_DIR / "suggest_media.json").open() as f:
+        RESP = json.load(f)
     IDEAL = [
         MovieInfo("The Matrix", 1999, "0133093", None, None),
         MovieInfo("The Matrix Reloaded", 2003, "0234215", None, None),
@@ -461,20 +362,9 @@ def test_suggest_media():
 
 
 def test_user_info():
-    RESP = {
-        "status": "200 OK",
-        "data": {
-            "IDUser": "6",
-            "UserNickName": "os",
-            "UserRank": "super admin",
-            "UploadCnt": "296",
-            "UserPreferedLanguages": "ger,eng,fre",
-            "DownloadCnt": "1215",
-            "UserWebLanguage": "en",
-        },
-        "seconds": "0.241",
-    }
-    CALL = (Endpoints.GET_USER_INFO,)
+    CALL = [Endpoints.GET_USER_INFO]
+    with (SAMPLES_DIR / "user_info.json").open() as f:
+        RESP = json.load(f)
     IDEAL_RESULT = FULL_USER_INFO1
 
     _standard_asw_mock("user_info", "_request", (), RESP, CALL, IDEAL_RESULT)
@@ -482,22 +372,15 @@ def test_user_info():
 
 def test_vote():
     INVALID_SCORES = [0, 11]
-    VALID_SCORES = [1, 10]
-    SAMPLE_RESP = {
-        "status": "200 OK",
-        "data": {
-            "SubRating": "8.0",
-            "SubSumVotes": "1",
-            "IDSubtitle": SEARCH_RESULT1.subtitles.id,
-        },
-        "seconds": "0.075",
-    }
+    VALID_SCORES = range(1, 10 + 1)
+    with (SAMPLES_DIR / "vote.json").open() as f:
+        RESP = json.load(f)
 
     # Test valid scores
     for score in VALID_SCORES:
         query = (SEARCH_RESULT1, score)
         call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
-        _standard_asw_mock("vote", "_request", query, SAMPLE_RESP, call, None)
+        _standard_asw_mock("vote", "_request", query, RESP, call, None)
 
     # Test invalid scores
     for score in INVALID_SCORES:
@@ -506,14 +389,15 @@ def test_vote():
 
         asw = _dummy_auth_subwinder()
 
-        with patch.object(asw, "_request", return_value=SAMPLE_RESP):
+        with patch.object(asw, "_request", return_value=RESP):
             with pytest.raises(ValueError):
                 asw.vote(*query)
 
 
+# XXX: this should really test to _request, not just _preview_subtitles
 def test_preview_subtitles():
-    QUERIES = ([SEARCH_RESULT1, SEARCH_RESULT2],)
-    CALL = ([SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id],)
+    QUERIES = [[SEARCH_RESULT1, SEARCH_RESULT2.subtitles]]
+    CALL = [[SEARCH_RESULT1.subtitles.file_id, SEARCH_RESULT2.subtitles.file_id]]
     RESP = ["preview 1", "preview 2"]
     IDEAL = RESP
 
@@ -522,10 +406,11 @@ def test_preview_subtitles():
     )
 
 
+# XXX: combine with the above
 def test__preview_subtitles():
-    QUERIES = (["1951976245"],)
+    QUERIES = [["1951976245"]]
     CALL = (Endpoints.PREVIEW_SUBTITLES, QUERIES[0])
-    with open(SAMPLES_DIR / "preview_subtitles.json") as f:
+    with (SAMPLES_DIR / "preview_subtitles.json").open() as f:
         RESP = json.load(f)
 
     IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]

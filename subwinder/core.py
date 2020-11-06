@@ -7,15 +7,18 @@ except ImportError:
     ATOMIC_DOWNLOADS_SUPPORT = False
 
 
-from pathlib import Path
 import os
+from pathlib import Path
 
+# See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
+# if you want to know why `request` isn't imported with `from`
+import subwinder._request
 from subwinder import utils
+from subwinder._constants import Env
 from subwinder._internal_utils import type_check
-from subwinder._request import request, Endpoints
+from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
 from subwinder.info import (
-    build_media_info,
     Comment,
     EpisodeInfo,
     FullUserInfo,
@@ -24,8 +27,9 @@ from subwinder.info import (
     SearchResult,
     ServerInfo,
     SubtitlesInfo,
+    build_media_info,
 )
-from subwinder.lang import lang_2s, lang_3s, lang_longs, LangFormat
+from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
 from subwinder.media import Media
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
@@ -90,7 +94,7 @@ class Subwinder:
         Call the API `Endpoint` represented by `method` with any of the given `params`.
         """
         # Call the `request` function with our token
-        return request(endpoint, self._token, *params)
+        return subwinder._request.request(endpoint, self._token, *params)
 
     def daily_download_info(self):
         """
@@ -125,26 +129,26 @@ class AuthSubwinder(Subwinder):
         parameter is used.
         """
         # Try to get any info from env vars if not passed in
-        useragent = useragent or os.environ.get("OPEN_SUBTITLES_USERAGENT")
-        username = username or os.environ.get("OPEN_SUBTITLES_USERNAME")
-        password = password or os.environ.get("OPEN_SUBTITLES_PASSWORD")
+        useragent = useragent or os.environ.get(Env.USERAGENT.value)
+        username = username or os.environ.get(Env.USERNAME.value)
+        password = password or os.environ.get(Env.PASSWORD.value)
 
         if username is None:
             raise SubAuthError(
                 "missing `username`, set when initializing `AuthSubwinder` or with the"
-                " OPEN_SUBTITLES_USERNAME env var"
+                f" {Env.USERNAME.value} env var"
             )
 
         if password is None:
             raise SubAuthError(
                 "missing `password`, set when initializing `AuthSubwinder` or set the"
-                " OPEN_SUBTITLES_PASSWORD env var"
+                f" {Env.PASSWORD.value} env var"
             )
 
         if useragent is None:
             raise SubAuthError(
                 "missing `useragent`, set when initializing `AuthSubwinder` or set the"
-                " OPEN_SUBTITLES_USERAGENT env var. `useragent` must be specified for"
+                f" {Env.USERAGENT.value} env var. `useragent` must be specified for"
                 " your app according to instructions given at"
                 " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
                 "DevReadFirst"

@@ -1,0 +1,287 @@
+[
+    {
+        "token": "<token>",
+        "status": "200 OK",
+        "data": {
+            "IDUser": "1234567890",
+            "UserNickName": "<username>",
+            "UserRank": "sub leecher",
+            "UploadCnt": "0",
+            "DownloadCnt": "100",
+            "UserWebLanguage": "en",
+            "IsVIP": 0
+        },
+        "seconds": 0.059
+    },
+    {
+        "status": "200 OK",
+        "data": {
+            "IDUser": "1234567890",
+            "UserNickName": "<username>",
+            "UserRank": "sub leecher",
+            "UploadCnt": "0",
+            "UserPreferedLanguages": "",
+            "DownloadCnt": "100",
+            "UserWebLanguage": "en"
+        },
+        "seconds": 0.003
+    },
+    {
+        "xmlrpc_version": "0.1",
+        "xmlrpc_url": "http://api.opensubtitles.org/xml-rpc",
+        "application": "OpenSuber v0.2",
+        "contact": "<admin-email>",
+        "website_url": "http://www.opensubtitles.org",
+        "users_online_total": 19723,
+        "users_online_program": 13866,
+        "users_loggedin": 4886,
+        "users_max_alltime": "27449",
+        "users_registered": "6345245",
+        "subs_downloads": "4294967295",
+        "subs_subtitle_files": "5360485",
+        "movies_total": "929454",
+        "movies_aka": "783974",
+        "total_subtitles_languages": "92",
+        "last_update_strings": {
+            "en": "2014-11-12 12:34:41"
+        },
+        "download_limits": {
+            "global_24h_download_limit": 200,
+            "client_ip": "<ip-addr>",
+            "limit_check_by": "user_ip",
+            "client_24h_download_count": 0,
+            "client_download_quota": 200,
+            "client_24h_download_limit": 200
+        },
+        "seconds": 0.004
+    },
+    {
+        "status": "200 OK",
+        "data": {
+            "mr robot": [
+                {
+                    "MovieName": "Mr. Robot",
+                    "MovieYear": 2015,
+                    "MovieKind": "tv series",
+                    "IDMovieIMDB": "4158110"
+                },
+                {
+                    "MovieName": "Mr. Robot Digital After Show",
+                    "MovieYear": 2016,
+                    "MovieKind": "tv series",
+                    "IDMovieIMDB": "6137444"
+                },
+                {
+                    "MovieName": "Love, Death & Robots",
+                    "MovieYear": 2019,
+                    "MovieKind": "tv series",
+                    "IDMovieIMDB": "9561862"
+                },
+                {
+                    "MovieName": "I, Robot",
+                    "MovieYear": 2004,
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0343818"
+                },
+                {
+                    "MovieName": "Robots",
+                    "MovieYear": 2005,
+                    "MovieKind": "movie",
+                    "IDMovieIMDB": "0358082"
+                }
+            ]
+        },
+        "seconds": 0.009
+    },
+    {
+        "status": "200 OK",
+        "data": [
+            {
+                "MatchedBy": "imdbid",
+                "IDSubMovieFile": "0",
+                "MovieHash": "0",
+                "MovieByteSize": "0",
+                "MovieTimeMS": "0",
+                "IDSubtitleFile": "1954809951",
+                "SubFileName": "Mr.Robot.S01E02.HDTV.x264-KILLERS.srt",
+                "SubActualCD": "1",
+                "SubSize": "56682",
+                "SubHash": "a1c329145c9e7d7ca647c675a9321437",
+                "SubLastTS": "",
+                "SubTSGroup": "1",
+                "InfoReleaseGroup": "KILLERS",
+                "InfoFormat": "HDTV",
+                "InfoOther": "",
+                "IDSubtitle": "6221354",
+                "UserID": "1566989",
+                "SubLanguageID": "eng",
+                "SubFormat": "srt",
+                "SubSumCD": "1",
+                "SubAuthorComment": "",
+                "SubAddDate": "2015-07-02 14:26:19",
+                "SubBad": "0",
+                "SubRating": "9.3",
+                "SubSumVotes": "4",
+                "SubDownloadsCnt": "88198",
+                "MovieReleaseName": "Mr.Robot.S01E02.HDTV.x264-KILLERS",
+                "MovieFPS": "23.976",
+                "IDMovie": "199004",
+                "IDMovieImdb": "4686038",
+                "MovieName": "\"Mr. Robot\" eps1.1_ones-and-zer0es.mpeg",
+                "MovieNameEng": "",
+                "MovieYear": "2015",
+                "MovieImdbRating": "8.7",
+                "SubFeatured": "1",
+                "UserNickName": "GoldenBeard",
+                "SubTranslator": "",
+                "ISO639": "en",
+                "LanguageName": "English",
+                "SubComments": "1",
+                "SubHearingImpaired": "0",
+                "UserRank": "administrator",
+                "SeriesSeason": "1",
+                "SeriesEpisode": "2",
+                "MovieKind": "episode",
+                "SubHD": "1",
+                "SeriesIMDBParent": "4158110",
+                "SubEncoding": "UTF-8",
+                "SubAutoTranslation": "0",
+                "SubForeignPartsOnly": "0",
+                "SubFromTrusted": "1",
+                "QueryCached": 1,
+                "SubTSGroupHash": "77be4256fa6fbb62435a7f13b86e87d3",
+                "SubDownloadLink": "http://dl.opensubtitles.org/en/download/src-api/vrf-19dc0c5c/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/filead/1954809951.gz",
+                "ZipDownloadLink": "http://dl.opensubtitles.org/en/download/src-api/vrf-f5240bb0/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/subad/6221354",
+                "SubtitlesLink": "http://www.opensubtitles.org/en/subtitles/6221354/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/mr-robot-eps1-1-ones-and-zer0es-mpeg-en",
+                "QueryNumber": "0",
+                "QueryParameters": {
+                    "episode": 2,
+                    "season": 1,
+                    "imdbid": "4158110",
+                    "sublanguageid": "eng"
+                },
+                "Score": 37.74198
+            },
+            {
+                "MatchedBy": "imdbid",
+                "IDSubMovieFile": "0",
+                "MovieHash": "0",
+                "MovieByteSize": "0",
+                "MovieTimeMS": "0",
+                "IDSubtitleFile": "1954809953",
+                "SubFileName": "Mr.Robot.S01E02.HDTV.x264-KILLERS.srt",
+                "SubActualCD": "1",
+                "SubSize": "60531",
+                "SubHash": "a7a4914d201480be32b77e389fbede87",
+                "SubLastTS": "",
+                "SubTSGroup": "1",
+                "InfoReleaseGroup": "KILLERS",
+                "InfoFormat": "HDTV",
+                "InfoOther": "",
+                "IDSubtitle": "6221353",
+                "UserID": "1566989",
+                "SubLanguageID": "eng",
+                "SubFormat": "srt",
+                "SubSumCD": "1",
+                "SubAuthorComment": "",
+                "SubAddDate": "2015-07-02 14:26:02",
+                "SubBad": "0",
+                "SubRating": "10.0",
+                "SubSumVotes": "4",
+                "SubDownloadsCnt": "133948",
+                "MovieReleaseName": "Mr.Robot.S01E02.HDTV.x264-KILLERS",
+                "MovieFPS": "23.976",
+                "IDMovie": "199004",
+                "IDMovieImdb": "4686038",
+                "MovieName": "\"Mr. Robot\" eps1.1_ones-and-zer0es.mpeg",
+                "MovieNameEng": "",
+                "MovieYear": "2015",
+                "MovieImdbRating": "8.7",
+                "SubFeatured": "0",
+                "UserNickName": "GoldenBeard",
+                "SubTranslator": "",
+                "ISO639": "en",
+                "LanguageName": "English",
+                "SubComments": "0",
+                "SubHearingImpaired": "1",
+                "UserRank": "administrator",
+                "SeriesSeason": "1",
+                "SeriesEpisode": "2",
+                "MovieKind": "episode",
+                "SubHD": "1",
+                "SeriesIMDBParent": "4158110",
+                "SubEncoding": "UTF-8",
+                "SubAutoTranslation": "0",
+                "SubForeignPartsOnly": "0",
+                "SubFromTrusted": "1",
+                "QueryCached": 1,
+                "SubTSGroupHash": "77be4256fa6fbb62435a7f13b86e87d3",
+                "SubDownloadLink": "http://dl.opensubtitles.org/en/download/src-api/vrf-19de0c5e/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/filead/1954809953.gz",
+                "ZipDownloadLink": "http://dl.opensubtitles.org/en/download/src-api/vrf-f5230baf/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/subad/6221353",
+                "SubtitlesLink": "http://www.opensubtitles.org/en/subtitles/6221353/sid-reYOKb-XaBBbNpR2uOtxpvQfOs6/mr-robot-eps1-1-ones-and-zer0es-mpeg-en",
+                "QueryNumber": "0",
+                "QueryParameters": {
+                    "episode": 2,
+                    "season": 1,
+                    "imdbid": "4158110",
+                    "sublanguageid": "eng"
+                },
+                "Score": 36.33948
+            }
+        ],
+        "seconds": 0.019
+    },
+    {
+        "status": "200 OK",
+        "data": [
+            {
+                "encoding": "UTF-8",
+                "contents": "H4sIAB9/TV4C/zPk5TIwsAIiQyMdYxNTBV1dOwWQgKGVkbGOiakZL5dbZlFxiUJxaVJJZklOKi9XUk5+cjYAKnH1JzcAAAA="
+            }
+        ],
+        "seconds": 0.033
+    },
+    {
+        "xmlrpc_version": "0.1",
+        "xmlrpc_url": "http://api.opensubtitles.org/xml-rpc",
+        "application": "OpenSuber v0.2",
+        "contact": "<admin-email>",
+        "website_url": "http://www.opensubtitles.org",
+        "users_online_total": 19640,
+        "users_online_program": 13837,
+        "users_loggedin": 4861,
+        "users_max_alltime": "27449",
+        "users_registered": "6345245",
+        "subs_downloads": "4294967295",
+        "subs_subtitle_files": "5360485",
+        "movies_total": "929454",
+        "movies_aka": "783974",
+        "total_subtitles_languages": "92",
+        "last_update_strings": {
+            "en": "2014-11-12 12:34:41"
+        },
+        "download_limits": {
+            "global_24h_download_limit": 200,
+            "client_ip": "193.37.253.52",
+            "limit_check_by": "user_ip",
+            "client_24h_download_count": 0,
+            "client_download_quota": 200,
+            "client_24h_download_limit": 200
+        },
+        "seconds": 0.004
+    },
+    {
+        "status": "200 OK",
+        "data": [
+            {
+                "idsubtitlefile": "1954809953",
+                "data": "H4sIAB9/TV4C/zPk5TIwsAIiQyMdYxNTBV1dOwWQgKGVkbGOiakZL5dbZlFxiUJxaVJJZklOKi9XUk5+cjYAKnH1JzcAAAA="
+            }
+        ],
+        "seconds": 0.061
+    },
+    {
+        "status": "200 OK",
+        "seconds": 0.002
+    }
+]
