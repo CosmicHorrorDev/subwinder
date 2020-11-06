@@ -38,7 +38,7 @@ def special_hash(filepath):
         file.seek(-CHUNK_SIZE_BYTES, 2)
         hasher.update(file.read(CHUNK_SIZE_BYTES))
 
-    return hasher.digest()
+    return hasher.hexdigest()
 
 
 class _SumHasher:
@@ -52,7 +52,7 @@ class _SumHasher:
             chunk = values[i : i + self.block_size]
             self.hash += int.from_bytes(chunk, byteorder="little")
 
-    def digest(self):
+    def hexdigest(self):
         # Keep output in `self.digest_size`
         temp = self.hash & 2 ** (self.digest_size * 8) - 1
         return f"{temp:016x}"

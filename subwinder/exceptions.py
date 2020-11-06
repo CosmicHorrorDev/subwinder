@@ -6,6 +6,7 @@ class SubwinderError(Exception):
     """
 
 
+# TODO: Return more info here like the invalid lang type and lang code
 class SubLangError(SubwinderError):
     """
     Raised when the user tries to convert a language code using one of the global
@@ -13,6 +14,7 @@ class SubLangError(SubwinderError):
     """
 
 
+# TODO: Return the error type here
 class SubAuthError(SubwinderError):
     """
     Raised when trying to use `AuthSubwinder` without providing a username, password, or
@@ -22,6 +24,7 @@ class SubAuthError(SubwinderError):
     """
 
 
+# TODO: Return the error type here
 class SubUploadError(SubwinderError):
     """
     Raised if the user attempts to upload subtitles and the server returns a response
@@ -38,6 +41,7 @@ class SubDownloadError(SubwinderError):
     """
 
 
+# TODO: Return the error type here
 class SubServerError(SubwinderError):
     """
     When the server raises a 5xx error on a request or when the user hits more than 40
@@ -47,6 +51,7 @@ class SubServerError(SubwinderError):
     """
 
 
+# TODO: Return the file size here (and path if we can)
 class SubHashError(SubwinderError):
     """
     Raised when the user in some way tries to get the `subwinder.utils.special_hash` of

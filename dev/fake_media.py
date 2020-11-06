@@ -40,6 +40,7 @@ def _parse_args():
     return args
 
 
+# TODO: test that the hashes are right in unit testing
 def fake_media(entry_file, output_dir, entry_indicies=[]):
     HASH_SIZE = 8
     MAX_HASH = 2 ** (HASH_SIZE * 8) - 1
