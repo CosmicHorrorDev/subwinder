@@ -381,6 +381,8 @@ class AuthSubwinder(Subwinder):
 
     # TODO: can we ensure that the `search_result` was matched using a file hash before
     #       calling this endpoint
+    #       And the anser is yes. There are some attributes that only exist on an exact
+    #       match
     def report_media(self, sub_container):
         """
         Reports the subtitles tied to the `search_result`. This can only be done if the

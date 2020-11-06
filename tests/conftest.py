@@ -34,7 +34,6 @@ def _skip_non_default(request):
     node = request.node
 
     # IF we are skipping non default and we have a mark
-    # TODO: check for specific mark values
     if skip_non_default(request) and len(node.own_markers) > 0:
         for marker in node.own_markers:
             if marker.name in NON_DEFAULT_MARKERS:

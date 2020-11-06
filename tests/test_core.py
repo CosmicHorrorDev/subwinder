@@ -80,7 +80,6 @@ def test_server_info():
 # TODO: test correct case as well (assert token as well)
 # XXX: ENV_VARS stuff is a bit messy here. try to clean up logic if possible
 #      should probably be a fixture that wipes env vars in the beginning of all testing
-# TODO: add the env vars as library constants in an enum maybe?
 def test_authsubwinder__init__():
     # Clear out env vars if set
     for variant in Env:

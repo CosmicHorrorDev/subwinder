@@ -5,7 +5,6 @@ from tests.utils import RandomTempFile
 
 
 def test_Media():
-    # TODO: mock out the hash here with a random file with known seed too
     with RandomTempFile(128 * 1024, seed=1) as rand_file:
         media = Media(rand_file)
 
