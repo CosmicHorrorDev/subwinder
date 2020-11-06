@@ -7,7 +7,6 @@ from unittest.mock import call, patch
 import pytest
 
 from dev.fake_media import fake_media
-from examples.advanced_quickstart import adv_quickstart
 from examples.interactive import interative
 from subwinder._constants import Env
 from subwinder._request import Endpoints
@@ -106,21 +105,22 @@ def test_interactive(mock_request, tmp_path):
             assert file.read() == SUB_FILE
 
 
+# TODO: finish this implementation along with integration testing for all examples
 # FIXME: likely don't use `tmp_path` here, it doesn't automatically get cleaned up
 # XXX: don't have to remove lang stuff from here now
-@pytest.mark.io_heavy
-def test_adv_quickstart(gen_fake_media, tmp_path):
-    fake_media_paths = gen_fake_media
+# @pytest.mark.io_heavy
+# def test_adv_quickstart(gen_fake_media, tmp_path):
+#     fake_media_paths = gen_fake_media
 
-    # Setup all the values for our test
-    # TODO: fix these (make sure they test stuff)
-    AUTHOR_WHITELIST = []
-    SUB_EXTS = []
-    LANG = "en"
-    input_dir = fake_media_paths[0].parent
-    output_dir = tmp_path
-    saved_subs_file = output_dir / "ledger.json"
-    # TODO: still need to get the values from the actual requests here
-    # TODO: ensure everything runs right
-    # TODO: move all the files back to their right place
-    # TODO: ensure ledger has the right info
+#     # Setup all the values for our test
+#     # TODO: fix these (make sure they test stuff)
+#     AUTHOR_WHITELIST = []
+#     SUB_EXTS = []
+#     LANG = "en"
+#     input_dir = fake_media_paths[0].parent
+#     output_dir = tmp_path
+#     saved_subs_file = output_dir / "ledger.json"
+#     # TODO: still need to get the values from the actual requests here
+#     # TODO: ensure everything runs right
+#     # TODO: move all the files back to their right place
+#     # TODO: ensure ledger has the right info
