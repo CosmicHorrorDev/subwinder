@@ -1,7 +1,7 @@
-import pytest
-
 import os
 from tempfile import NamedTemporaryFile
+
+import pytest
 
 from subwinder.exceptions import SubHashError
 from subwinder.utils import extract, special_hash
