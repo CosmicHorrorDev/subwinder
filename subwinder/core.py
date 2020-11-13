@@ -447,7 +447,7 @@ class AuthSubwinder(Subwinder):
 
         # Expand out the `zip` to a `list`
         if isinstance(queries, zip):
-            queries = list(zip)
+            queries = list(queries)
 
         VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
         for query_pair in queries:
