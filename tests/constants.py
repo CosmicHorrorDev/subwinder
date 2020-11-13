@@ -99,7 +99,11 @@ SEARCH_RESULT2 = SearchResult(
 )
 
 DOWNLOAD_INFO = DownloadInfo(
-    ip="1.1.1.1", downloaded=0, remaining=200, limit=200, limit_checked_by="user_ip",
+    ip="1.1.1.1",
+    downloaded=0,
+    remaining=200,
+    limit=200,
+    limit_checked_by="user_ip",
 )
 
 SERVER_INFO = ServerInfo(
@@ -116,5 +120,7 @@ SERVER_INFO = ServerInfo(
 )
 
 GUESS_MEDIA_RESULT = GuessMediaResult(
-    best_guess=MOVIE_INFO1, from_string=EPISODE_INFO1, from_imdb=[],
+    best_guess=MOVIE_INFO1,
+    from_string=EPISODE_INFO1,
+    from_imdb=[],
 )

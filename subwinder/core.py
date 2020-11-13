@@ -345,7 +345,11 @@ class AuthSubwinder(Subwinder):
         self._request(Endpoints.NO_OPERATION)
 
     def guess_media(
-        self, queries, ranking_func=rank_guess_media, *rank_args, **rank_kwargs,
+        self,
+        queries,
+        ranking_func=rank_guess_media,
+        *rank_args,
+        **rank_kwargs,
     ):
         """
         Same as `guess_media_unranked`, but selects the best result using `ranking_func`
@@ -411,7 +415,11 @@ class AuthSubwinder(Subwinder):
         self._request(Endpoints.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
 
     def search_subtitles(
-        self, queries, ranking_func=rank_search_subtitles, *rank_args, **rank_kwargs,
+        self,
+        queries,
+        ranking_func=rank_search_subtitles,
+        *rank_args,
+        **rank_kwargs,
     ):
         """
         Same as `search_subtitles_unranked`, but the results are run through the
@@ -463,7 +471,11 @@ class AuthSubwinder(Subwinder):
 
         # This can return 500 items, but one query could return multiple so 20 is being
         # used in hope that there are plenty of results for each
-        return _batch(self._search_subtitles_unranked, 20, [queries],)
+        return _batch(
+            self._search_subtitles_unranked,
+            20,
+            [queries],
+        )
 
     def _search_subtitles_unranked(self, queries):
         internal_queries = [_build_search_query(q, l) for q, l in queries]

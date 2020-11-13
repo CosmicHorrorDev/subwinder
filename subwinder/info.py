@@ -48,7 +48,10 @@ class UserInfo:
         if id == "0":
             return None
 
-        return cls(id=id, name=data["UserNickName"],)
+        return cls(
+            id=id,
+            name=data["UserNickName"],
+        )
 
 
 @dataclass

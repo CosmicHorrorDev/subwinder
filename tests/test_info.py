@@ -66,7 +66,9 @@ def test_Comment():
         DATA = json.load(f)
 
     assert Comment.from_data(DATA) == Comment(
-        UserInfo("<id>", "<name>"), datetime(2000, 1, 2, 3, 4, 5), "<comment>",
+        UserInfo("<id>", "<name>"),
+        datetime(2000, 1, 2, 3, 4, 5),
+        "<comment>",
     )
 
 

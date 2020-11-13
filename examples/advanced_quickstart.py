@@ -49,7 +49,10 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
         # Now we can search for all of our `media` using our custom ranking function
         print("Searching... ", end="")
         results = asw.search_subtitles(
-            zip(media, repeat(lang)), custom_rank_func, author_whitelist, sub_exts,
+            zip(media, repeat(lang)),
+            custom_rank_func,
+            author_whitelist,
+            sub_exts,
         )
         # Filter out items that didn't get any matches
         results = [result for result in results if result is not None]
