@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from subwinder._constants import REPO_URL, TIME_FORMAT
 from subwinder.exceptions import SubLibError
@@ -63,7 +63,7 @@ class FullUserInfo(UserInfo):
     rank: str
     num_uploads: int
     num_downloads: int
-    preferred_languages: list
+    preferred_languages: List[str]
     web_language: str
 
     @classmethod
@@ -112,8 +112,8 @@ class MediaInfo:
     name: str
     year: int
     imdbid: str
-    _dirname: Path
-    _filename: Path
+    _dirname: Optional[Path]
+    _filename: Optional[Path]
 
     def __init__(self, name, year, imdbid, dirname, filename):
         self.name = name
@@ -278,7 +278,7 @@ class SubtitlesInfo:
     size: int
     id: str
     file_id: str
-    sub_to_movie_id: str
+    sub_to_movie_id: Optional[str]
     filename: Path
     lang_2: str
     lang_3: str
@@ -313,14 +313,14 @@ class SearchResult:
     Data container for a search result from searching for subtitles.
     """
 
-    author: UserInfo
+    author: Optional[UserInfo]
     media: MediaInfo
     subtitles: SubtitlesInfo
     upload_date: datetime
     num_bad_reports: int
     num_downloads: int
     num_comments: int
-    rating: float
+    rating: Optional[float]
     score: float
 
     @classmethod
@@ -346,8 +346,8 @@ class GuessMediaResult:
     Data container for a result from `AuthSubwinder`'s `guess_media` method
     """
 
-    best_guess: MediaInfo
-    from_string: MediaInfo
+    best_guess: Optional[MediaInfo]
+    from_string: Optional[MediaInfo]
     from_imdb: List[MediaInfo]
 
     @classmethod
