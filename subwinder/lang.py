@@ -10,9 +10,11 @@ import subwinder._request
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubLangError
 
-_LANG_2_KEY = "ISO639"
-_LANG_3_KEY = "SubLanguageID"
-_LANG_LONG_KEY = "LanguageName"
+
+class _LangKey(Enum):
+    LANG_2 = "ISO639"
+    LANG_3 = "SubLanguageID"
+    LANG_LONG = "LanguageName"
 
 
 class LangFormat(Enum):
@@ -48,9 +50,11 @@ class _LangConverter:
         # Reset then recollect info
         self.default()
         for lang_set in lang_sets:
-            self._langs[LangFormat.LANG_2.value].append(lang_set[_LANG_2_KEY])
-            self._langs[LangFormat.LANG_3.value].append(lang_set[_LANG_3_KEY])
-            self._langs[LangFormat.LANG_LONG.value].append(lang_set[_LANG_LONG_KEY])
+            self._langs[LangFormat.LANG_2.value].append(lang_set[_LangKey.LANG_2.value])
+            self._langs[LangFormat.LANG_3.value].append(lang_set[_LangKey.LANG_3.value])
+            self._langs[LangFormat.LANG_LONG.value].append(
+                lang_set[_LangKey.LANG_LONG.value]
+            )
 
         # Refresh updated time
         self._last_updated = datetime.now()
