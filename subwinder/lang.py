@@ -16,6 +16,11 @@ class _LangKey(Enum):
     LANG_3 = "SubLanguageID"
     LANG_LONG = "LanguageName"
 
+    @classmethod
+    def from_format(cls, lang_format):
+        KEYS = [cls.LANG_2, cls.LANG_3, cls.LANG_LONG]
+        return KEYS[lang_format.value]
+
 
 class LangFormat(Enum):
     LANG_2 = 0
@@ -50,11 +55,9 @@ class _LangConverter:
         # Reset then recollect info
         self.default()
         for lang_set in lang_sets:
-            self._langs[LangFormat.LANG_2.value].append(lang_set[_LangKey.LANG_2.value])
-            self._langs[LangFormat.LANG_3.value].append(lang_set[_LangKey.LANG_3.value])
-            self._langs[LangFormat.LANG_LONG.value].append(
-                lang_set[_LangKey.LANG_LONG.value]
-            )
+            for lang_format in LangFormat:
+                lang = lang_set[_LangKey.from_format(lang_format).value]
+                self._langs[lang_format.value].append(lang)
 
         # Refresh updated time
         self._last_updated = datetime.now()
