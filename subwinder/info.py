@@ -285,6 +285,28 @@ class SubtitlesInfo:
     ext: str
     encoding: str
 
+    def __init__(
+        self,
+        size,
+        id,
+        file_id,
+        sub_to_movie_id,
+        filename,
+        lang_2,
+        lang_3,
+        ext,
+        encoding,
+    ):
+        self.size = size
+        self.id = id
+        self.file_id = file_id
+        self.sub_to_movie_id = sub_to_movie_id
+        self.filename = Path(filename)
+        self.lang_2 = lang_2
+        self.lang_3 = lang_3
+        self.ext = ext
+        self.encoding = encoding
+
     @classmethod
     def from_data(cls, data):
         # If the search was done with anything other than movie hash and size then
@@ -299,7 +321,7 @@ class SubtitlesInfo:
             id=data["IDSubtitle"],
             file_id=data["IDSubtitleFile"],
             sub_to_movie_id=sub_to_movie_id,
-            filename=Path(data["SubFileName"]),
+            filename=data["SubFileName"],
             lang_2=data["ISO639"],
             lang_3=data["SubLanguageID"],
             ext=data["SubFormat"].lower(),
