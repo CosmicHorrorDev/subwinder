@@ -7,8 +7,8 @@
     "IDSubtitleFile": "<file-id>",
     "IDSubMovieFile": "0",
     "SubFileName": "sub-filename.sub-ext",
-    "ISO639": "<lang-2>",
-    "SubLanguageID": "<lang-3>",
+    "ISO639": "de",
+    "SubLanguageID": "ger",
     "SubFormat": "<ext>",
     "SubEncoding": "UTF-8"
 }

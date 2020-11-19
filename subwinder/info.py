@@ -281,7 +281,6 @@ class SubtitlesInfo:
     sub_to_movie_id: Optional[str]
     filename: Path
     lang_2: str
-    lang_3: str
     ext: str
     encoding: str
 
@@ -293,7 +292,6 @@ class SubtitlesInfo:
         sub_to_movie_id,
         filename,
         lang_2,
-        lang_3,
         ext,
         encoding,
     ):
@@ -303,7 +301,6 @@ class SubtitlesInfo:
         self.sub_to_movie_id = sub_to_movie_id
         self.filename = Path(filename)
         self.lang_2 = lang_2
-        self.lang_3 = lang_3
         self.ext = ext
         self.encoding = encoding
 
@@ -323,7 +320,6 @@ class SubtitlesInfo:
             sub_to_movie_id=sub_to_movie_id,
             filename=data["SubFileName"],
             lang_2=data["ISO639"],
-            lang_3=data["SubLanguageID"],
             ext=data["SubFormat"].lower(),
             encoding=data["SubEncoding"],
         )

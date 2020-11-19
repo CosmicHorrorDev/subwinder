@@ -229,6 +229,7 @@ class AuthSubwinder(Subwinder):
                     _ = name_format.format(
                         lang_2="",
                         lang_3="",
+                        lang_long="",
                         ext="",
                         upload_name="",
                         upload_filename="",
@@ -255,7 +256,8 @@ class AuthSubwinder(Subwinder):
             filename = name_format.format(
                 media_name=media_name,
                 lang_2=subtitles.lang_2,
-                lang_3=subtitles.lang_3,
+                lang_3=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_3),
+                lang_long=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_LONG),
                 ext=subtitles.ext,
                 upload_name=upload_name,
                 upload_filename=subtitles.filename,

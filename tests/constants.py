@@ -56,8 +56,7 @@ SUBTITLES_INFO1 = SubtitlesInfo(
     file_id="<file-id>",
     sub_to_movie_id=None,
     filename="sub-filename.sub-ext",
-    lang_2="<lang-2>",
-    lang_3="<lang-3>",
+    lang_2="de",
     ext="<ext>",
     encoding="UTF-8",
 )
@@ -69,7 +68,6 @@ SUBTITLES_INFO2 = SubtitlesInfo(
     sub_to_movie_id="3585468",
     filename="Fringe.S04E03.HDTV.XviD-LOL.srt",
     lang_2="en",
-    lang_3="eng",
     ext="srt",
     encoding="UTF-8",
 )
