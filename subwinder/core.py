@@ -194,8 +194,6 @@ class AuthSubwinder(Subwinder):
         """
         type_check(downloads, (list, tuple))
 
-        # Get all the subtitle file_ids from `downloads`
-        # List of paths where the subtitle files should be saved
         sub_containers = []
         download_paths = []
         for download in downloads:
@@ -206,14 +204,11 @@ class AuthSubwinder(Subwinder):
             media_dirname = None
             media_filename = None
             subtitles = download
-
             if isinstance(download, SearchResult):
                 # `SearchResult` holds more info than `SubtitlesInfo`
                 subtitles = download.subtitles
                 media_dirname = download.media.get_dirname()
                 media_filename = download.media.get_filename()
-
-            # Get a list of the `SubtitlesInfo` to pass along
             sub_containers.append(subtitles)
 
             # Make sure there is enough context to save subtitles
@@ -265,8 +260,7 @@ class AuthSubwinder(Subwinder):
 
             download_paths.append(dir_path / filename)
 
-        # Check that the user has enough downloads remaining to satisfy all
-        # `downloads`
+        # Check that the user has enough downloads remaining to satisfy all `downloads`
         daily_remaining = self.daily_download_info().remaining
         if daily_remaining < len(downloads):
             raise SubDownloadError(
@@ -378,7 +372,7 @@ class AuthSubwinder(Subwinder):
     def _guess_media_unranked(self, queries):
         data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
-        # Special case: so `""` is just silently excluded from the response so force it
+        # Special case: `""` is just silently excluded from the response so force it
         if "" in queries and "" not in data:
             data[""] = {}
 

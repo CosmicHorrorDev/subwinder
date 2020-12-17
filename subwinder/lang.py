@@ -117,6 +117,7 @@ class _Lang:
     def __len__(self):
         return len(_converter.list(self._format))
 
+    # TODO: Rename to `convert_to` to make it obvious?
     def convert(self, lang, to_format):
         """
         Convert the `lang` from the current format to `to_format`.
