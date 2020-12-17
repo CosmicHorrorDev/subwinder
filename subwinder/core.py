@@ -421,6 +421,12 @@ class AuthSubwinder(Subwinder):
         Same as `search_subtitles_unranked`, but the results are run through the
         `ranking_func` first to try and determine the best result.
         """
+
+        # Expand out the `zip` to a `list` (need to expand here and in
+        # `search_subtitles_unranked` because we will be using the same queries)
+        if isinstance(queries, zip):
+            queries = list(queries)
+
         # Get all the results for the query
         groups = self.search_subtitles_unranked(queries)
 
