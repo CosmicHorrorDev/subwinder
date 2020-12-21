@@ -27,7 +27,11 @@ from tests.constants import (
 
 # TODO: do this with a fixture too?
 def _dummy_auth_subwinder():
-    return AuthSubwinder.__new__(AuthSubwinder)
+    # FIXME: this stuff is super hacky
+    dummy = AuthSubwinder.__new__(AuthSubwinder)
+    dummy.limited_search_size = False
+
+    return dummy
 
 
 # TODO: is this really required

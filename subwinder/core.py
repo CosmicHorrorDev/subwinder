@@ -14,7 +14,7 @@ from pathlib import Path
 # if you want to know why `request` isn't imported with `from`
 import subwinder._request
 from subwinder import utils
-from subwinder._constants import Env
+from subwinder._constants import DEV_USERAGENT, Env
 from subwinder._internal_utils import type_check
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
@@ -121,6 +121,8 @@ class AuthSubwinder(Subwinder):
     the library.
     """
 
+    limited_search_size: bool
+
     def __init__(self, username=None, password=None, useragent=None):
         """
         Signs in the user with the given `username`, `password` and program's
@@ -133,6 +135,11 @@ class AuthSubwinder(Subwinder):
         username = username or os.environ.get(Env.USERNAME.value)
         password = password or os.environ.get(Env.PASSWORD.value)
 
+        self.limited_search_size = False
+        if useragent is None or useragent == DEV_USERAGENT:
+            useragent = DEV_USERAGENT
+            self.limited_search_size = True
+
         if username is None:
             raise SubAuthError(
                 "missing `username`, set when initializing `AuthSubwinder` or with the"
@@ -143,15 +150,6 @@ class AuthSubwinder(Subwinder):
             raise SubAuthError(
                 "missing `password`, set when initializing `AuthSubwinder` or set the"
                 f" {Env.PASSWORD.value} env var"
-            )
-
-        if useragent is None:
-            raise SubAuthError(
-                "missing `useragent`, set when initializing `AuthSubwinder` or set the"
-                f" {Env.USERAGENT.value} env var. `useragent` must be specified for"
-                " your app according to instructions given at"
-                " https://trac.opensubtitles.org/projects/opensubtitles/wiki/"
-                "DevReadFirst"
             )
 
         self._token = self._login(username, password, useragent)
@@ -260,6 +258,7 @@ class AuthSubwinder(Subwinder):
 
             download_paths.append(dir_path / filename)
 
+        # TODO: don't need to do this if there's nothing to download
         # Check that the user has enough downloads remaining to satisfy all `downloads`
         daily_remaining = self.daily_download_info().remaining
         if daily_remaining < len(downloads):
@@ -471,11 +470,17 @@ class AuthSubwinder(Subwinder):
                     f"'{lang_2}' not found in valid lang list:\n{lang_map}"
                 )
 
-        # This can return 500 items, but one query could return multiple so 20 is being
-        # used in hope that there are plenty of results for each
+        # The API limits to 5 results if the dev useragent is given so only search one
+        # item at a time. Otherwise use 20 since there should be plenty of options from
+        # the up to 500 results returned
+        if self.limited_search_size:
+            batch_size = 1
+        else:
+            batch_size = 20
+
         return _batch(
             self._search_subtitles_unranked,
-            20,
+            batch_size,
             [queries],
         )
 

@@ -88,6 +88,13 @@ _API_PROTOCOL_ERR_MAP = {
 _client = ServerProxy(API_BASE, allow_none=True, transport=Transport())
 
 
+import json
+from pathlib import Path
+
+thingies = Path("thingies.json")
+calls = []
+
+
 # TODO: give a way to let lib user to set `TIMEOUT`?
 def request(endpoint, token, *params):
     """
@@ -113,6 +120,11 @@ def request(endpoint, token, *params):
             else:
                 # Use the token if it's defined
                 resp = getattr(_client, endpoint.value)(token, *params)
+
+            calls.append(resp)
+            with thingies.open("w") as f:
+                json.dump(calls, f)
+
         except ExpatError:
             # So an expat error was an error parsing the xml response. I believe this is
             # hit when the API is having problems and sends a plaintext message instead

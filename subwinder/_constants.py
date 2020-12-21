@@ -6,6 +6,8 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 REPO_URL = "https://github.com/LovecraftianHorror/subwinder"
 
+DEV_USERAGENT = "TemporaryUserAgent"
+
 
 class Env(Enum):
     USERAGENT = "OPEN_SUBTITLES_USERAGENT"
