@@ -32,7 +32,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
     # So now let's get all the files in `INPUT_DIR` as `Media` objects
     print(f"Scanning {input_dir}... ", end="")
     media = []
-    for item in input_dir.iterdir():
+    for item in input_dir.glob("**/*"):
         # We only care about files
         if item.is_file():
             # Hashing can fail if the file is too small (under 128 KiB)
@@ -111,8 +111,10 @@ def custom_rank_func(results, query, author_whitelist, sub_exts=None):
 def rank_by_whitelist(results, query, author_whitelist):
     # Search all the results for a known-good author
     for result in results:
-        if result.author.name in author_whitelist:
-            return result
+        # Author can be `None` if the subtitles were anonymously uploaded
+        if result.author is not None:
+            if result.author.name in author_whitelist:
+                return result
 
     # No matching result
     return None
