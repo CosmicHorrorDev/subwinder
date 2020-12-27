@@ -8,6 +8,16 @@ So this little script manages creating a fake media given the expected hash and 
 
 ```text
 Example Usages:
-./fake_media.py fake_media_entries.json
-./fake_media.py --entry 0 --output-dir /tmp fake_media_entries.json
+./fake_media.py
+./fake_media.py --entry 0 --output-dir /tmp --entry-file /path/to/your/entry_file.json
+```
+
+### `pack_subtitles.py`
+
+This script handles setting up subtitles in the way they get returned from the API. This involves gzipping then base64 encoding them. It just reads from stdin and then dumps the gzipped+base64 encoded contents to output.
+
+```text
+Example Usages:
+echo 'Testing 1 2 3' | ./pack_subtitles.py
+cat sample_subtitles.srt | ./pack_subtitles.py > packed_subtitles.srt
 ```

@@ -8,6 +8,7 @@ def rank_guess_media(results, query):
     return results.best_guess
 
 
+# TODO: this really __should not__ `exclude_bad` by default
 def rank_search_subtitles(results, query, exclude_bad=True, sub_exts=None):
     """
     The default ranking function used to determine the best result for `AuthSubwinder`'s

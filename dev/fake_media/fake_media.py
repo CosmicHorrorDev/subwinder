@@ -24,9 +24,15 @@ def _parse_args():
         "--output-dir",
         type=Path,
         help="[Default: current directory] Directory to store generated media in",
-        default=Path.cwd(),
+        default=None,
     )
-    parser.add_argument("entry_file", type=Path, help="Location of the entry file")
+    parser.add_argument(
+        "-f",
+        "--entry-file",
+        type=Path,
+        help="[Default: default_entries.json] Entry file to use for fake media info",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -41,10 +47,21 @@ def _parse_args():
 
 
 # TODO: test that the hashes are right in unit testing
-def fake_media(entry_file, output_dir, entry_indicies=[]):
+def fake_media(entry_file=None, output_dir=None, entry_indicies=[]):
     HASH_SIZE = 8
     MAX_HASH = 2 ** (HASH_SIZE * 8) - 1
     MIN_FILE_SIZE = 128 * 1024
+
+    # No entry file defaults to default_entries.json
+    if entry_file is None:
+        entry_file = Path(__file__).resolve().parent / "default_entries.json"
+
+    # No output dir defaults to cwd
+    if output_dir is None:
+        output_dir = Path.cwd()
+
+    # Make the `output_dir` if it doesn't exist
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Attempt to read the entry file
     with entry_file.open() as f:
@@ -54,8 +71,8 @@ def fake_media(entry_file, output_dir, entry_indicies=[]):
     if len(entry_indicies) == 0:
         entry_indicies = range(len(entries))
 
+    # Make sure all entries are within bounds
     for index in entry_indicies:
-        # Make sure all entries are within bounds
         if index >= len(entries) or index < 0:
             raise ValueError(
                 f"Entry {index} extends outside entries' bounds (0, {len(entries) - 1})"

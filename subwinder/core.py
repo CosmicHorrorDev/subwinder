@@ -137,6 +137,7 @@ class AuthSubwinder(Subwinder):
 
         self.limited_search_size = False
         if useragent is None or useragent == DEV_USERAGENT:
+            # TODO: warn on this once logging is setup
             useragent = DEV_USERAGENT
             self.limited_search_size = True
 
@@ -163,7 +164,7 @@ class AuthSubwinder(Subwinder):
             self._logout()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(_token: {self._token.__repr__()})"
+        return f"{self.__class__.__name__}(_token: {repr(self._token)})"
 
     def _login(self, username, password, useragent):
         """

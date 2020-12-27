@@ -72,6 +72,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
     # Note: that this does not retain any special directory structure from
     #       `INPUT_DIR` in `OUTPUT_DIR`
     print(f"Moving matched media and subtitle files to {output_dir}... ", end="")
+    output_dir.mkdir(exist_ok=True, parents=True)
     for result, download in zip(results, download_paths):
         from_media_path = result.media.get_filepath()
         to_media_path = output_dir / from_media_path.name
