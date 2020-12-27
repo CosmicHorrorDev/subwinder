@@ -124,8 +124,8 @@ def test_adv_quickstart(mock_request, tmp_path):
         ("c47cb30ab992fb34", "730435584"),
         ("18379ac9af039390", "366876694"),
         ("e1966a88db8f4a48", "948792230"),
-        ("09a2c497663259cb", "733589504"),
         ("4f47a0266f3d15c5", "1743776999"),
+        ("09a2c497663259cb", "733589504"),
         ("b5a6939c71a6c3b6", "758756235"),
         ("2ef61c586962b462", "1322969681"),
     ]
@@ -147,8 +147,8 @@ def test_adv_quickstart(mock_request, tmp_path):
                 "1953621390",
                 "1952941557",
                 "1953552171",
-                "235409",
                 "1952200785",
+                "235409",
                 "1952149026",
                 "1954434245",
             ],
@@ -170,7 +170,9 @@ def test_adv_quickstart(mock_request, tmp_path):
     items = list(input_dir.glob("**/*"))
 
     def _sorted_glob(self, glob):
-        items.sort()
+        # Sort values ignoring case (case causes issues since some filesystems are case
+        # sensitive while others aren't)
+        items.sort(key=lambda val: str(val).lower())
         for item in items:
             yield item
 
