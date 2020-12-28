@@ -89,16 +89,20 @@ def test_interactive(mock_request, tmp_path):
 
 # TODO: steps
 # 1. Can probably strip out some of the results to slim down the file size
-# 2. Update the sample responses with dummy pack info
-# 4. Get verifying all the files (including ledger) and calls working
 # 5. Move integration test responses into a separate folder
 # 6. Add test extract and pack with one sample, and with randomly generated input
 # 7. Add test for faking media
+#    - Test that it's sparse
+#    - Test on single value
+#    - Test on some random data as well (limit size to something like 1MB?)
 # 8. Expose making both dev and prog authsubwinder as a fixture
 # 9. Move integration tests and unit tests into separate folders
 # 10. Import the base private portion, or using as to rename
-# TODO: finish this implementation along with integration testing for all examples
 # TODO: check stdout too?
+@pytest.mark.io_heavy(
+    "Playing it safe due to large files if sparse files fail. An unmarked test using"
+    " smaller sparse files should pick this up instead"
+)
 @patch("subwinder._request.request")
 def test_adv_quickstart(mock_request, tmp_path):
     # Setup all the values for our test
@@ -111,8 +115,6 @@ def test_adv_quickstart(mock_request, tmp_path):
     # Setup fake media in our input directory
     input_dir = tmp_path / "Input"
     input_dir.mkdir()
-    # FIXME: hold the number of media static so extra media can be added without having
-    # to update this test
     fake_media(output_dir=input_dir, entry_indicies=range(11))
 
     # Calls to verify against
@@ -183,11 +185,8 @@ def test_adv_quickstart(mock_request, tmp_path):
     # Verify the calls to `request` look good
     assert mock_request.call_args_list == CALLS
 
-    # TODO: look into using filecmp.cmpfiles to verify the output files look right
-
     # Verify all the new files look right
     assets_dir = REPO_DIR / "tests" / "integration_test_assets" / "adv_quickstart"
-    # ideal_output_dir = assets_dir / "Output"
     sub_files = [
         Path("Output") / "Carnival of Souls (1962).eng.srt",
         Path("Output") / "Detour (1945).eng.srt",
