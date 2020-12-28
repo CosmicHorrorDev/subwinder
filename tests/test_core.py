@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,9 +7,8 @@ from unittest.mock import call, patch
 import pytest
 
 from subwinder import AuthSubwinder, Subwinder
-from subwinder._constants import Env
 from subwinder._request import Endpoints
-from subwinder.exceptions import SubAuthError, SubDownloadError
+from subwinder.exceptions import SubDownloadError
 from subwinder.info import Comment, MovieInfo, TvSeriesInfo, UserInfo
 from tests.constants import (
     DOWNLOAD_INFO,
@@ -80,30 +78,10 @@ def test_server_info():
     mocked.assert_called_once_with(Endpoints.SERVER_INFO)
 
 
-# TODO: assert that _request isn't called for bad params?
-# TODO: test correct case as well (assert token as well)
-# XXX: ENV_VARS stuff is a bit messy here. try to clean up logic if possible
-#      should probably be a fixture that wipes env vars in the beginning of all testing
-def test_authsubwinder__init__():
-    # Clear out env vars if set
-    for variant in Env:
-        if variant.value in os.environ:
-            del os.environ[variant.value]
-
-    bad_params = [
-        # Empty creds
-        [],
-        # Missing both password and useragent
-        ["<username>"],
-        # Missing useragent
-        ["<username>", "<password>"],
-        # Invalid useragent
-        ["<username>", "<password>", None],
-    ]
-
-    for params in bad_params:
-        with pytest.raises(SubAuthError):
-            AuthSubwinder(*params)
+# TODO: add a proper test for authenticating
+# TODO: is there an easy way to make sure we're not requesting the actual api? Can we
+# setup a basic xml server that gets used and throws errors when requested? The other
+# potential option would be to patch out the xmlserver
 
 
 # TODO: Test creating an AuthSubwinder instead
