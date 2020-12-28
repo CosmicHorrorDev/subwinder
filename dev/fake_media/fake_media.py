@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import argparse
 import json
+import platform
+import subprocess
 from pathlib import Path
 
 
 def _main():
+    # TODO: add a warning here
     args = _parse_args()
     fake_media(args.entry_file, args.output_dir, args.entry)
 
@@ -99,12 +102,30 @@ def fake_media(entry_file=None, output_dir=None, entry_indicies=[]):
 
         with output_file.open("wb") as file:
             file.write(contents.to_bytes(HASH_SIZE, byteorder="little"))
-            # Use truncate to set the remaining file size. On file systems that support
-            # it this will create a sparse file which takes less space on disk
+
+        if platform.system() == "Windows":
+            # Workaround because `truncate` does not create sparse files on windows
+            # https://bugs.python.org/issue39910
+            subprocess_args = [
+                ["FSUtil", "file", "setEOF", str(output_file), str(size)],
+                ["FSUtil", "sparse", "setFlag", str(output_file)],
+                ["FSUtil", "sparse", "setRange", str(output_file), "8", str(size - 8)],
+            ]
+
+            for args in subprocess_args:
+                subprocess.run(
+                    args,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+        else:
+            # Use truncate to set the remaining file size. On file systems that
+            # support it this will create a sparse file
             # Note: even if the filesystem supports sparse files, copying or moving
-            #       the file may not keep it as a sparse file if the program used is not
-            #       aware
-            file.truncate(size)
+            # the file may not keep it as a sparse file if the program used is not
+            # aware
+            with output_file.open("ab") as file:
+                file.truncate(size)
 
         output_paths.append(output_file)
 
