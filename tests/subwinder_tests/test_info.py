@@ -19,16 +19,15 @@ from subwinder.info import (
 from tests.constants import (
     EPISODE_INFO1,
     FULL_USER_INFO1,
-    INFO_DIR,
-    SAMPLES_DIR,
     SEARCH_RESULT2,
     SUBTITLES_INFO1,
+    SUBWINDER_RESPONSES,
     USER_INFO1,
 )
 
 
 def test_build_media_info():
-    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
+    with (SUBWINDER_RESPONSES / "search_subtitles.json").open() as f:
         RESP = json.load(f)
     data = RESP["data"][0]
 
@@ -55,14 +54,14 @@ def test_UserInfo():
 
 
 def test_FullUserInfo():
-    with (INFO_DIR / "full_user_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "full_user_info.json").open() as f:
         DATA = json.load(f)
 
     assert FullUserInfo.from_data(DATA) == FULL_USER_INFO1
 
 
 def test_Comment():
-    with (INFO_DIR / "comment.json").open() as f:
+    with (SUBWINDER_RESPONSES / "comment.json").open() as f:
         DATA = json.load(f)
 
     assert Comment.from_data(DATA) == Comment(
@@ -73,7 +72,7 @@ def test_Comment():
 
 
 def test_MediaInfo():
-    with (INFO_DIR / "media_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "media_info.json").open() as f:
         DATA = json.load(f)
 
     assert MediaInfo.from_data(DATA) == MediaInfo(
@@ -92,7 +91,7 @@ def test_TvSeriesInfo():
 
 
 def test_EpisodeInfo():
-    with (INFO_DIR / "episode_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "episode_info.json").open() as f:
         DATA = json.load(f)
 
     tv_series = TvSeriesInfo.from_data(DATA)
@@ -106,14 +105,14 @@ def test_EpisodeInfo():
 
 
 def test_SubtitlesInfo():
-    with (INFO_DIR / "subtitles_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "subtitles_info.json").open() as f:
         DATA = json.load(f)
 
     assert SubtitlesInfo.from_data(DATA) == SUBTITLES_INFO1
 
 
 def test_SearchResult():
-    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
+    with (SUBWINDER_RESPONSES / "search_subtitles.json").open() as f:
         SAMPLE_RESP = json.load(f)["data"][0]
 
     search_result = SearchResult.from_data(SAMPLE_RESP)

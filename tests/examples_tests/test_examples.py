@@ -13,7 +13,7 @@ from examples.interactive import interative
 from subwinder._constants import DEV_USERAGENT, Env
 from subwinder._request import Endpoints
 from subwinder.media import Media
-from tests.constants import REPO_DIR, SAMPLES_DIR
+from tests.constants import EXAMPLES_ASSETS, EXAMPLES_RESPONSES
 
 USERNAME = "<username>"
 PASSWORD = "<password>"
@@ -68,7 +68,7 @@ def test_interactive(mock_request, tmp_path):
     ]
 
     # Set the fake responses
-    with (SAMPLES_DIR / "example_interactive.json").open() as f:
+    with (EXAMPLES_RESPONSES / "interactive.json").open() as f:
         RESPS = json.load(f)
     mock_request.side_effect = RESPS
 
@@ -89,14 +89,12 @@ def test_interactive(mock_request, tmp_path):
 
 # TODO: steps
 # 1. Can probably strip out some of the results to slim down the file size
-# 5. Move integration test responses into a separate folder
 # 6. Add test extract and pack with one sample, and with randomly generated input
 # 7. Add test for faking media
 #    - Test that it's sparse
 #    - Test on single value
 #    - Test on some random data as well (limit size to something like 1MB?)
 # 8. Expose making both dev and prog authsubwinder as a fixture
-# 9. Move integration tests and unit tests into separate folders
 # 10. Import the base private portion, or using as to rename
 # TODO: check stdout too?
 @pytest.mark.io_heavy(
@@ -159,7 +157,7 @@ def test_adv_quickstart(mock_request, tmp_path):
     ]
 
     # Set the fake responses
-    with (SAMPLES_DIR / "example_adv_quickstart.json").open() as f:
+    with (EXAMPLES_RESPONSES / "adv_quickstart.json").open() as f:
         RESPS = json.load(f)
     mock_request.side_effect = RESPS
 
@@ -186,7 +184,7 @@ def test_adv_quickstart(mock_request, tmp_path):
     assert mock_request.call_args_list == CALLS
 
     # Verify all the new files look right
-    assets_dir = REPO_DIR / "tests" / "integration_test_assets" / "adv_quickstart"
+    adv_quickstart_assets = EXAMPLES_ASSETS / "adv_quickstart"
     sub_files = [
         Path("Output") / "Carnival of Souls (1962).eng.srt",
         Path("Output") / "Detour (1945).eng.srt",
@@ -200,7 +198,7 @@ def test_adv_quickstart(mock_request, tmp_path):
     ledger_file = "ledger.json"
 
     match, mismatch, errors = filecmp.cmpfiles(
-        tmp_path, assets_dir, [*sub_files, ledger_file]
+        tmp_path, adv_quickstart_assets, [*sub_files, ledger_file]
     )
     print(f"Mismatched: {mismatch}", file=sys.stderr)
     print(f"Errors: {errors}", file=sys.stderr)

@@ -16,10 +16,10 @@ from tests.constants import (
     FULL_USER_INFO1,
     MEDIA1,
     MOVIE_INFO1,
-    SAMPLES_DIR,
     SEARCH_RESULT1,
     SEARCH_RESULT2,
     SERVER_INFO,
+    SUBWINDER_RESPONSES,
 )
 
 
@@ -46,7 +46,7 @@ def _standard_asw_mock(
 
 
 def test_daily_download_info():
-    with (SAMPLES_DIR / "server_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "server_info.json").open() as f:
         RESP = json.load(f)
     IDEAL = DOWNLOAD_INFO
 
@@ -67,7 +67,7 @@ def test_get_languages():
 
 
 def test_server_info():
-    with (SAMPLES_DIR / "server_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "server_info.json").open() as f:
         RESP = json.load(f)
     IDEAL = SERVER_INFO
 
@@ -114,7 +114,7 @@ def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
     QUERIES = [PROGRAM_NAME]
     CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
-    with (SAMPLES_DIR / "auto_update.json").open() as f:
+    with (SUBWINDER_RESPONSES / "auto_update.json").open() as f:
         RESP = json.load(f)
 
     _standard_asw_mock("auto_update", "_request", QUERIES, RESP, CALL, RESP)
@@ -166,7 +166,7 @@ def test_download_subtitles():
 def test__download_subtitles():
     asw = _dummy_auth_subwinder()
 
-    with (SAMPLES_DIR / "download_subtitles.json").open() as f:
+    with (SUBWINDER_RESPONSES / "download_subtitles.json").open() as f:
         RESP = json.load(f)
     IDEAL_CONTENTS = (
         "Hello there, I'm that good ole compressed and encoded subtitle information"
@@ -191,7 +191,7 @@ def test__download_subtitles():
 def test_get_comments():
     # Build up the empty `SearchResult`s and add the `subtitles.id`
     queries = [[SEARCH_RESULT1, SEARCH_RESULT2]]
-    with (SAMPLES_DIR / "get_comments.json").open() as f:
+    with (SUBWINDER_RESPONSES / "get_comments.json").open() as f:
         RESP = json.load(f)
     ideal_result = [
         [
@@ -242,7 +242,7 @@ def test_guess_media():
         MovieInfo("Nochnoy dozor", 2004, "0403358", None, None),
         MovieInfo("Aliens", 1986, "0090605", None, None),
     ]
-    with (SAMPLES_DIR / "guess_media.json").open() as f:
+    with (SUBWINDER_RESPONSES / "guess_media.json").open() as f:
         RESP = json.load(f)
 
     with patch.object(asw, "_request") as mocked:
@@ -259,7 +259,7 @@ def test_guess_media():
     ]
     CALL = (Endpoints.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
     IDEAL_RESULT = [None, None]
-    with (SAMPLES_DIR / "guess_media_edge_cases.json").open() as f:
+    with (SUBWINDER_RESPONSES / "guess_media_edge_cases.json").open() as f:
         EDGE_RESP = json.load(f)
 
     with patch.object(asw, "_request") as mocked:
@@ -319,7 +319,7 @@ def test__search_subtitles_unranked():
             },
         ],
     )
-    with (SAMPLES_DIR / "search_subtitles.json").open() as f:
+    with (SUBWINDER_RESPONSES / "search_subtitles.json").open() as f:
         RESP = json.load(f)
 
     IDEAL = [[SEARCH_RESULT2]]
@@ -332,7 +332,7 @@ def test__search_subtitles_unranked():
 def test_suggest_media():
     QUERY = ["matrix"]
     CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
-    with (SAMPLES_DIR / "suggest_media.json").open() as f:
+    with (SUBWINDER_RESPONSES / "suggest_media.json").open() as f:
         RESP = json.load(f)
     IDEAL = [
         MovieInfo("The Matrix", 1999, "0133093", None, None),
@@ -344,7 +344,7 @@ def test_suggest_media():
 
 def test_user_info():
     CALL = [Endpoints.GET_USER_INFO]
-    with (SAMPLES_DIR / "user_info.json").open() as f:
+    with (SUBWINDER_RESPONSES / "user_info.json").open() as f:
         RESP = json.load(f)
     IDEAL_RESULT = FULL_USER_INFO1
 
@@ -354,7 +354,7 @@ def test_user_info():
 def test_vote():
     INVALID_SCORES = [0, 11]
     VALID_SCORES = range(1, 10 + 1)
-    with (SAMPLES_DIR / "vote.json").open() as f:
+    with (SUBWINDER_RESPONSES / "vote.json").open() as f:
         RESP = json.load(f)
 
     # Test valid scores
@@ -391,7 +391,7 @@ def test_preview_subtitles():
 def test__preview_subtitles():
     QUERIES = [["1951976245"]]
     CALL = (Endpoints.PREVIEW_SUBTITLES, QUERIES[0])
-    with (SAMPLES_DIR / "preview_subtitles.json").open() as f:
+    with (SUBWINDER_RESPONSES / "preview_subtitles.json").open() as f:
         RESP = json.load(f)
 
     IDEAL = ["1\r\n00:00:12,345 --> 00:01:23,456\r\nFirst subtitle\r\nblock"]

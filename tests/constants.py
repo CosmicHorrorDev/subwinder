@@ -16,8 +16,13 @@ from subwinder.media import Media
 
 TEST_DIR = Path(__file__).resolve().parent
 REPO_DIR = TEST_DIR.parent
-SAMPLES_DIR = TEST_DIR / "sample_responses"
-INFO_DIR = TEST_DIR / "sample_info"
+
+SUBWINDER_TESTS = TEST_DIR / "subwinder_tests"
+SUBWINDER_RESPONSES = SUBWINDER_TESTS / "responses"
+
+EXAMPLES_TESTS = TEST_DIR / "examples_tests"
+EXAMPLES_ASSETS = EXAMPLES_TESTS / "assets"
+EXAMPLES_RESPONSES = EXAMPLES_TESTS / "responses"
 
 MEDIA1 = Media.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
 USER_INFO1 = UserInfo("1332962", "elderman")
