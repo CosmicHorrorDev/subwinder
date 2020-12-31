@@ -35,6 +35,8 @@ def interative(lang):
         # Find which one they want to view
         resp = int(input(f"Which do you want to see? (0 -> {len(ext_media) - 1}) "))
         if resp < 0 or resp >= len(ext_media):
+            # TODO: this really shouldn't exit now that this is libified. Just raise an
+            # exception up to main
             sys.exit(f"Entry {resp} out of bounds (0 -> {len(ext_media) - 1})")
 
         # Search for the subtitles

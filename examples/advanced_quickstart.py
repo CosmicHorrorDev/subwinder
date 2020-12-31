@@ -5,6 +5,7 @@ from pathlib import Path
 
 from subwinder import AuthSubwinder, Media, info
 from subwinder.exceptions import SubHashError
+from subwinder.names import NameFormatter
 from subwinder.ranking import rank_search_subtitles
 
 
@@ -63,7 +64,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
         results = results[: asw.daily_download_info().remaining]
         print(f"Downloading {len(results)} subtitles... ", end="")
         download_paths = asw.download_subtitles(
-            results, name_format="{media_name}.{lang_3}.{ext}"
+            results, name_formatter=NameFormatter("{media_name}.{lang_3}.{ext}")
         )
         print("Downloaded")
     # And at this point we're done with the API. Exiting the `with` logs out of the API

@@ -8,7 +8,6 @@ except ImportError:
 
 
 import os
-from pathlib import Path
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
@@ -31,6 +30,7 @@ from subwinder.info import (
 )
 from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
 from subwinder.media import Media
+from subwinder.names import NameFormatter
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
 
@@ -183,7 +183,10 @@ class AuthSubwinder(Subwinder):
         self._token = None
 
     def download_subtitles(
-        self, downloads, download_dir=None, name_format="{upload_filename}"
+        self,
+        downloads,
+        download_dir=None,
+        name_formatter=NameFormatter("{upload_filename}"),
     ):
         """
         Attempts to download the `SearchResult`s passed in as `downloads`. The download
@@ -210,54 +213,11 @@ class AuthSubwinder(Subwinder):
                 media_filename = download.media.get_filename()
             sub_containers.append(subtitles)
 
-            # Make sure there is enough context to save subtitles
-            if media_dirname is None and download_dir is None:
-                raise SubDownloadError(
-                    "Insufficient context. Need to set either the `dirname` in"
-                    f" {download} or `download_dir` in `download_subtitles`"
+            download_paths.append(
+                name_formatter.generate(
+                    subtitles, media_filename, media_dirname, download_dir
                 )
-
-            if media_filename is None:
-                # Hacky way to see if `media_name` is used in `name_format`
-                try:
-                    _ = name_format.format(
-                        lang_2="",
-                        lang_3="",
-                        lang_long="",
-                        ext="",
-                        upload_name="",
-                        upload_filename="",
-                    )
-                except KeyError:
-                    # Can't set the media's `media_name` if we have no `media_name`
-                    raise SubDownloadError(
-                        "Insufficient context. Need to set the `filename` for"
-                        f" {download} if you plan on using `media_name` in the"
-                        " `name_format`"
-                    )
-
-            # Store the subtitle file next to the original media unless `download_dir`
-            # was set
-            if download_dir is None:
-                dir_path = media_dirname
-            else:
-                dir_path = Path(download_dir)
-
-            # Format the `filename` according to the `name_format` passed in
-            upload_name = subtitles.filename.stem
-            media_name = None if media_filename is None else media_filename.stem
-
-            filename = name_format.format(
-                media_name=media_name,
-                lang_2=subtitles.lang_2,
-                lang_3=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_3),
-                lang_long=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_LONG),
-                ext=subtitles.ext,
-                upload_name=upload_name,
-                upload_filename=subtitles.filename,
             )
-
-            download_paths.append(dir_path / filename)
 
         # TODO: don't need to do this if there's nothing to download
         # Check that the user has enough downloads remaining to satisfy all `downloads`

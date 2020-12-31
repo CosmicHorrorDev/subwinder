@@ -10,6 +10,7 @@ from subwinder import AuthSubwinder, Subwinder
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubDownloadError
 from subwinder.info import Comment, MovieInfo, TvSeriesInfo, UserInfo
+from subwinder.names import NameFormatter
 from tests.constants import (
     DOWNLOAD_INFO,
     EPISODE_INFO1,
@@ -127,7 +128,7 @@ def test_download_subtitles():
     BARE_IDEAL = [BARE_PATH]
 
     FULL_PATH = Path("test dir") / "test file"
-    FULL_QUERIES = [[SEARCH_RESULT1.subtitles], "test dir", "test file"]
+    FULL_QUERIES = [[SEARCH_RESULT1.subtitles], "test dir", NameFormatter("test file")]
     FULL_CALL = ([SEARCH_RESULT1.subtitles], [FULL_PATH])
     FULL_IDEAL = [FULL_PATH]
     RESP = None
@@ -158,7 +159,9 @@ def test_download_subtitles():
         temp_filename = BARE_QUERIES[0][0].media.get_filename()
         BARE_QUERIES[0][0].media.set_filename(None)
         with pytest.raises(SubDownloadError):
-            _ = asw.download_subtitles(*BARE_QUERIES, name_format="{media_name}")
+            _ = asw.download_subtitles(
+                *BARE_QUERIES, name_formatter=NameFormatter("{media_name}")
+            )
     BARE_QUERIES[0][0].media.set_filename(temp_filename)
 
 
