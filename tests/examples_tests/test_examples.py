@@ -88,29 +88,21 @@ def test_interactive(mock_request, tmp_path):
 
 # TODO: steps
 # 1. Can probably strip out some of the results to slim down the file size
-# 6. Add test extract and pack with one sample, and with randomly generated input
-# 7. Add test for faking media
-#    - Test that it's sparse
-#    - Test on single value
-#    - Test on some random data as well (limit size to something like 1MB?)
 # 8. Expose making both dev and prog authsubwinder as a fixture
 # 10. Import the base private portion, or using as to rename
 # TODO: check stdout too?
-@pytest.mark.io_heavy(
-    "Playing it safe due to large files if sparse files fail. An unmarked test using"
-    " smaller sparse files should pick this up instead"
-)
 @patch("subwinder._request.request")
 def test_adv_quickstart(mock_request, tmp_path):
     # Setup our ideal output directory
     ideal_dir = tmp_path / "ideal"
     ideal_input = ideal_dir / "Input"
     ideal_output = ideal_dir / "Output"
-    shutil.copytree(EXAMPLES_ASSETS / "adv_quickstart", ideal_dir)
+    shutil.copytree(EXAMPLES_ASSETS / "adv_quickstart" / "ideal", ideal_dir)
 
     # Build up the dummy media since I don't want to keep it in the repo
-    fake_media(output_dir=ideal_input, entry_indicies=[5, 7, 8])
-    fake_media(output_dir=ideal_output, entry_indicies=[0, 1, 2, 3, 4, 6, 9, 10])
+    ENTRY_FILE = EXAMPLES_ASSETS / "adv_quickstart" / "small_entries.json"
+    fake_media(ENTRY_FILE, ideal_input, entry_indicies=[5, 7, 8])
+    fake_media(ENTRY_FILE, ideal_output, entry_indicies=[0, 1, 2, 3, 4, 6, 9, 10])
 
     # Directory for our test to use
     real_dir = tmp_path / "real"
@@ -124,21 +116,21 @@ def test_adv_quickstart(mock_request, tmp_path):
 
     # Setup fake media in our test input directory
     input_dir = real_dir / "Input"
-    fake_media(output_dir=input_dir, entry_indicies=range(11))
+    fake_media(ENTRY_FILE, input_dir, entry_indicies=range(11))
 
     # Calls to verify against
     search_values = [
-        ("dd68b108d270aa7b", "732924242"),
-        ("6e02ec9fdf3c200f", "1251826386"),
-        ("579bfcd8ee87dff3", "1529505156"),
-        ("7d87bae932a2e533", "2632612813"),
-        ("c47cb30ab992fb34", "730435584"),
-        ("18379ac9af039390", "366876694"),
-        ("e1966a88db8f4a48", "948792230"),
-        ("4f47a0266f3d15c5", "1743776999"),
-        ("09a2c497663259cb", "733589504"),
-        ("b5a6939c71a6c3b6", "758756235"),
-        ("2ef61c586962b462", "1322969681"),
+        ("dd68b108d270aa7b", "732924"),
+        ("6e02ec9fdf3c200f", "1251826"),
+        ("579bfcd8ee87dff3", "1529505"),
+        ("7d87bae932a2e533", "2632612"),
+        ("c47cb30ab992fb34", "730435"),
+        ("18379ac9af039390", "366876"),
+        ("e1966a88db8f4a48", "948792"),
+        ("4f47a0266f3d15c5", "1743776"),
+        ("09a2c497663259cb", "733589"),
+        ("b5a6939c71a6c3b6", "758756"),
+        ("2ef61c586962b462", "1322969"),
     ]
     search_calls = []
     for hash, size in search_values:
@@ -193,15 +185,26 @@ def test_adv_quickstart(mock_request, tmp_path):
     # Verify the calls to `request` look good
     assert mock_request.call_args_list == CALLS
 
+    def sorted_rel_files(directory):
+        files = []
+        dir_str = str(directory) + os.sep
+
+        for item in directory.glob("**/*"):
+            if item.is_file():
+                item = str(item)
+                files.append(item.replace(dir_str, ""))
+
+        files.sort()
+        return files
+
     # Verify the ideal and test directory is the same
-    cmp = filecmp.dircmp(real_dir, ideal_dir)
-    print(f"Left Only: {cmp.left_only}", file=sys.stderr)
-    print(f"Right Only: {cmp.right_only}", file=sys.stderr)
-    print(f"Common Funny: {cmp.common_funny}", file=sys.stderr)
-    print(f"Diff File: {cmp.diff_files}", file=sys.stderr)
-    print(f"Funny Files: {cmp.funny_files}", file=sys.stderr)
-    assert len(cmp.left_only) == 0
-    assert len(cmp.right_only) == 0
-    assert len(cmp.common_funny) == 0
-    assert len(cmp.diff_files) == 0
-    assert len(cmp.funny_files) == 0
+    # they being ignored by default?
+    real_files = sorted_rel_files(real_dir)
+    ideal_files = sorted_rel_files(ideal_dir)
+
+    assert ideal_files == real_files
+    match, mismatch, errors = filecmp.cmpfiles(real_dir, ideal_dir, real_files)
+    print(f"Mismatch: {mismatch}", file=sys.stderr)
+    print(f"Errors: {errors}", file=sys.stderr)
+    assert len(mismatch) == 0
+    assert len(errors) == 0
