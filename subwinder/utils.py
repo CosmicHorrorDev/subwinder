@@ -1,5 +1,6 @@
 import base64
 import gzip
+import os
 from pathlib import Path
 
 from subwinder.exceptions import SubHashError
@@ -35,7 +36,7 @@ def special_hash(filepath):
         # Hash the first chunk of the file
         hasher.update(file.read(CHUNK_SIZE_BYTES))
         # and the last chunk
-        file.seek(-CHUNK_SIZE_BYTES, 2)
+        file.seek(-CHUNK_SIZE_BYTES, os.SEEK_END)
         hasher.update(file.read(CHUNK_SIZE_BYTES))
 
     return hasher.hexdigest()

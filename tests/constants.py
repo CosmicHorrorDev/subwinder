@@ -24,6 +24,9 @@ EXAMPLES_TESTS = TEST_DIR / "examples_tests"
 EXAMPLES_ASSETS = EXAMPLES_TESTS / "assets"
 EXAMPLES_RESPONSES = EXAMPLES_TESTS / "responses"
 
+DEV_TESTS = TEST_DIR / "dev_tests"
+DEV_ASSETS = DEV_TESTS / "assets"
+
 MEDIA1 = Media.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
 USER_INFO1 = UserInfo("1332962", "elderman")
 

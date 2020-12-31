@@ -4,6 +4,7 @@ import json
 import platform
 import subprocess
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 
 def _main():
@@ -100,37 +101,91 @@ def fake_media(entry_file=None, output_dir=None, entry_indicies=[]):
         else:
             contents = hash - size
 
-        with output_file.open("wb") as file:
-            file.write(contents.to_bytes(HASH_SIZE, byteorder="little"))
-
-        if platform.system() == "Windows":
-            # Workaround because `truncate` does not create sparse files on windows
-            # https://bugs.python.org/issue39910
-            subprocess_args = [
-                ["FSUtil", "file", "setEOF", str(output_file), str(size)],
-                ["FSUtil", "sparse", "setFlag", str(output_file)],
-                ["FSUtil", "sparse", "setRange", str(output_file), "8", str(size - 8)],
-            ]
-
-            for args in subprocess_args:
-                subprocess.run(
-                    args,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-        else:
-            # Use truncate to set the remaining file size. On file systems that
-            # support it this will create a sparse file
-            # Note: even if the filesystem supports sparse files, copying or moving
-            # the file may not keep it as a sparse file if the program used is not
-            # aware
-            with output_file.open("ab") as file:
-                file.truncate(size)
-
+        write_sparse_file(
+            output_file, contents.to_bytes(HASH_SIZE, byteorder="little"), size
+        )
         output_paths.append(output_file)
 
     # Return the paths to all the dummy files
     return output_paths
+
+
+def validate_sparse_support(directory):
+    SIZE = 1024 * 1024  # 1 MiB temp file seems reasonable
+
+    if not directory.exists():
+        raise FileNotFoundError(f"No such file or directory: '{directory}'")
+    elif not directory.is_dir():
+        raise ValueError(f"Expected '{directory}' to be a directory")
+
+    # Try to write a small sparse file in the same directory as `filepath` and then read
+    # the actual size to check that it's sparse
+    temp_file = NamedTemporaryFile(dir=directory, delete=False)
+    temp_file.close()
+    temp_file = Path(temp_file.name)
+
+    write_sparse_file(temp_file, b"~Testing~", SIZE)
+    temp_file_size = size_on_disk(temp_file)
+    if temp_file_size is None:
+        return False
+
+    is_sparse = temp_file_size < SIZE
+    temp_file.unlink()
+
+    return is_sparse
+
+
+def write_sparse_file(filepath, contents, size):
+    with filepath.open("wb") as file:
+        file.write(contents)
+
+    if platform.system() == "Windows":
+        # Workaround because `truncate` does not create sparse files on windows
+        # https://bugs.python.org/issue39910
+        subprocess_args = [
+            ["FSUtil", "file", "setEOF", str(filepath), str(size)],
+            ["FSUtil", "sparse", "setFlag", str(filepath)],
+            [
+                "FSUtil",
+                "sparse",
+                "setRange",
+                str(filepath),
+                str(len(contents)),
+                str(size - len(contents)),
+            ],
+        ]
+
+        for args in subprocess_args:
+            subprocess.run(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+    else:
+        # Use truncate to set the remaining file size. On file systems that
+        # support it this will create a sparse file
+        # Note: even if the filesystem supports sparse files, copying or moving
+        # the file may not keep it as a sparse file if the program used is not
+        # aware
+        with filepath.open("ab") as file:
+            file.truncate(size)
+
+
+def size_on_disk(filepath):
+    # Mac supports rsize which is the "real size" of the file
+    try:
+        return filepath.stat().st_rsize
+    except AttributeError:
+        pass
+
+    # Some unix systems support st_blocks which should be the number of 512-byte blocks
+    # allocated for the file
+    try:
+        return filepath.stat().st_blocks * 512
+    except AttributeError:
+        pass
+
+    return None
 
 
 if __name__ == "__main__":

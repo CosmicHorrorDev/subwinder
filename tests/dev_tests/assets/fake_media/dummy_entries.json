@@ -1,0 +1,12 @@
+[
+    {
+        "name": "File 1.dummy",
+        "hash": "0x0123456789abcdef",
+        "size": 1234567
+    },
+    {
+        "name": "File 2.dummy",
+        "hash": "0x00000000deadbeef",
+        "size": 333333
+    }
+]
