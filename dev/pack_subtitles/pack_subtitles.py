@@ -4,7 +4,7 @@ import gzip
 import sys
 
 
-def main():
+def _main():
     packed = pack(sys.stdin.buffer.read())
     sys.stdout.buffer.write(packed)
 
@@ -17,4 +17,4 @@ def pack(bytes):
 
 
 if __name__ == "__main__":
-    main()
+    _main()
