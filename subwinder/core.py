@@ -131,9 +131,9 @@ class AuthSubwinder(Subwinder):
         parameter is used.
         """
         # Try to get any info from env vars if not passed in
-        useragent = useragent or os.environ.get(Env.USERAGENT.value)
-        username = username or os.environ.get(Env.USERNAME.value)
-        password = password or os.environ.get(Env.PASSWORD.value)
+        useragent = os.environ.get(Env.USERAGENT.value) or useragent
+        username = os.environ.get(Env.USERNAME.value) or username
+        password = os.environ.get(Env.PASSWORD.value) or password
 
         self.limited_search_size = False
         if useragent is None or useragent == DEV_USERAGENT:
