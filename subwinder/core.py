@@ -7,6 +7,7 @@ except ImportError:
     ATOMIC_DOWNLOADS_SUPPORT = False
 
 
+import hashlib
 import os
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
@@ -123,7 +124,9 @@ class AuthSubwinder(Subwinder):
 
     limited_search_size: bool
 
-    def __init__(self, username=None, password=None, useragent=None):
+    def __init__(
+        self, username=None, password=None, password_hash=None, useragent=None
+    ):
         """
         Signs in the user with the given `username`, `password` and program's
         `useragent`. These can also be set as environment variables instead if that's
@@ -134,6 +137,17 @@ class AuthSubwinder(Subwinder):
         useragent = os.environ.get(Env.USERAGENT.value) or useragent
         username = os.environ.get(Env.USERNAME.value) or username
         password = os.environ.get(Env.PASSWORD.value) or password
+        password_hash = os.environ.get(Env.PASSWORD_HASH.value) or password_hash
+
+        if password_hash is not None and password is not None:
+            raise SubAuthError(
+                "`password` and `password_hash` are mutually exclusive. Only one or the"
+                " other should be set"
+            )
+
+        # Send the password as an md5 hash
+        if password is not None:
+            password_hash = hashlib.md5(password.encode("UTF-8")).hexdigest()
 
         self.limited_search_size = False
         if useragent is None or useragent == DEV_USERAGENT:
@@ -147,13 +161,14 @@ class AuthSubwinder(Subwinder):
                 f" {Env.USERNAME.value} env var"
             )
 
-        if password is None:
+        if password_hash is None:
             raise SubAuthError(
-                "missing `password`, set when initializing `AuthSubwinder` or set the"
-                f" {Env.PASSWORD.value} env var"
+                "missing password hash, this can be set from either password or"
+                " password_hash when initializing `AuthSubwinder` or by setting either"
+                f" the {Env.PASSWORD.value} or {Env.PASSWORD_HASH.value} env var"
             )
 
-        self._token = self._login(username, password, useragent)
+        self._token = self._login(username, password_hash, useragent)
 
     def __enter__(self):
         return self

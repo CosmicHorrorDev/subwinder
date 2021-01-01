@@ -4,10 +4,12 @@ documented for it, so enjoy this pytest black magic.
 """
 
 import logging
+import os
 from datetime import datetime as dt
 
 import pytest
 
+from subwinder._constants import Env
 from subwinder.lang import _converter
 
 NON_DEFAULT_MARKERS = ["io_heavy", "slow"]
@@ -72,3 +74,12 @@ def no_fake_langs():
     yield
 
     _converter.set(*stored)
+
+
+@pytest.fixture(autouse=True)
+def clear_env_vars():
+    for var in Env:
+        if var.value in os.environ:
+            del os.environ[var.value]
+
+    yield

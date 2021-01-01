@@ -1,4 +1,5 @@
 import filecmp
+import hashlib
 import json
 import os
 import shutil
@@ -16,11 +17,12 @@ from subwinder._request import Endpoints
 from tests.constants import EXAMPLES_ASSETS, EXAMPLES_RESPONSES
 
 USERNAME = "<username>"
-PASSWORD = "<password>"
+PASSWORD = "<password-hash>"
+PASSWORD_HASH = hashlib.md5("<password-hash>".encode("UTF-8")).hexdigest()
 USERAGENT = DEV_USERAGENT
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(autouse=True)
 def set_credentials():
     # Set the fake credentials
     os.environ[Env.USERNAME.value] = USERNAME
@@ -52,7 +54,7 @@ def test_interactive(mock_request, tmp_path):
     OUT_FILE_NAME = "Mr.Robot.S01E02.HDTV.x264-KILLERS.srt"
     SUB_FILE = "1\n00:00:12,345 --> 00:01:23,456\nFirst subtitle\nblock"
     CALLS = [
-        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD, "en", USERAGENT),
+        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
         call(Endpoints.GET_USER_INFO, TOKEN),
         call(Endpoints.SERVER_INFO, TOKEN),
         call(Endpoints.SUGGEST_MOVIE, TOKEN, SAMPLE_INPUTS[0]),
@@ -138,7 +140,7 @@ def test_adv_quickstart(mock_request, tmp_path):
         search_calls.append(call(Endpoints.SEARCH_SUBTITLES, "<token>", query))
 
     CALLS = [
-        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD, "en", USERAGENT),
+        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
         *search_calls,
         call(Endpoints.SERVER_INFO, "<token>"),
         call(Endpoints.SERVER_INFO, "<token>"),

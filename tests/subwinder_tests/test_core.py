@@ -85,11 +85,11 @@ def test_server_info():
 # potential option would be to patch out the xmlserver
 
 
-# TODO: Test creating an AuthSubwinder instead
+# TODO: Test creating an AuthSubwinder instead (also allows for testing password hash)
 def test__login():
-    QUERIES = ("<username>", "<password>", "<useragent>")
+    QUERIES = ("<username>", "<password-hash>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
-    CALL = (Endpoints.LOG_IN, "<username>", "<password>", "en", "<useragent>")
+    CALL = (Endpoints.LOG_IN, "<username>", "<password-hash>", "en", "<useragent>")
 
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
