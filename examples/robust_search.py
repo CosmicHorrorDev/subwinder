@@ -2,7 +2,7 @@
 import re
 from itertools import repeat
 
-from subwinder import AuthSubwinder, Media, info
+from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
 
 
@@ -18,12 +18,12 @@ def robust_search(lang, media_filepaths):
     # Match on a s<num>e<num> snippet for `TvSeriesInfo`
     EPISODE_REGEX = re.compile(r"s(\d{1,})e(\d{1,})", re.IGNORECASE)
 
-    # First thing is to get `Media` objects for the files we want subtitles for
+    # First thing is to get `MediaFile` objects for the files we want subtitles for
     media = []
     for filepath in media_filepaths:
         # Hashing fails if the file is too small (under 128 KiB)
         try:
-            media.append(Media(filepath))
+            media.append(MediaFile(filepath))
         except SubHashError:
             pass
 
@@ -76,7 +76,7 @@ def robust_search(lang, media_filepaths):
         new_results = asw.search_subtitles(zip(guesses, repeat(lang)))
 
     # And now here is our final list of results that we can use, if you wanted you could
-    # do a little more to keep track of the `Media` these are associated with, but
+    # do a little more to keep track of the `MediaFile` these are associated with, but
     # each result should still have the `filename` and `dirname` associated with it
     results += new_results
     results = [result for result in new_results if result is not None]  # :tada:

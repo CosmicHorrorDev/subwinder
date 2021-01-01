@@ -30,7 +30,7 @@ from subwinder.info import (
     build_media_info,
 )
 from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
-from subwinder.media import Media
+from subwinder.media import MediaFile
 from subwinder.names import NameFormatter
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
@@ -44,8 +44,8 @@ def _build_search_query(query, lang):
     internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
 
     # Handle all the different formats for seaching for subtitles
-    if isinstance(query, Media):
-        # Search by `Media`s hash and size
+    if isinstance(query, MediaFile):
+        # Search by `MediaFile`s hash and size
         internal_query["moviehash"] = query.hash
         internal_query["moviebytesize"] = str(query.size)
     elif isinstance(query, (MovieInfo, EpisodeInfo)):
@@ -139,6 +139,7 @@ class AuthSubwinder(Subwinder):
         password = os.environ.get(Env.PASSWORD.value) or password
         password_hash = os.environ.get(Env.PASSWORD_HASH.value) or password_hash
 
+        # TODO: these SubAuthErrors should really be TypeErrors or ValueErrors
         if password_hash is not None and password is not None:
             raise SubAuthError(
                 "`password` and `password_hash` are mutually exclusive. Only one or the"
@@ -361,7 +362,7 @@ class AuthSubwinder(Subwinder):
     def report_media(self, sub_container):
         """
         Reports the subtitles tied to the `search_result`. This can only be done if the
-        match was done using a `Media` object so that the subtitles can be tied to a
+        match was done using a `MediaFile` object so that the subtitles can be tied to a
         specific file. There's a number of good situations to use this like if the
         subtitles were listed under the wrong language, are for the wrong movie, or
         aren't in sync. If theyre OK, but have lots of mistakes or something then it
@@ -380,7 +381,7 @@ class AuthSubwinder(Subwinder):
             raise ValueError(
                 "`report_media` can only be called if the subtitles were matched off a"
                 " search using a media files hash and size (This is done automatically"
-                " when searching with a `Media` object)."
+                " when searching with a `MediaFile` object)."
             )
 
         self._request(Endpoints.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
@@ -415,9 +416,9 @@ class AuthSubwinder(Subwinder):
     def search_subtitles_unranked(self, queries):
         """
         Searches for any subtitles that match the provided `queries`. Queries are
-        allowed to be `Media`, `MovieInfo`, or `EpisodeInfo` objects. A custom ranking
-        function for matching a result can be provided through `ranking_func` which also
-        gets passed the provided `*args` and `**kwargs`.
+        allowed to be `MediaFile`, `MovieInfo`, or `EpisodeInfo` objects. A custom
+        ranking function for matching a result can be provided through `ranking_func`
+        which also gets passed the provided `*args` and `**kwargs`.
         """
         # Verify that all the queries are correct before doing any requests
         type_check(queries, (list, tuple, zip))
@@ -426,7 +427,7 @@ class AuthSubwinder(Subwinder):
         if isinstance(queries, zip):
             queries = list(queries)
 
-        VALID_CLASSES = (Media, MovieInfo, EpisodeInfo)
+        VALID_CLASSES = (MediaFile, MovieInfo, EpisodeInfo)
         for query_pair in queries:
             if not isinstance(query_pair, (list, tuple)) or len(query_pair) != 2:
                 raise ValueError(

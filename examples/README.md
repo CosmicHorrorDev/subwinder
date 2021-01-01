@@ -16,7 +16,7 @@ Hopefully you'll see from this example that it's surprisingly easy to do some co
 
 ### [Interactive](interactive.py)
 
-**Note: that searching this way is not trying to get an exact match like searching with a `Media` object would**
+**Note: that searching this way is not trying to get an exact match like searching with a `MediaFile` object would**
 
 This example covers:
 

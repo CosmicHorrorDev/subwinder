@@ -19,6 +19,7 @@ class NameFormatter:
     def generate(self, sub_container, media_filename, media_dirname, download_dir):
         # Make sure there is enough context to save subtitles
         if media_dirname is None and download_dir is None:
+            # TODO: should be a TypeError or ValueError?
             raise SubDownloadError(
                 "Insufficient context. Need to set either the `dirname` in"
                 f" {sub_container} if possible or `download_dir` in"
@@ -38,6 +39,7 @@ class NameFormatter:
                 )
             except KeyError:
                 # Can't set the media's `media_name` if we have no `media_name`
+                # TODO: should be a TypeError or ValueError?
                 raise SubDownloadError(
                     "Insufficient context. Need to set the `filename` for"
                     f" {sub_container} if you plan on using `media_name` in the"

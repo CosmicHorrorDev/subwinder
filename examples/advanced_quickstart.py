@@ -3,7 +3,7 @@ import json
 from itertools import repeat
 from pathlib import Path
 
-from subwinder import AuthSubwinder, Media, info
+from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
 from subwinder.names import NameFormatter
 from subwinder.ranking import rank_search_subtitles
@@ -30,7 +30,7 @@ def main():
 
 
 def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_exts):
-    # So now let's get all the files in `INPUT_DIR` as `Media` objects
+    # So now let's get all the files in `INPUT_DIR` as `MediaFile` objects
     print(f"Scanning {input_dir}... ", end="")
     media = []
     for item in input_dir.glob("**/*"):
@@ -38,7 +38,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
         if item.is_file():
             # Hashing can fail if the file is too small (under 128 KiB)
             try:
-                media.append(Media(item))
+                media.append(MediaFile(item))
             except SubHashError:
                 pass
     print(f"Found {len(media)} files")

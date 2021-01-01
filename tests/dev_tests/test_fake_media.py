@@ -5,7 +5,7 @@ from dev.fake_media.fake_media import (
     validate_sparse_support,
     write_sparse_file,
 )
-from subwinder import Media
+from subwinder import MediaFile
 from tests.constants import DEV_ASSETS
 
 
@@ -22,16 +22,16 @@ def test_validate_sparse_support(tmp_path):
 
 def test_fake_media(tmp_path):
     IDEAL = [
-        Media.from_parts("0123456789abcdef", 1234567, tmp_path, "File 1.dummy"),
-        Media.from_parts("00000000deadbeef", 333333, tmp_path, "File 2.dummy"),
+        MediaFile.from_parts("0123456789abcdef", 1234567, tmp_path, "File 1.dummy"),
+        MediaFile.from_parts("00000000deadbeef", 333333, tmp_path, "File 2.dummy"),
     ]
     DUMMY_ENTRY_FILE = DEV_ASSETS / "fake_media" / "dummy_entries.json"
 
     # Generate the dummy dummy files and check that they look right
     fake_media(DUMMY_ENTRY_FILE, tmp_path)
     real = [
-        Media(tmp_path / "File 1.dummy"),
-        Media(tmp_path / "File 2.dummy"),
+        MediaFile(tmp_path / "File 1.dummy"),
+        MediaFile(tmp_path / "File 2.dummy"),
     ]
 
     assert real == IDEAL

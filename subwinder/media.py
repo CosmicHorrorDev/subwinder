@@ -5,7 +5,7 @@ from subwinder.utils import special_hash
 
 
 @dataclass
-class Media:
+class MediaFile:
     """
     Data container representing some media (Movie, Episode, etc.) to search for.
     """
@@ -17,7 +17,7 @@ class Media:
 
     def __init__(self, filepath):
         """
-        Builds a `Media` object from a local file.
+        Builds a `MediaFile` object from a local file.
         """
         filepath = Path(filepath)
         hash = special_hash(filepath)
@@ -30,9 +30,9 @@ class Media:
     @classmethod
     def from_parts(cls, hash, size, dirname=None, filename=None):
         """
-        Builds a `Media` object from the individual parts.
+        Builds a `MediaFile` object from the individual parts.
         """
-        # Make a bare `Media` skipping the call to `__init__`
+        # Make a bare `MediaFile` skipping the call to `__init__`
         media = cls.__new__(cls)
         media._from_parts(hash, size, dirname, filename)
 
