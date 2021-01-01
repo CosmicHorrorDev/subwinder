@@ -1,5 +1,7 @@
 ## Examples
 
+**Note: All of these examples assume that your credentials are set with environment variables as described in the [Authsubwinder initialization docs](https://github.com/LovecraftianHorror/subwinder/blob/master/docs/Authenticated-Endpoints.md#initialization)**
+
 If you have any good ideas for more examples that would be helpful then don't hesitate to [raise an issue](https://github.com/LovecraftianHorror/subwinder/issues) about it.
 
 ### [Advanced Quickstart](advanced_quickstart.py)
