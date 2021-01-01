@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 from datetime import datetime as dt
 
 from subwinder import AuthSubwinder, info
@@ -35,9 +34,7 @@ def interative(lang):
         # Find which one they want to view
         resp = int(input(f"Which do you want to see? (0 -> {len(ext_media) - 1}) "))
         if resp < 0 or resp >= len(ext_media):
-            # TODO: this really shouldn't exit now that this is libified. Just raise an
-            # exception up to main
-            sys.exit(f"Entry {resp} out of bounds (0 -> {len(ext_media) - 1})")
+            OutOfBoundsError(f"Entry {resp} out of bounds (0 -> {len(ext_media) - 1})")
 
         # Search for the subtitles
         desired = ext_media[resp]
@@ -63,7 +60,9 @@ def interative(lang):
             input(f"Which one do you want to preview? (0 -> {len(ext_results) - 1}) ")
         )
         if resp < 0 or resp >= len(ext_results):
-            sys.exit(f"Entry {resp} out of bounds (0 -> {len(ext_results) - 1})")
+            OutOfBoundsError(
+                f"Entry {resp} out of bounds (0 -> {len(ext_results) - 1})"
+            )
         result = ext_results[resp]
         preview = asw.preview_subtitles([result])[0]
         # Limit preview size
@@ -71,9 +70,9 @@ def interative(lang):
 
         resp = input("Do you want to download these subtitles? (Y/n) ").strip().lower()
         if resp == "n":
-            sys.exit()
+            return
         elif resp not in ["y", ""]:
-            sys.exit(f"Unrecognized option '{resp}'")
+            BadResponseError(f"Unrecognized option '{resp}'")
 
         resp = input("Where do you want them downloaded? ")
 
@@ -133,6 +132,14 @@ class ExtSearchResult(info.SearchResult):
         sub = self.subtitles
         author = "NA" if self.author is None else self.author.name
         return f"[{upload} | by {author} | {sub.ext}] {sub.filename}"
+
+
+class OutOfBoundsError(Exception):
+    pass
+
+
+class BadResponseError(Exception):
+    pass
 
 
 if __name__ == "__main__":
