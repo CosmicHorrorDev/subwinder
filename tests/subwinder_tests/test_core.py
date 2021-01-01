@@ -9,7 +9,7 @@ import pytest
 from subwinder import AuthSubwinder, Subwinder
 from subwinder._request import Endpoints
 from subwinder.exceptions import SubDownloadError
-from subwinder.info import Comment, MovieInfo, TvSeriesInfo, UserInfo
+from subwinder.info import Comment, Movie, TvSeries, User
 from subwinder.names import NameFormatter
 from tests.constants import (
     DOWNLOAD_INFO,
@@ -199,19 +199,19 @@ def test_get_comments():
     ideal_result = [
         [
             Comment(
-                UserInfo("192696", "neo_rtr"),
+                User("192696", "neo_rtr"),
                 datetime(2008, 12, 14, 17, 20, 42),
                 "Greate Work. thank you",
             )
         ],
         [
             Comment(
-                UserInfo("745565", "pee-jay_cz"),
+                User("745565", "pee-jay_cz"),
                 datetime(2008, 12, 12, 15, 21, 48),
                 "Thank you.",
             ),
             Comment(
-                UserInfo("754781", "Guzeppi"),
+                User("754781", "Guzeppi"),
                 datetime(2008, 12, 12, 15, 51, 1),
                 "You're welcome :)",
             ),
@@ -240,10 +240,10 @@ def test_guess_media():
         call(Endpoints.GUESS_MOVIE_FROM_STRING, QUERIES[3:]),
     ]
     IDEAL_RESULT = [
-        TvSeriesInfo("Heroes", 2006, "0813715", None, None),
-        MovieInfo("Insurgent", 2015, "2908446", None, None),
-        MovieInfo("Nochnoy dozor", 2004, "0403358", None, None),
-        MovieInfo("Aliens", 1986, "0090605", None, None),
+        TvSeries("Heroes", 2006, "0813715", None, None),
+        Movie("Insurgent", 2015, "2908446", None, None),
+        Movie("Nochnoy dozor", 2004, "0403358", None, None),
+        Movie("Aliens", 1986, "0090605", None, None),
     ]
     with (SUBWINDER_RESPONSES / "guess_media.json").open() as f:
         RESP = json.load(f)
@@ -338,8 +338,8 @@ def test_suggest_media():
     with (SUBWINDER_RESPONSES / "suggest_media.json").open() as f:
         RESP = json.load(f)
     IDEAL = [
-        MovieInfo("The Matrix", 1999, "0133093", None, None),
-        MovieInfo("The Matrix Reloaded", 2003, "0234215", None, None),
+        Movie("The Matrix", 1999, "0133093", None, None),
+        Movie("The Matrix Reloaded", 2003, "0234215", None, None),
     ]
 
     _standard_asw_mock("suggest_media", "_request", QUERY, RESP, CALL, IDEAL)

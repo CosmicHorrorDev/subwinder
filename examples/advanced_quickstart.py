@@ -92,7 +92,7 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
     else:
         saved_subs = []
 
-    ext_subs = [ExtSubtitlesInfo.from_subtitles(result) for result in results]
+    ext_subs = [ExtSubtitles.from_subtitles(result) for result in results]
     saved_subs += [ext_sub.to_json_dict() for ext_sub in ext_subs]
 
     with ledger.open("w") as file:
@@ -125,22 +125,21 @@ def rank_by_whitelist(results, query, author_whitelist):
 # So the reason storing this makes sense is that there is no way to go from a local
 # subtitle file to the id for it on opensubtitles, so if you're doing anything with
 # the result later (commenting on it, etc.) you would want to store the attributes.
-# And yes you can just pickle the `SubtitlesInfo`. This is really just showing off
-# that you can extend `SubtitlesInfo` while still using it in places that expect a
-# `SubtitlesInfo` (maybe you're storing and retrieving the information from a database
-# or something).
-class ExtSubtitlesInfo(info.SubtitlesInfo):
+# And yes you can just pickle the `Subtitles`. This is really just showing off that you
+# can extend `Subtitles` while still using it in places that expect a `Subtitles`
+# (maybe you're storing and retrieving the information from a database or something).
+class ExtSubtitles(info.Subtitles):
     @classmethod
     def from_subtitles(cls, sub_container):
         # Add the option for passing `SearchResults` in
         if isinstance(sub_container, info.SearchResult):
             sub_container = sub_container.subtitles
 
-        # We just want all the members from `sub_container` in our `ExtSubtitlesInfo`
+        # We just want all the members from `sub_container` in our `ExtSubtitles`
         # Yes this seems hacky, python's classes are _interesting_, so were going to
-        # create a `ExtSubtitlesInfo` skipping `__init__` by using `__new__` then set
+        # create a `ExtSubtitles` skipping `__init__` by using `__new__` then set
         # our members (aka `__dict__`) to all of those from `subtitles`
-        ext_subtitles = ExtSubtitlesInfo.__new__(ExtSubtitlesInfo)
+        ext_subtitles = ExtSubtitles.__new__(ExtSubtitles)
         ext_subtitles.__dict__ = sub_container.__dict__
         return ext_subtitles
 
@@ -154,11 +153,11 @@ class ExtSubtitlesInfo(info.SubtitlesInfo):
     @classmethod
     def from_json_dict(cls, json_dict):
         # And now we just need to do the reverse of `.to_json_dict(...)`
-        subtitles = info.SubtitlesInfo.__new__(info.SubtitlesInfo)
+        subtitles = info.Subtitles.__new__(info.Subtitles)
         subtitles.filename = Path(subtitles.filename)
 
-        # Now return the `ExtSubtitlesInfo` for our `SubtitlesInfo`
-        return ExtSubtitlesInfo.from_subtitles(subtitles)
+        # Now return the `ExtSubtitles` for our `Subtitles`
+        return ExtSubtitles.from_subtitles(subtitles)
 
 
 if __name__ == "__main__":

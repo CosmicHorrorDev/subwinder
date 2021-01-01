@@ -20,14 +20,14 @@ from subwinder._request import Endpoints
 from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
 from subwinder.info import (
     Comment,
-    EpisodeInfo,
-    FullUserInfo,
+    Episode,
+    FullUser,
     GuessMediaResult,
-    MovieInfo,
+    Movie,
     SearchResult,
     ServerInfo,
-    SubtitlesInfo,
-    build_media_info,
+    Subtitles,
+    build_media,
 )
 from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
 from subwinder.media import MediaFile
@@ -48,12 +48,12 @@ def _build_search_query(query, lang):
         # Search by `MediaFile`s hash and size
         internal_query["moviehash"] = query.hash
         internal_query["moviebytesize"] = str(query.size)
-    elif isinstance(query, (MovieInfo, EpisodeInfo)):
-        # All `MediaInfo` classes provide an `imdbid`
+    elif isinstance(query, (Movie, Episode)):
+        # All `Media` classes provide an `imdbid`
         internal_query["imdbid"] = query.imdbid
 
-        # `EpisodeInfo` also needs a `season` and `episode`
-        if isinstance(query, EpisodeInfo):
+        # `Episode` also needs a `season` and `episode`
+        if isinstance(query, Episode):
             internal_query["season"] = query.season
             internal_query["episode"] = query.episode
     else:
@@ -215,15 +215,15 @@ class AuthSubwinder(Subwinder):
         sub_containers = []
         download_paths = []
         for download in downloads:
-            # All downloads should be some container for `SubtitlesInfo`
-            type_check(download, (SearchResult, SubtitlesInfo))
+            # All downloads should be some container for `Subtitles`
+            type_check(download, (SearchResult, Subtitles))
 
             # Assume minimal info to begin
             media_dirname = None
             media_filename = None
             subtitles = download
             if isinstance(download, SearchResult):
-                # `SearchResult` holds more info than `SubtitlesInfo`
+                # `SearchResult` holds more info than `Subtitles`
                 subtitles = download.subtitles
                 media_dirname = download.media.get_dirname()
                 media_filename = download.media.get_filename()
@@ -280,7 +280,7 @@ class AuthSubwinder(Subwinder):
 
         ids = []
         for sub_container in sub_containers:
-            type_check(sub_container, (SearchResult, SubtitlesInfo))
+            type_check(sub_container, (SearchResult, Subtitles))
 
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
@@ -306,7 +306,7 @@ class AuthSubwinder(Subwinder):
         """
         Get information stored for the current user.
         """
-        return FullUserInfo.from_data(self._request(Endpoints.GET_USER_INFO)["data"])
+        return FullUser.from_data(self._request(Endpoints.GET_USER_INFO)["data"])
 
     def ping(self):
         """
@@ -369,7 +369,7 @@ class AuthSubwinder(Subwinder):
         would be better to add a comment instead to give context as to why they're bad
         (`.add_comment("<meaningful-comment>", bad=True)`).
         """
-        type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, Subtitles))
 
         # Get subtitles file_id from `sub_container`
         if isinstance(sub_container, SearchResult):
@@ -416,9 +416,9 @@ class AuthSubwinder(Subwinder):
     def search_subtitles_unranked(self, queries):
         """
         Searches for any subtitles that match the provided `queries`. Queries are
-        allowed to be `MediaFile`, `MovieInfo`, or `EpisodeInfo` objects. A custom
-        ranking function for matching a result can be provided through `ranking_func`
-        which also gets passed the provided `*args` and `**kwargs`.
+        allowed to be `MediaFile`, `Movie`, or `Episode` objects. A custom ranking
+        function for matching a result can be provided through `ranking_func` which
+        also gets passed the provided `*args` and `**kwargs`.
         """
         # Verify that all the queries are correct before doing any requests
         type_check(queries, (list, tuple, zip))
@@ -427,7 +427,7 @@ class AuthSubwinder(Subwinder):
         if isinstance(queries, zip):
             queries = list(queries)
 
-        VALID_CLASSES = (MediaFile, MovieInfo, EpisodeInfo)
+        VALID_CLASSES = (MediaFile, Movie, Episode)
         for query_pair in queries:
             if not isinstance(query_pair, (list, tuple)) or len(query_pair) != 2:
                 raise ValueError(
@@ -490,16 +490,16 @@ class AuthSubwinder(Subwinder):
         data = self._request(Endpoints.SUGGEST_MOVIE, query)["data"]
 
         # `data` is an empty list if there were no results
-        return [] if not data else [build_media_info(media) for media in data[query]]
+        return [] if not data else [build_media(media) for media in data[query]]
 
     def add_comment(self, sub_container, comment_str, bad=False):
         """
         Adds the comment `comment_str` for the `search_result`. If desired you can
         denote that the comment is due to the result being `bad`.
         """
-        type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, Subtitles))
 
-        # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
+        # Get the `Subtitles` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
         sub_id = sub_id_obj.id
@@ -510,13 +510,13 @@ class AuthSubwinder(Subwinder):
         """
         Votes for the `sub_id_obj` with a score of `score`.
         """
-        type_check(sub_container, (SearchResult, SubtitlesInfo))
+        type_check(sub_container, (SearchResult, Subtitles))
         type_check(score, int)
 
         if score < 1 or score > 10:
             raise ValueError(f"Subtitle Vote must be between 1 and 10, given '{score}'")
 
-        # Get the `SubtitlesInfo` from `SearchResult`, then get subtitle id
+        # Get the `Subtitles` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
             sub_id_obj = sub_container.subtitles
         sub_id = sub_id_obj.id
@@ -543,7 +543,7 @@ class AuthSubwinder(Subwinder):
         # Get the subtitles file_ids from `sub_containers`
         file_ids = []
         for sub_container in sub_containers:
-            type_check(sub_container, (SearchResult, SubtitlesInfo))
+            type_check(sub_container, (SearchResult, Subtitles))
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
             file_ids.append(sub_container.file_id)

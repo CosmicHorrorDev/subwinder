@@ -9,15 +9,15 @@ from subwinder.lang import LangFormat, lang_3s
 
 
 # Build the right info object from the "MovieKind"
-def build_media_info(data):
+def build_media(data):
     """
-    Automatically builds `data` into the correct `MediaInfo` class. `dirname` and
+    Automatically builds `data` into the correct `Media` class. `dirname` and
     `filename` can be set to tie the resulting object to some local file.
     """
     MEDIA_MAP = {
-        "movie": MovieInfo,
-        "episode": EpisodeInfo,
-        "tv series": TvSeriesInfo,
+        "movie": Movie,
+        "episode": Episode,
+        "tv series": TvSeries,
     }
 
     kind = data["MovieKind"]
@@ -31,7 +31,7 @@ def build_media_info(data):
 
 
 @dataclass
-class UserInfo:
+class User:
     """
     Data container holding basic user information.
     """
@@ -55,7 +55,7 @@ class UserInfo:
 
 
 @dataclass
-class FullUserInfo(UserInfo):
+class FullUser(User):
     """
     Data container holding extensive user information.
     """
@@ -75,7 +75,7 @@ class FullUserInfo(UserInfo):
                 preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
         return cls(
-            **UserInfo.from_data(data).__dict__,
+            **User.from_data(data).__dict__,
             rank=data["UserRank"],
             num_uploads=int(data["UploadCnt"]),
             num_downloads=int(data["DownloadCnt"]),
@@ -90,13 +90,13 @@ class Comment:
     Data container for a comment.
     """
 
-    author: UserInfo
+    author: User
     date: datetime
     text: str
 
     @classmethod
     def from_data(cls, data):
-        author = UserInfo.from_data(data)
+        author = User.from_data(data)
         date = datetime.strptime(data["Created"], TIME_FORMAT)
         text = data["Comment"]
 
@@ -104,7 +104,7 @@ class Comment:
 
 
 @dataclass
-class MediaInfo:
+class Media:
     """
     Data container for a generic Media.
     """
@@ -163,20 +163,20 @@ class MediaInfo:
         return self._dirname
 
 
-class MovieInfo(MediaInfo):
+class Movie(Media):
     """
     Data container for a Movie.
     """
 
 
-class TvSeriesInfo(MediaInfo):
+class TvSeries(Media):
     """
     Data container for a TV Series.
     """
 
 
 @dataclass
-class EpisodeInfo(TvSeriesInfo):
+class Episode(TvSeries):
     """
     Data contianer for a single TV Series Episode.
     """
@@ -191,7 +191,7 @@ class EpisodeInfo(TvSeriesInfo):
 
     @classmethod
     def from_data(cls, data):
-        tv_series = TvSeriesInfo.from_data(data)
+        tv_series = TvSeries.from_data(data)
         # Yay different keys for the same data!
         season = int(data.get("SeriesSeason") or data.get("Season"))
         episode = int(data.get("SeriesEpisode") or data.get("Episode"))
@@ -270,7 +270,7 @@ class ServerInfo:
 
 
 @dataclass
-class SubtitlesInfo:
+class Subtitles:
     """
     Data container for a set of uploaded Subtitles.
     """
@@ -331,9 +331,9 @@ class SearchResult:
     Data container for a search result from searching for subtitles.
     """
 
-    author: Optional[UserInfo]
-    media: MediaInfo
-    subtitles: SubtitlesInfo
+    author: Optional[User]
+    media: Media
+    subtitles: Subtitles
     upload_date: datetime
     num_bad_reports: int
     num_downloads: int
@@ -344,9 +344,9 @@ class SearchResult:
     @classmethod
     def from_data(cls, data):
         return cls(
-            author=UserInfo.from_data(data),
-            media=build_media_info(data),
-            subtitles=SubtitlesInfo.from_data(data),
+            author=User.from_data(data),
+            media=build_media(data),
+            subtitles=Subtitles.from_data(data),
             upload_date=datetime.strptime(data["SubAddDate"], TIME_FORMAT),
             num_bad_reports=int(data["SubBad"]),
             num_downloads=int(data["SubDownloadsCnt"]),
@@ -364,9 +364,9 @@ class GuessMediaResult:
     Data container for a result from `AuthSubwinder`'s `guess_media` method
     """
 
-    best_guess: Optional[MediaInfo]
-    from_string: Optional[MediaInfo]
-    from_imdb: List[MediaInfo]
+    best_guess: Optional[Media]
+    from_string: Optional[Media]
+    from_imdb: List[Media]
 
     @classmethod
     def from_data(cls, data):
@@ -400,8 +400,8 @@ class GuessMediaResult:
         from_imdb = list(dict(data[IMDB_KEY]).values())
 
         return cls(
-            # Now that it's orgainzed build the appropriate `MediaInfo`
-            best_guess=build_media_info(best_guess) if best_guess else None,
-            from_string=build_media_info(from_string) if from_string else None,
-            from_imdb=[build_media_info(m) for m in from_imdb],
+            # Now that it's orgainzed build the appropriate `Media`
+            best_guess=build_media(best_guess) if best_guess else None,
+            from_string=build_media(from_string) if from_string else None,
+            from_imdb=[build_media(m) for m in from_imdb],
         )

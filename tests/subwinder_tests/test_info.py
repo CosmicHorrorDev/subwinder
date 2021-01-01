@@ -6,15 +6,15 @@ import pytest
 
 from subwinder.info import (
     Comment,
-    EpisodeInfo,
-    FullUserInfo,
-    MediaInfo,
-    MovieInfo,
+    Episode,
+    FullUser,
+    Media,
+    Movie,
     SearchResult,
-    SubtitlesInfo,
-    TvSeriesInfo,
-    UserInfo,
-    build_media_info,
+    Subtitles,
+    TvSeries,
+    User,
+    build_media,
 )
 from tests.constants import (
     EPISODE_INFO1,
@@ -32,32 +32,32 @@ def test_build_media_info():
     data = RESP["data"][0]
 
     # Test detecting the correct type of media
-    with patch.object(EpisodeInfo, "from_data") as mocked:
-        build_media_info(data)
+    with patch.object(Episode, "from_data") as mocked:
+        build_media(data)
         mocked.assert_called_once_with(data)
 
     data["MovieKind"] = "movie"
-    with patch.object(MovieInfo, "from_data") as mocked:
-        build_media_info(data)
+    with patch.object(Movie, "from_data") as mocked:
+        build_media(data)
         mocked.assert_called_once_with(data)
 
     data["MovieKind"] = "tv series"
-    with patch.object(TvSeriesInfo, "from_data") as mocked:
-        build_media_info(data)
+    with patch.object(TvSeries, "from_data") as mocked:
+        build_media(data)
         mocked.assert_called_once_with(data)
 
 
-def test_UserInfo():
+def test_User():
     DATA = {"UserID": "1332962", "UserNickName": "elderman"}
 
-    assert UserInfo.from_data(DATA) == USER_INFO1
+    assert User.from_data(DATA) == USER_INFO1
 
 
-def test_FullUserInfo():
+def test_FullUser():
     with (SUBWINDER_RESPONSES / "full_user_info.json").open() as f:
         DATA = json.load(f)
 
-    assert FullUserInfo.from_data(DATA) == FULL_USER_INFO1
+    assert FullUser.from_data(DATA) == FULL_USER_INFO1
 
 
 def test_Comment():
@@ -65,50 +65,48 @@ def test_Comment():
         DATA = json.load(f)
 
     assert Comment.from_data(DATA) == Comment(
-        UserInfo("<id>", "<name>"),
+        User("<id>", "<name>"),
         datetime(2000, 1, 2, 3, 4, 5),
         "<comment>",
     )
 
 
-def test_MediaInfo():
+def test_Media():
     with (SUBWINDER_RESPONSES / "media_info.json").open() as f:
         DATA = json.load(f)
 
-    assert MediaInfo.from_data(DATA) == MediaInfo(
-        "<name>", 2000, "<imdbid>", None, None
-    )
+    assert Media.from_data(DATA) == Media("<name>", 2000, "<imdbid>", None, None)
 
 
-@pytest.mark.skip(reason="This isn't any different than `MediaInfo`")
-def test_MovieInfo():
+@pytest.mark.skip(reason="This isn't any different than `Media`")
+def test_Movie():
     pass
 
 
-@pytest.mark.skip(reason="This isn't any different than `MediaInfo`")
-def test_TvSeriesInfo():
+@pytest.mark.skip(reason="This isn't any different than `Media`")
+def test_TvSeries():
     pass
 
 
-def test_EpisodeInfo():
+def test_Episode():
     with (SUBWINDER_RESPONSES / "episode_info.json").open() as f:
         DATA = json.load(f)
 
-    tv_series = TvSeriesInfo.from_data(DATA)
+    tv_series = TvSeries.from_data(DATA)
     tv_series.set_filepath("/path/to/file.mkv")
 
-    episode_info = EpisodeInfo.from_data(DATA)
+    episode_info = Episode.from_data(DATA)
     episode_info.set_filepath("/path/to/file.mkv")
 
     assert episode_info == EPISODE_INFO1
-    assert EpisodeInfo.from_tv_series(tv_series, 4, 3) == EPISODE_INFO1
+    assert Episode.from_tv_series(tv_series, 4, 3) == EPISODE_INFO1
 
 
-def test_SubtitlesInfo():
+def test_Subtitles():
     with (SUBWINDER_RESPONSES / "subtitles_info.json").open() as f:
         DATA = json.load(f)
 
-    assert SubtitlesInfo.from_data(DATA) == SUBTITLES_INFO1
+    assert Subtitles.from_data(DATA) == SUBTITLES_INFO1
 
 
 def test_SearchResult():

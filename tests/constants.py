@@ -3,14 +3,14 @@ from pathlib import Path
 
 from subwinder.info import (
     DownloadInfo,
-    EpisodeInfo,
-    FullUserInfo,
+    Episode,
+    FullUser,
     GuessMediaResult,
-    MovieInfo,
+    Movie,
     SearchResult,
     ServerInfo,
-    SubtitlesInfo,
-    UserInfo,
+    Subtitles,
+    User,
 )
 from subwinder.media import MediaFile
 
@@ -28,9 +28,9 @@ DEV_TESTS = TEST_DIR / "dev_tests"
 DEV_ASSETS = DEV_TESTS / "assets"
 
 MEDIA1 = MediaFile.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
-USER_INFO1 = UserInfo("1332962", "elderman")
+USER_INFO1 = User("1332962", "elderman")
 
-FULL_USER_INFO1 = FullUserInfo(
+FULL_USER_INFO1 = FullUser(
     id="6",
     name="os",
     rank="super admin",
@@ -40,7 +40,7 @@ FULL_USER_INFO1 = FullUserInfo(
     web_language="en",
 )
 
-MOVIE_INFO1 = MovieInfo(
+MOVIE_INFO1 = Movie(
     name="<movie-name>",
     year=2015,
     imdbid="<imdbid>",
@@ -48,7 +48,7 @@ MOVIE_INFO1 = MovieInfo(
     filename="movie_file",
 )
 
-EPISODE_INFO1 = EpisodeInfo(
+EPISODE_INFO1 = Episode(
     name='"Fringe" Alone in the World',
     year=2011,
     imdbid="1998676",
@@ -58,7 +58,7 @@ EPISODE_INFO1 = EpisodeInfo(
     episode=3,
 )
 
-SUBTITLES_INFO1 = SubtitlesInfo(
+SUBTITLES_INFO1 = Subtitles(
     size=71575,
     id="3387112",
     file_id="<file-id>",
@@ -69,7 +69,7 @@ SUBTITLES_INFO1 = SubtitlesInfo(
     encoding="UTF-8",
 )
 
-SUBTITLES_INFO2 = SubtitlesInfo(
+SUBTITLES_INFO2 = Subtitles(
     size=58024,
     id="4251071",
     file_id="1952941557",

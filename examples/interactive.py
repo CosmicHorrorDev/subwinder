@@ -26,7 +26,7 @@ def interative(lang):
         media = asw.suggest_media(query)
 
         # Build our extended objects and display the media
-        ext_media = [build_extended_mediainfo(m) for m in media]
+        ext_media = [build_extended_media(m) for m in media]
         for i, media in enumerate(ext_media):
             print(f"{i}) {media}")
         print()
@@ -38,16 +38,16 @@ def interative(lang):
 
         # Search for the subtitles
         desired = ext_media[resp]
-        # This is the special case of a `TvSeriesInfo` again. So if we have a
-        # `TvSeriesInfo` we need to get the specific episode to search for. If you have
+        # This is the special case of a `TvSeries` again. So if we have a
+        # `TvSeries` we need to get the specific episode to search for. If you have
         # information about the number of series and episodes available then you could
         # search for all of them at once too
-        if type(desired) == ExtTvSeriesInfo:
+        if type(desired) == ExtTvSeries:
             print("It looks like you selected a tv series!")
             season = int(input("What season do you want? "))
             episode = int(input("What episode do you want? "))
             print()
-            desired = info.EpisodeInfo.from_tv_series(desired, season, episode)
+            desired = info.Episode.from_tv_series(desired, season, episode)
         results = asw.search_subtitles_unranked([(desired, lang)])[0]
         ext_results = [ExtSearchResult(result) for result in results]
 
@@ -80,8 +80,8 @@ def interative(lang):
         print(f"Downloaded to '{download_path}', have a nice day!")
 
 
-# And now we can extend all the `MediaInfo` classes we care about
-class ExtMovieInfo(info.MovieInfo):
+# And now we can extend all the `Media` classes we care about
+class ExtMovie(info.Movie):
     def __init__(self, movie):
         super().__init__(
             movie.name,
@@ -95,7 +95,7 @@ class ExtMovieInfo(info.MovieInfo):
         return f"(Movie)\t{self.name}\t({self.year})\t(imdb: {self.imdbid})"
 
 
-class ExtTvSeriesInfo(info.TvSeriesInfo):
+class ExtTvSeries(info.TvSeries):
     def __init__(self, tv_series):
         super().__init__(
             tv_series.name,
@@ -109,11 +109,11 @@ class ExtTvSeriesInfo(info.TvSeriesInfo):
         return f"(TV Series)\t{self.name}\t({self.year})\t(imdb: {self.imdbid})"
 
 
-# Helper function to make it easier to build the appropriate extended `MediaInfo`
-def build_extended_mediainfo(obj):
+# Helper function to make it easier to build the appropriate extended `Media`
+def build_extended_media(obj):
     CLASS_MAP = {
-        info.MovieInfo: ExtMovieInfo,
-        info.TvSeriesInfo: ExtTvSeriesInfo,
+        info.Movie: ExtMovie,
+        info.TvSeries: ExtTvSeries,
     }
 
     # Use the correct extended class for `obj`
