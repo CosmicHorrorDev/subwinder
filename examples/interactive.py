@@ -34,7 +34,9 @@ def interative(lang):
         # Find which one they want to view
         resp = int(input(f"Which do you want to see? (0 -> {len(ext_media) - 1}) "))
         if resp < 0 or resp >= len(ext_media):
-            OutOfBoundsError(f"Entry {resp} out of bounds (0 -> {len(ext_media) - 1})")
+            raise OutOfBoundsError(
+                f"Entry {resp} out of bounds (0 -> {len(ext_media) - 1})"
+            )
 
         # Search for the subtitles
         desired = ext_media[resp]
@@ -60,7 +62,7 @@ def interative(lang):
             input(f"Which one do you want to preview? (0 -> {len(ext_results) - 1}) ")
         )
         if resp < 0 or resp >= len(ext_results):
-            OutOfBoundsError(
+            raise OutOfBoundsError(
                 f"Entry {resp} out of bounds (0 -> {len(ext_results) - 1})"
             )
         result = ext_results[resp]
@@ -72,7 +74,7 @@ def interative(lang):
         if resp == "n":
             return
         elif resp not in ["y", ""]:
-            BadResponseError(f"Unrecognized option '{resp}'")
+            raise BadResponseError(f"Unrecognized option '{resp}'")
 
         resp = input("Where do you want them downloaded? ")
 

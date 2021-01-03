@@ -17,8 +17,8 @@ from subwinder._request import Endpoints
 from tests.constants import EXAMPLES_ASSETS, EXAMPLES_RESPONSES
 
 USERNAME = "<username>"
-PASSWORD = "<password-hash>"
-PASSWORD_HASH = hashlib.md5("<password-hash>".encode("UTF-8")).hexdigest()
+PASSWORD = "<password>"
+PASSWORD_HASH = hashlib.md5("<password>".encode("UTF-8")).hexdigest()
 USERAGENT = DEV_USERAGENT
 
 
