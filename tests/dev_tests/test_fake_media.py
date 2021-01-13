@@ -20,6 +20,7 @@ def test_validate_sparse_support(tmp_path):
         )
 
 
+# TODO: can we test through to arg parsing too?
 def test_fake_media(tmp_path):
     IDEAL = [
         MediaFile.from_parts("0123456789abcdef", 1234567, tmp_path, "File 1.dummy"),

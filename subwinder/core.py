@@ -17,7 +17,12 @@ from subwinder import utils
 from subwinder._constants import DEV_USERAGENT, Env
 from subwinder._internal_utils import type_check
 from subwinder._request import Endpoints
-from subwinder.exceptions import SubAuthError, SubDownloadError, SubLangError
+from subwinder.exceptions import (
+    SubAuthError,
+    SubDownloadError,
+    SubLangError,
+    SubLibError,
+)
 from subwinder.info import (
     Comment,
     Episode,
@@ -530,8 +535,12 @@ class AuthSubwinder(Subwinder):
         """
         type_check(program_name, str)
 
-        # Not sure if I should return this information in a better format
-        return self._request(Endpoints.AUTO_UPDATE, program_name)
+        try:
+            # Not sure if I should return this information in a better format
+            return self._request(Endpoints.AUTO_UPDATE, program_name)
+        except SubLibError:
+            # No matching program name is returned as "invalid parameters"
+            return None
 
     def preview_subtitles(self, sub_containers):
         """

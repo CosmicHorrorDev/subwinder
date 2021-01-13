@@ -3,6 +3,8 @@ import json
 from itertools import repeat
 from pathlib import Path
 
+# TODO: can get these imports to work by doing path hacks
+# https://stackoverflow.com/questions/61234609/how-to-import-python-package-from-another-directory
 from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
 from subwinder.names import NameFormatter
