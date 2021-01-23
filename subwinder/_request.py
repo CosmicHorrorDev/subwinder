@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 from enum import Enum
+from http.client import ResponseNotReady
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import ProtocolError, ServerProxy, Transport
 
@@ -132,6 +133,13 @@ def request(endpoint, token, *params):
                     f" issue in the repo ({REPO_URL}) so that this can be handled in"
                     f" the future\nProtocolError: {err}"
                 )
+        except ResponseNotReady:
+            # From what I've found this occurs when the server's keep-alive ends and the
+            # socket closes. This only seems to occur when the server is having issues,
+            # so a `SubServerError` seems appropriate.
+            raise SubServerError(
+                "The server seems to be encoutering issues. Try again later."
+            )
 
         # Some endpoints don't return a status when "OK" like GetSubLanguages or
         # ServerInfo, so force the status if it's missing
