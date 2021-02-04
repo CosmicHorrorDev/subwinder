@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from subwinder.exceptions import SubDownloadError
@@ -5,11 +6,10 @@ from subwinder.lang import LangFormat, lang_2s
 
 
 # TODO: move all this once core is split up
-class BaseNameFormatter:
+class BaseNameFormatter(ABC):
+    @abstractmethod
     def generate(self, sub_container, media_filename, media_dirname, download_dir):
-        raise NotImplementedError(
-            "The base formatter is only meant to be inherited from to ensure structure"
-        )
+        pass
 
 
 class NameFormatter:
