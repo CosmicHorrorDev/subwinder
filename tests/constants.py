@@ -90,6 +90,7 @@ SEARCH_RESULT1 = SearchResult(
     num_comments=0,
     rating=None,
     score=105.0,
+    hearing_impaired=False,
 )
 
 SEARCH_RESULT2 = SearchResult(
@@ -102,6 +103,7 @@ SEARCH_RESULT2 = SearchResult(
     num_comments=2,
     rating=None,
     score=103.57765,
+    hearing_impaired=False,
 )
 
 DOWNLOAD_INFO = DownloadInfo(

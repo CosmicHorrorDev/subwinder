@@ -8,6 +8,7 @@ from subwinder.exceptions import SubLibError
 from subwinder.lang import LangFormat, lang_3s
 
 
+# TODO: allow for passing in a dict that maps the resolved class to the extended class?
 # Build the right info object from the "MovieKind"
 def build_media(data):
     """
@@ -340,6 +341,7 @@ class SearchResult:
     num_comments: int
     rating: Optional[float]
     score: float
+    hearing_impaired: bool
 
     @classmethod
     def from_data(cls, data):
@@ -355,6 +357,7 @@ class SearchResult:
             # at a glance
             rating=None if data["SubRating"] == "0.0" else float(data["SubRating"]),
             score=data["Score"],
+            hearing_impaired=bool(int(data["SubHearingImpaired"])),
         )
 
 

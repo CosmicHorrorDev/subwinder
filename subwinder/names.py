@@ -16,6 +16,7 @@ class NameFormatter:
     def __init__(self, name_format):
         self.name_format = name_format
 
+    # TODO: is there some easy way to extend this or offer some of its functionality
     def generate(self, sub_container, media_filename, media_dirname, download_dir):
         # Make sure there is enough context to save subtitles
         if media_dirname is None and download_dir is None:
