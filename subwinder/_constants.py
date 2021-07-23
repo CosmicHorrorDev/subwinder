@@ -1,12 +1,12 @@
 from enum import Enum
 
-API_BASE = "https://api.opensubtitles.org/xml-rpc"
+API_BASE: str = "https://api.opensubtitles.org/xml-rpc"
 
-TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
-REPO_URL = "https://github.com/LovecraftianHorror/subwinder"
+REPO_URL: str = "https://github.com/LovecraftianHorror/subwinder"
 
-DEV_USERAGENT = "TemporaryUserAgent"
+DEV_USERAGENT: str = "TemporaryUserAgent"
 
 
 class Env(Enum):

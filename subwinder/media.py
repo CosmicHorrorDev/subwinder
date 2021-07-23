@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional, cast
 
 from subwinder.utils import special_hash
 
@@ -12,8 +13,8 @@ class MediaFile:
 
     hash: str
     size: int
-    _dirname: Path
-    _filename: Path
+    _dirname: Optional[Path]
+    _filename: Optional[Path]
 
     def __init__(self, filepath):
         """
@@ -63,10 +64,16 @@ class MediaFile:
         self._dirname = None if dirname is None else Path(dirname)
 
     def get_filepath(self):
+        filename = self.get_filename()
+        dirname = self.get_dirname()
+
         if self.get_filename() is None or self.get_dirname() is None:
             return None
 
-        return self.get_dirname() / self.get_filename()
+        filename = cast(Path, filename)
+        dirname = cast(Path, dirname)
+
+        return dirname / filename
 
     def get_filename(self):
         return self._filename

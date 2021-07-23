@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from enum import Enum
 from http.client import ResponseNotReady
+from typing import Any, Dict, List, Optional
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import ProtocolError, ServerProxy, Transport
 
@@ -53,7 +54,7 @@ class Endpoints(Enum):
     UPLOAD_SUBTITLES = "UploadSubtitles"
 
 
-_TOKENLESS_ENDPOINTS = [
+_TOKENLESS_ENDPOINTS: List[Endpoints] = [
     Endpoints.AUTO_UPDATE,
     Endpoints.GET_SUB_LANGUAGES,
     Endpoints.LOG_IN,
@@ -62,7 +63,7 @@ _TOKENLESS_ENDPOINTS = [
 
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
-_API_ERROR_MAP = {
+_API_ERROR_MAP: Dict[str, Any] = {
     "401": SubAuthError,
     "402": SubUploadError,
     "407": SubDownloadError,
@@ -80,17 +81,17 @@ _API_ERROR_MAP = {
     "520": SubServerError,
 }
 
-_API_PROTOCOL_ERR_MAP = {
+_API_PROTOCOL_ERR_MAP: Dict[int, str] = {
     503: "503 Service Unavailable",
     506: "506 Server under maintenance",
     520: "520 Unknown internal error",
 }
 
-_client = ServerProxy(API_BASE, allow_none=True, transport=Transport())
+_client: ServerProxy = ServerProxy(API_BASE, allow_none=True, transport=Transport())
 
 
 # TODO: give a way to let lib user to set `TIMEOUT`?
-def request(endpoint, token, *params):
+def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str, Any]:
     """
     Function to allow for robust and reusable calls to the XMLRPC API. `endpoint`
     is the `Endpoint` that you want to use from the opensubtitles API. `token` is the
@@ -99,10 +100,10 @@ def request(endpoint, token, *params):
     Note: Retrying with exponential backoff and exposing appropriate errors are all
     handled automatically.
     """
-    TIMEOUT = 15
-    DELAY_FACTOR = 2
-    current_delay = 1.5
-    start = datetime.now()
+    TIMEOUT: int = 15
+    DELAY_FACTOR: int = 2
+    current_delay: float = 1.5
+    start: datetime = datetime.now()
 
     # Keep retrying if status code indicates rate limiting (429) or server error (5XX)
     # until the `TIMEOUT` is hit
@@ -110,10 +111,10 @@ def request(endpoint, token, *params):
         try:
             if endpoint in _TOKENLESS_ENDPOINTS:
                 # Flexible way to call method while reducing error handling
-                resp = getattr(_client, endpoint.value)(*params)
+                resp: dict = getattr(_client, endpoint.value)(*params)
             else:
                 # Use the token if it's defined
-                resp = getattr(_client, endpoint.value)(token, *params)
+                resp: dict = getattr(_client, endpoint.value)(token, *params)
 
         except ExpatError:
             # So an expat error was an error parsing the xml response. I believe this is
@@ -125,7 +126,7 @@ def request(endpoint, token, *params):
         except ProtocolError as err:
             # Try handling the `ProtocolError` appropriately
             if err.errcode in _API_PROTOCOL_ERR_MAP:
-                resp = {"status": _API_PROTOCOL_ERR_MAP[err.errcode]}
+                resp: dict = {"status": _API_PROTOCOL_ERR_MAP[err.errcode]}
             else:
                 # Unexpected `ProtocolError`
                 raise SubLibError(
@@ -146,8 +147,8 @@ def request(endpoint, token, *params):
         if "status" not in resp:
             resp["status"] = "200 OK"
 
-        status_code = resp["status"][:3]
-        status_msg = resp["status"][4:]
+        status_code: str = resp["status"][:3]
+        status_msg: str = resp["status"][4:]
 
         # Retry if rate limit was hit (429) or server error (5XX), otherwise handle
         # appropriately
@@ -155,7 +156,7 @@ def request(endpoint, token, *params):
             break
 
         # Server under heavy load, wait and retry
-        remaining_time = TIMEOUT - (datetime.now() - start).total_seconds()
+        remaining_time: float = TIMEOUT - (datetime.now() - start).total_seconds()
         if remaining_time <= current_delay:
             # Not enough time to try again so go ahead and `break`
             break

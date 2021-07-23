@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from subwinder._constants import REPO_URL, TIME_FORMAT
 from subwinder.exceptions import SubLibError
@@ -97,9 +97,11 @@ class Comment:
 
     @classmethod
     def from_data(cls, data):
-        author = User.from_data(data)
-        date = datetime.strptime(data["Created"], TIME_FORMAT)
-        text = data["Comment"]
+        # Note: Anonymous user's can't leave comments so this is guaranteed to return a
+        # `User`
+        author: User = cast(User, User.from_data(data))
+        date: datetime = datetime.strptime(data["Created"], TIME_FORMAT)
+        text: str = data["Comment"]
 
         return cls(author, date, text)
 
@@ -152,10 +154,17 @@ class Media:
         self._dirname = None if dirname is None else Path(dirname)
 
     def get_filepath(self):
-        if self.get_filename() is None or self.get_dirname() is None:
+        filename = self.get_filename()
+        dirname = self.get_dirname()
+
+        if filename is None or dirname is None:
             return None
 
-        return self.get_dirname() / self.get_filename()
+        # We know that both the values are `Path`s now
+        filename = cast(Path, filename)
+        dirname = cast(Path, dirname)
+
+        return dirname / filename
 
     def get_filename(self):
         return self._filename
@@ -371,6 +380,13 @@ class GuessMediaResult:
     from_string: Optional[Media]
     from_imdb: List[Media]
 
+    # So just in case you're wondering why there's all these hoops to jump
+    # through. The API returns each value paired in a dict where the IMDB id is
+    # the key, but since we don't know the key we have to do some extra work to
+    # ignore it while still getting the value attached to it (Oh yeah, but
+    # "BestGuess" is **not** returned this way, yet all the others are).
+    # There's also some extra work done since portions may be elided entirely if they
+    # contain no data.
     @classmethod
     def from_data(cls, data):
         BEST_GUESS_KEY = "BestGuess"
@@ -382,11 +398,6 @@ class GuessMediaResult:
             if key not in data:
                 data[key] = {}
 
-        # So just in case you're wondering why there's all these hoops to jump
-        # through. The API returns each value paired in a dict where the IMDB id is
-        # the key, but since we don't know the key we have to do some extra work to
-        # ignore it while still getting the value attached to it (Oh yeah, but
-        # "BestGuess" is **not** returned this way, yet all the others are)
         best_guess = data[BEST_GUESS_KEY]
 
         # So this one is a bit complicated, from what I've seen sometimes this is a

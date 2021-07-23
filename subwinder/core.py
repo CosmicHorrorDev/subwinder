@@ -2,13 +2,14 @@
 try:
     from atomicwrites import atomic_write
 
-    ATOMIC_DOWNLOADS_SUPPORT = True
+    ATOMIC_DOWNLOADS_SUPPORT: bool = True
 except ImportError:
-    ATOMIC_DOWNLOADS_SUPPORT = False
+    ATOMIC_DOWNLOADS_SUPPORT: bool = False
 
 
 import hashlib
 import os
+from typing import Any, Callable, Union
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
@@ -28,6 +29,7 @@ from subwinder.info import (
     Episode,
     FullUser,
     GuessMediaResult,
+    Media,
     Movie,
     SearchResult,
     ServerInfo,
@@ -40,13 +42,13 @@ from subwinder.names import NameFormatter
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
 
 
-def _build_search_query(query, lang):
+def _build_search_query(query: Union[MediaFile, Media], lang: str):
     """
     Helper function for `AuthSubwinder.search_subtitles(...)` that handles converting
     the `query` to the appropriate `dict` of information for the API.
     """
     # All queries take a language
-    internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
+    internal_query: dict = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
 
     # Handle all the different formats for seaching for subtitles
     if isinstance(query, MediaFile):
@@ -67,18 +69,20 @@ def _build_search_query(query, lang):
     return internal_query
 
 
-def _batch(function, batch_size, iterables, *args, **kwargs):
+def _batch(
+    function: Callable, batch_size: int, iterables: list, *args: Any, **kwargs: Any
+):
     """
     Helper function that batches calls of `function` with at most `batch_size` amount of
     `iterables` each call. Both `args` and `kwargs` will be passed in directly.
     """
-    results = []
+    results: list = []
     for i in range(0, len(iterables[0]), batch_size):
-        chunked = []
+        chunked: list = []
         for iterable in iterables:
             chunked.append(iterable[i : i + batch_size])
 
-        result = function(*chunked, *args, **kwargs)
+        result: Any = function(*chunked, *args, **kwargs)
         if result is not None:
             results += result
 
@@ -506,8 +510,8 @@ class AuthSubwinder(Subwinder):
 
         # Get the `Subtitles` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
-            sub_id_obj = sub_container.subtitles
-        sub_id = sub_id_obj.id
+            sub_container = sub_container.subtitles
+        sub_id = sub_container.id
 
         self._request(Endpoints.ADD_COMMENT, sub_id, comment_str, bad)
 
@@ -523,8 +527,8 @@ class AuthSubwinder(Subwinder):
 
         # Get the `Subtitles` from `SearchResult`, then get subtitle id
         if isinstance(sub_container, SearchResult):
-            sub_id_obj = sub_container.subtitles
-        sub_id = sub_id_obj.id
+            sub_container = sub_container.subtitles
+        sub_id = sub_container.id
 
         self._request(Endpoints.SUBTITLES_VOTE, sub_id, score)
 

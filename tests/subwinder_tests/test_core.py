@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import cast
 from unittest.mock import call, patch
 
 import pytest
@@ -122,7 +123,10 @@ def test_auto_update():
 
 
 def test_download_subtitles():
-    BARE_PATH = SEARCH_RESULT1.media.get_dirname() / SEARCH_RESULT1.subtitles.filename
+    dirname = SEARCH_RESULT1.media.get_dirname()
+    assert dirname is not None, "Dummy search result should have `dirname`"
+    dirname = cast(Path, dirname)
+    BARE_PATH = dirname / SEARCH_RESULT1.subtitles.filename
     BARE_QUERIES = [[SEARCH_RESULT1]]
     BARE_CALL = ([SEARCH_RESULT1.subtitles], [BARE_PATH])
     BARE_IDEAL = [BARE_PATH]
@@ -153,7 +157,7 @@ def test_download_subtitles():
         BARE_QUERIES[0][0].media.set_dirname(None)
         with pytest.raises(SubDownloadError):
             _ = asw.download_subtitles(*BARE_QUERIES)
-        BARE_QUERIES[0][0].media.dirname = temp_dirname
+        BARE_QUERIES[0][0].media._dirname = temp_dirname
 
         # Test failing from no `media_name` for `name_format`
         temp_filename = BARE_QUERIES[0][0].media.get_filename()
