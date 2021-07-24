@@ -44,8 +44,8 @@ MOVIE_INFO1 = Movie(
     name="<movie-name>",
     year=2015,
     imdbid="<imdbid>",
-    dirname="movie_dir",
-    filename="movie_file",
+    dirname=Path("movie_dir"),
+    filename=Path("movie_file"),
 )
 
 EPISODE_INFO1 = Episode(
