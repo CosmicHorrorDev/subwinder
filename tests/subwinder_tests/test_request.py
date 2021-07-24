@@ -6,6 +6,7 @@ import pytest
 
 from subwinder._request import Endpoint, _client, request
 from subwinder.exceptions import SubServerError
+from subwinder.types import Token
 
 
 def test__request():
@@ -29,7 +30,10 @@ def test_retry_on_fail():
     ]
     with patch.object(_client, "GetUserInfo") as mocked:
         mocked.side_effect = RESPS
-        assert request(Endpoint.GET_USER_INFO, "<token>", "arg1", "arg2") == RESPS[1]
+        assert (
+            request(Endpoint.GET_USER_INFO, Token("<token>"), "arg1", "arg2")
+            == RESPS[1]
+        )
         mocked.assert_has_calls(CALLS)
 
 
@@ -48,7 +52,7 @@ def _test_request_timeout(endpoint):
     with patch.object(_client, endpoint.value, return_value=BAD_RESP):
         start = dt.now()
         with pytest.raises(SubServerError):
-            request(endpoint, "<token>")
+            request(endpoint, Token("<token>"))
 
         # `request` should keep trying long enough for the rate limit to expire
         assert (dt.now() - start).total_seconds() > RATE_LIMIT_SECONDS

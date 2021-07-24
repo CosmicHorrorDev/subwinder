@@ -2,21 +2,23 @@ import base64
 import gzip
 import os
 from pathlib import Path
+from typing import AnyStr
 
 from subwinder.exceptions import SubHashError
+from subwinder.types import AnyPath
 
 
-def extract(bytes: str) -> bytes:
+def extract(b: AnyStr) -> bytes:
     """
     Extract `bytes` from being gzip'd and base64 encoded.
     """
-    compressed = base64.b64decode(bytes)
+    compressed = base64.b64decode(b)
     return gzip.decompress(compressed)
 
 
 # As per API spec with some tweaks to make it a bit nicer
 # https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
-def special_hash(filepath: Path) -> str:
+def special_hash(filepath: AnyPath) -> str:
     """
     The "special hash" used by opensubtitles representing a specific media file.
     """

@@ -54,7 +54,9 @@ def _build_search_query(query: Searchable, lang: str) -> ApiDict:
     the `query` to the appropriate `dict` of information for the API.
     """
     # All queries take a language
-    internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
+    internal_query: ApiDict = {
+        "sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)
+    }
 
     # Handle all the different formats for seaching for subtitles
     if isinstance(query, MediaFile):
@@ -234,6 +236,9 @@ class AuthSubwinder(Subwinder):
         provided `name_format`.
         """
         type_check(downloads, (list, tuple))
+
+        if download_dir is not None:
+            download_dir = Path(download_dir)
 
         sub_containers = []
         download_paths = []

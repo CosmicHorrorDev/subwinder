@@ -39,7 +39,8 @@ def test_LangConverter():
         mocked.assert_called_once_with()
 
         # Now wait long enough that we will refresh the langs
-        converter._last_updated -= timedelta(seconds=3600)
+        if converter._last_updated is not None:
+            converter._last_updated -= timedelta(seconds=3600)
         converter.list(LangFormat.LANG_2)
         mocked.assert_has_calls([call(), call()])
 

@@ -27,7 +27,9 @@ EXAMPLES_RESPONSES = EXAMPLES_TESTS / "responses"
 DEV_TESTS = TEST_DIR / "dev_tests"
 DEV_ASSETS = DEV_TESTS / "assets"
 
-MEDIA1 = MediaFile.from_parts("18379ac9af039390", 366876694, "/path/to", "file.mkv")
+MEDIA1 = MediaFile.from_parts(
+    "18379ac9af039390", 366876694, Path("/path/to"), Path("file.mkv")
+)
 USER_INFO1 = User("1332962", "elderman")
 
 FULL_USER_INFO1 = FullUser(
@@ -52,8 +54,8 @@ EPISODE_INFO1 = Episode(
     name='"Fringe" Alone in the World',
     year=2011,
     imdbid="1998676",
-    dirname="/path/to",
-    filename="file.mkv",
+    dirname=Path("/path/to"),
+    filename=Path("file.mkv"),
     season=4,
     episode=3,
 )
@@ -63,7 +65,7 @@ SUBTITLES_INFO1 = Subtitles(
     id="3387112",
     file_id="<file-id>",
     sub_to_movie_id=None,
-    filename="sub-filename.sub-ext",
+    filename=Path("sub-filename.sub-ext"),
     lang_2="de",
     ext="<ext>",
     encoding="UTF-8",
@@ -74,7 +76,7 @@ SUBTITLES_INFO2 = Subtitles(
     id="4251071",
     file_id="1952941557",
     sub_to_movie_id="3585468",
-    filename="Fringe.S04E03.HDTV.XviD-LOL.srt",
+    filename=Path("Fringe.S04E03.HDTV.XviD-LOL.srt"),
     lang_2="en",
     ext="srt",
     encoding="UTF-8",

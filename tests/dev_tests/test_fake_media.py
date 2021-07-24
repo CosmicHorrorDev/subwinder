@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 from dev.fake_media.fake_media import (
     fake_media,
@@ -23,8 +24,12 @@ def test_validate_sparse_support(tmp_path):
 # TODO: can we test through to arg parsing too?
 def test_fake_media(tmp_path):
     IDEAL = [
-        MediaFile.from_parts("0123456789abcdef", 1234567, tmp_path, "File 1.dummy"),
-        MediaFile.from_parts("00000000deadbeef", 333333, tmp_path, "File 2.dummy"),
+        MediaFile.from_parts(
+            "0123456789abcdef", 1234567, tmp_path, Path("File 1.dummy")
+        ),
+        MediaFile.from_parts(
+            "00000000deadbeef", 333333, tmp_path, Path("File 2.dummy")
+        ),
     ]
     DUMMY_ENTRY_FILE = DEV_ASSETS / "fake_media" / "dummy_entries.json"
 

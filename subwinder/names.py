@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 from subwinder.exceptions import SubDownloadError
 from subwinder.info import Subtitles
@@ -69,6 +69,7 @@ class NameFormatter(BaseNameFormatter):
             dir_path = media_dirname
         else:
             dir_path = Path(download_dir)
+        dir_path = cast(Path, dir_path)
 
         # Format the `filename` according to the `name_format` passed in
         upload_name = subtitles.filename.stem

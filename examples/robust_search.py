@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import re
 from itertools import repeat
+from typing import List, cast
 
 from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
+from subwinder.types import Searchable
 
 
 def main():
@@ -14,7 +16,7 @@ def main():
     robust_search(LANG, MEDIA_FILEPATHS)
 
 
-def robust_search(lang, media_filepaths):
+def robust_search(lang: str, media_filepaths):
     # Match on a s<num>e<num> snippet for `TvSeries`
     EPISODE_REGEX = re.compile(r"s(\d{1,})e(\d{1,})", re.IGNORECASE)
 
@@ -69,11 +71,12 @@ def robust_search(lang, media_filepaths):
 
                     # Replace the `TvSeries` with the correct `Episode`
                     guesses[i] = info.Episode.from_tv_series(
-                        guesses[i], season_num, episode_num
+                        cast(info.TvSeries, guesses[i]), season_num, episode_num
                     )
 
         # Now we can search for all the missing media that we have guesses for
         guesses = [guess for guess in guesses if guess is not None]
+        guesses = cast(List[Searchable], guesses)
         new_results = asw.search_subtitles(zip(guesses, repeat(lang)))
 
     # And now here is our final list of results that we can use, if you wanted you could
