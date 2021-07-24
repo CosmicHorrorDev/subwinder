@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 # Note: this whole file uses enough global variables to make my skin crawl, but I can't
 # really think of a nicer way of exposing everything
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import Dict, Iterator, List, Optional, Tuple
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
 import subwinder._request
-from subwinder._request import Endpoints
+from subwinder._request import Endpoint
 from subwinder.exceptions import SubLangError
 
 
@@ -17,7 +20,7 @@ class _LangKey(Enum):
     LANG_LONG = "LanguageName"
 
     @classmethod
-    def from_format(cls, lang_format):
+    def from_format(cls, lang_format: LangFormat) -> _LangKey:
         KEYS = [cls.LANG_2, cls.LANG_3, cls.LANG_LONG]
         return KEYS[lang_format.value]
 
@@ -36,13 +39,17 @@ class _LangConverter:
     any of the forms.
     """
 
-    def __init__(self):
+    _last_updated: Optional[datetime]
+    _langs: List[List[str]]
+
+    # TODO: `_last_updated` doesn't actually get set??
+    def __init__(self) -> None:
         self.default()
 
-    def _fetch(self):
-        return subwinder._request.request(Endpoints.GET_SUB_LANGUAGES, None)["data"]
+    def _fetch(self) -> List[Dict[str, str]]:
+        return subwinder._request.request(Endpoint.GET_SUB_LANGUAGES, None)["data"]
 
-    def _maybe_update(self, force=False):
+    def _maybe_update(self, force: bool = False) -> None:
         # Language list should refresh every hour, return early if still fresh unless
         # update is `force`d
         if not force and self._last_updated is not None:
@@ -62,10 +69,10 @@ class _LangConverter:
         # Refresh updated time
         self._last_updated = datetime.now()
 
-    def default(self):
+    def default(self) -> None:
         self.set(None, [[] for _ in list(LangFormat)])
 
-    def dump(self):
+    def dump(self) -> Tuple[Optional[datetime], List[List[str]]]:
         last_updated = self._last_updated
         langs = self._langs
 
@@ -73,11 +80,11 @@ class _LangConverter:
 
         return last_updated, langs
 
-    def set(self, last_updated, langs):
+    def set(self, last_updated: Optional[datetime], langs: List[List[str]]) -> None:
         self._last_updated = last_updated
         self._langs = langs
 
-    def convert(self, lang, from_format, to_format):
+    def convert(self, lang: str, from_format: LangFormat, to_format: LangFormat) -> str:
         self._maybe_update()
 
         try:
@@ -90,7 +97,7 @@ class _LangConverter:
 
         return self._langs[to_format.value][lang_index]
 
-    def list(self, lang_format):
+    def list(self, lang_format: LangFormat) -> List[str]:
         self._maybe_update()
 
         return self._langs[lang_format.value]
@@ -111,14 +118,14 @@ class _Lang:
 
     _format: LangFormat
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(_converter.list(self._format))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(_converter.list(self._format))
 
     # TODO: Rename to `convert_to` to make it obvious?
-    def convert(self, lang, to_format):
+    def convert(self, lang: str, to_format: LangFormat) -> str:
         """
         Convert the `lang` from the current format to `to_format`.
         """

@@ -6,7 +6,7 @@ from pathlib import Path
 from subwinder.exceptions import SubHashError
 
 
-def extract(bytes):
+def extract(bytes: str) -> bytes:
     """
     Extract `bytes` from being gzip'd and base64 encoded.
     """
@@ -16,7 +16,7 @@ def extract(bytes):
 
 # As per API spec with some tweaks to make it a bit nicer
 # https://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
-def special_hash(filepath):
+def special_hash(filepath: Path) -> str:
     """
     The "special hash" used by opensubtitles representing a specific media file.
     """
@@ -43,17 +43,17 @@ def special_hash(filepath):
 
 
 class _SumHasher:
-    def __init__(self, filesize):
+    def __init__(self, filesize: int) -> None:
         self.hash = filesize
         self.digest_size = 8
         self.block_size = 8
 
-    def update(self, values):
+    def update(self, values: bytes) -> None:
         for i in range(0, len(values), self.block_size):
             chunk = values[i : i + self.block_size]
             self.hash += int.from_bytes(chunk, byteorder="little")
 
-    def hexdigest(self):
+    def hexdigest(self) -> str:
         # Keep output in `self.digest_size`
         temp = self.hash & 2 ** (self.digest_size * 8) - 1
         return f"{temp:016x}"

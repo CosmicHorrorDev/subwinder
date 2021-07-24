@@ -1,4 +1,10 @@
-def rank_guess_media(results, query):
+from typing import List, Optional
+
+from subwinder.info import GuessMediaResult, Media, SearchResult
+from subwinder.types import Searchable
+
+
+def rank_guess_media(results: GuessMediaResult, query: str) -> Optional[Media]:
     """
     The default ranking function used to determine the best result for `AuthSubwinder`'s
     `.guess_media(...)` method. `results` is the information returned as specified by
@@ -9,7 +15,12 @@ def rank_guess_media(results, query):
 
 
 # TODO: this really __should not__ `exclude_bad` by default
-def rank_search_subtitles(results, query, exclude_bad=True, sub_exts=None):
+def rank_search_subtitles(
+    results: List[SearchResult],
+    query: Searchable,
+    exclude_bad: bool = True,
+    sub_exts: Optional[List[str]] = None,
+) -> Optional[SearchResult]:
     """
     The default ranking function used to determine the best result for `AuthSubwinder`'s
     `.search_subtitles(...)` method. `results` is the information returned as specified

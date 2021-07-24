@@ -13,7 +13,7 @@ from dev.fake_media.fake_media import fake_media
 from examples.advanced_quickstart import adv_quickstart
 from examples.interactive import interative
 from subwinder._constants import DEV_USERAGENT, Env
-from subwinder._request import Endpoints
+from subwinder._request import Endpoint
 from tests.constants import EXAMPLES_ASSETS, EXAMPLES_RESPONSES
 
 USERNAME = "<username>"
@@ -54,19 +54,19 @@ def test_interactive(mock_request, tmp_path):
     OUT_FILE_NAME = "Mr.Robot.S01E02.HDTV.x264-KILLERS.srt"
     SUB_FILE = "1\n00:00:12,345 --> 00:01:23,456\nFirst subtitle\nblock"
     CALLS = [
-        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
-        call(Endpoints.GET_USER_INFO, TOKEN),
-        call(Endpoints.SERVER_INFO, TOKEN),
-        call(Endpoints.SUGGEST_MOVIE, TOKEN, SAMPLE_INPUTS[0]),
+        call(Endpoint.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
+        call(Endpoint.GET_USER_INFO, TOKEN),
+        call(Endpoint.SERVER_INFO, TOKEN),
+        call(Endpoint.SUGGEST_MOVIE, TOKEN, SAMPLE_INPUTS[0]),
         call(
-            Endpoints.SEARCH_SUBTITLES,
+            Endpoint.SEARCH_SUBTITLES,
             TOKEN,
             [{"sublanguageid": "eng", "imdbid": "4158110", "season": 1, "episode": 2}],
         ),
-        call(Endpoints.PREVIEW_SUBTITLES, TOKEN, [SUB_ID]),
-        call(Endpoints.SERVER_INFO, TOKEN),
-        call(Endpoints.DOWNLOAD_SUBTITLES, TOKEN, [SUB_ID]),
-        call(Endpoints.LOG_OUT, TOKEN),
+        call(Endpoint.PREVIEW_SUBTITLES, TOKEN, [SUB_ID]),
+        call(Endpoint.SERVER_INFO, TOKEN),
+        call(Endpoint.DOWNLOAD_SUBTITLES, TOKEN, [SUB_ID]),
+        call(Endpoint.LOG_OUT, TOKEN),
     ]
 
     # Set the fake responses
@@ -137,15 +137,15 @@ def test_adv_quickstart(mock_request, tmp_path):
     search_calls = []
     for hash, size in search_values:
         query = [{"sublanguageid": "eng", "moviehash": hash, "moviebytesize": size}]
-        search_calls.append(call(Endpoints.SEARCH_SUBTITLES, "<token>", query))
+        search_calls.append(call(Endpoint.SEARCH_SUBTITLES, "<token>", query))
 
     CALLS = [
-        call(Endpoints.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
+        call(Endpoint.LOG_IN, None, USERNAME, PASSWORD_HASH, "en", USERAGENT),
         *search_calls,
-        call(Endpoints.SERVER_INFO, "<token>"),
-        call(Endpoints.SERVER_INFO, "<token>"),
+        call(Endpoint.SERVER_INFO, "<token>"),
+        call(Endpoint.SERVER_INFO, "<token>"),
         call(
-            Endpoints.DOWNLOAD_SUBTITLES,
+            Endpoint.DOWNLOAD_SUBTITLES,
             "<token>",
             [
                 "1955750684",
@@ -158,7 +158,7 @@ def test_adv_quickstart(mock_request, tmp_path):
                 "1954434245",
             ],
         ),
-        call(Endpoints.LOG_OUT, "<token>"),
+        call(Endpoint.LOG_OUT, "<token>"),
     ]
 
     # Set the fake responses

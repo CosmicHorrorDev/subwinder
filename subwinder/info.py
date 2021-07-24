@@ -8,12 +8,12 @@ from typing import List, Optional, Union, cast
 from subwinder._constants import REPO_URL, TIME_FORMAT
 from subwinder.exceptions import SubLibError
 from subwinder.lang import LangFormat, lang_3s
-from subwinder.types import AnyPath, ApiObj, Lang2
+from subwinder.types import AnyPath, ApiDict, Lang2
 
 
 # TODO: allow for passing in a dict that maps the resolved class to the extended class?
 # Build the right info object from the "MovieKind"
-def build_media(data: ApiObj) -> Union[Movie, Episode, TvSeries]:
+def build_media(data: ApiDict) -> Union[Movie, Episode, TvSeries]:
     """
     Automatically builds `data` into the correct `Media` class. `dirname` and
     `filename` can be set to tie the resulting object to some local file.
@@ -44,7 +44,7 @@ class User:
     name: str
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> Optional[User]:
+    def from_data(cls, data: ApiDict) -> Optional[User]:
         # Different keys for the same data again :/
         id = data.get("UserID") or data["IDUser"]
 
@@ -71,7 +71,7 @@ class FullUser(User):
     web_language: Lang2
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> FullUser:
+    def from_data(cls, data: ApiDict) -> FullUser:
         preferred = []
         for lang in data["UserPreferedLanguages"].split(","):
             # Ignore empty string in case of no preferred languages
@@ -99,7 +99,7 @@ class Comment:
     text: str
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> Comment:
+    def from_data(cls, data: ApiDict) -> Comment:
         # Note: Anonymous user's can't leave comments so this is guaranteed to return a
         # `User`
         author: User = cast(User, User.from_data(data))
@@ -136,7 +136,7 @@ class Media:
         self.set_filename(filename)
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> Media:
+    def from_data(cls, data: ApiDict) -> Media:
         name = data["MovieName"]
         # Sometimes this is returned as an `int`, sometimes it's a `str` ¯\_(ツ)_/¯
         year = int(data["MovieYear"])
@@ -190,7 +190,7 @@ class Movie(Media):
 
     # Need to override the base class' method so that the signature is right :/
     @classmethod
-    def from_data(cls, data: ApiObj) -> Movie:
+    def from_data(cls, data: ApiDict) -> Movie:
         return cast(Movie, super().from_data(data))
 
 
@@ -201,7 +201,7 @@ class TvSeries(Media):
 
     # Need to override the base class' method so that the signature is right :/
     @classmethod
-    def from_data(cls, data: ApiObj) -> TvSeries:
+    def from_data(cls, data: ApiDict) -> TvSeries:
         return cast(TvSeries, super().from_data(data))
 
 
@@ -229,7 +229,7 @@ class Episode(TvSeries):
         self.episode = episode
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> Episode:
+    def from_data(cls, data: ApiDict) -> Episode:
         tv_series = TvSeries.from_data(data)
         # Yay different keys for the same data!
         season = int(data.get("SeriesSeason") or data["Season"])
@@ -264,7 +264,7 @@ class DownloadInfo:
     limit_checked_by: str
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> DownloadInfo:
+    def from_data(cls, data: ApiDict) -> DownloadInfo:
         limits = data["download_limits"]
         return cls(
             ip=limits["client_ip"],
@@ -293,7 +293,7 @@ class ServerInfo:
     daily_download_info: DownloadInfo
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> ServerInfo:
+    def from_data(cls, data: ApiDict) -> ServerInfo:
         return cls(
             application=data["application"],
             users_online=int(data["users_online_total"]),
@@ -344,7 +344,7 @@ class Subtitles:
         self.encoding = encoding
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> Subtitles:
+    def from_data(cls, data: ApiDict) -> Subtitles:
         # If the search was done with anything other than movie hash and size then
         # there isn't a "IDSubMovieFile"
         if data["IDSubMovieFile"] == "0":
@@ -382,7 +382,7 @@ class SearchResult:
     hearing_impaired: bool
 
     @classmethod
-    def from_data(cls, data: ApiObj) -> SearchResult:
+    def from_data(cls, data: ApiDict) -> SearchResult:
         return cls(
             author=User.from_data(data),
             media=build_media(data),
@@ -417,7 +417,7 @@ class GuessMediaResult:
     # There's also some extra work done since portions may be elided entirely if they
     # contain no data.
     @classmethod
-    def from_data(cls, data: ApiObj) -> GuessMediaResult:
+    def from_data(cls, data: ApiDict) -> GuessMediaResult:
         BEST_GUESS_KEY = "BestGuess"
         FROM_STRING_KEY = "GuessMovieFromString"
         IMDB_KEY = "GetIMDBSuggest"

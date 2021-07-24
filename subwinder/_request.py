@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from enum import Enum
 from http.client import ResponseNotReady
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Final, List, Optional, Type
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import ProtocolError, ServerProxy, Transport
 
@@ -13,11 +13,13 @@ from subwinder.exceptions import (
     SubLibError,
     SubServerError,
     SubUploadError,
+    SubwinderError,
 )
+from subwinder.types import ApiDict, Token
 
 
 # The names of all the different endpoints exposed by opensubtitles
-class Endpoints(Enum):
+class Endpoint(Enum):
     ADD_COMMENT = "AddComment"
     ADD_REQUEST = "AddRequest"
     AUTO_UPDATE = "AutoUpdate"
@@ -54,16 +56,15 @@ class Endpoints(Enum):
     UPLOAD_SUBTITLES = "UploadSubtitles"
 
 
-_TOKENLESS_ENDPOINTS: List[Endpoints] = [
-    Endpoints.AUTO_UPDATE,
-    Endpoints.GET_SUB_LANGUAGES,
-    Endpoints.LOG_IN,
-    Endpoints.SERVER_INFO,
+_TOKENLESS_ENDPOINTS: Final[List[Endpoint]] = [
+    Endpoint.AUTO_UPDATE,
+    Endpoint.GET_SUB_LANGUAGES,
+    Endpoint.LOG_IN,
+    Endpoint.SERVER_INFO,
 ]
 
-
 # Responses 403, 404, 405, 406, 409 should be prevented by API
-_API_ERROR_MAP: Dict[str, Any] = {
+_API_ERROR_MAP: Final[Dict[str, Type[SubwinderError]]] = {
     "401": SubAuthError,
     "402": SubUploadError,
     "407": SubDownloadError,
@@ -81,17 +82,17 @@ _API_ERROR_MAP: Dict[str, Any] = {
     "520": SubServerError,
 }
 
-_API_PROTOCOL_ERR_MAP: Dict[int, str] = {
+_API_PROTOCOL_ERR_MAP: Final[Dict[int, str]] = {
     503: "503 Service Unavailable",
     506: "506 Server under maintenance",
     520: "520 Unknown internal error",
 }
 
-_client: ServerProxy = ServerProxy(API_BASE, allow_none=True, transport=Transport())
+_client = ServerProxy(API_BASE, allow_none=True, transport=Transport())
 
 
 # TODO: give a way to let lib user to set `TIMEOUT`?
-def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str, Any]:
+def request(endpoint: Endpoint, token: Optional[Token], *params: Any) -> ApiDict:
     """
     Function to allow for robust and reusable calls to the XMLRPC API. `endpoint`
     is the `Endpoint` that you want to use from the opensubtitles API. `token` is the
@@ -100,8 +101,8 @@ def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str
     Note: Retrying with exponential backoff and exposing appropriate errors are all
     handled automatically.
     """
-    TIMEOUT: int = 15
-    DELAY_FACTOR: int = 2
+    TIMEOUT: Final[int] = 15
+    DELAY_FACTOR: Final[int] = 2
     current_delay: float = 1.5
     start: datetime = datetime.now()
 
@@ -111,10 +112,10 @@ def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str
         try:
             if endpoint in _TOKENLESS_ENDPOINTS:
                 # Flexible way to call method while reducing error handling
-                resp: dict = getattr(_client, endpoint.value)(*params)
+                resp = getattr(_client, endpoint.value)(*params)
             else:
                 # Use the token if it's defined
-                resp: dict = getattr(_client, endpoint.value)(token, *params)
+                resp = getattr(_client, endpoint.value)(token, *params)
 
         except ExpatError:
             # So an expat error was an error parsing the xml response. I believe this is
@@ -126,7 +127,7 @@ def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str
         except ProtocolError as err:
             # Try handling the `ProtocolError` appropriately
             if err.errcode in _API_PROTOCOL_ERR_MAP:
-                resp: dict = {"status": _API_PROTOCOL_ERR_MAP[err.errcode]}
+                resp = {"status": _API_PROTOCOL_ERR_MAP[err.errcode]}
             else:
                 # Unexpected `ProtocolError`
                 raise SubLibError(
@@ -156,7 +157,7 @@ def request(endpoint: Endpoints, token: Optional[str], *params: Any) -> Dict[str
             break
 
         # Server under heavy load, wait and retry
-        remaining_time: float = TIMEOUT - (datetime.now() - start).total_seconds()
+        remaining_time = TIMEOUT - (datetime.now() - start).total_seconds()
         if remaining_time <= current_delay:
             # Not enough time to try again so go ahead and `break`
             break

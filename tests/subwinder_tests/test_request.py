@@ -4,7 +4,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from subwinder._request import Endpoints, _client, request
+from subwinder._request import Endpoint, _client, request
 from subwinder.exceptions import SubServerError
 
 
@@ -12,7 +12,7 @@ def test__request():
     RESP = {"status": "200 OK", "data": "The data!", "seconds": "0.15"}
     with patch.object(_client, "ServerInfo", return_value=RESP) as mocked:
         # Response should be passed through on success
-        assert request(Endpoints.SERVER_INFO, None) == RESP
+        assert request(Endpoint.SERVER_INFO, None) == RESP
         mocked.assert_called_once_with()
 
 
@@ -29,15 +29,15 @@ def test_retry_on_fail():
     ]
     with patch.object(_client, "GetUserInfo") as mocked:
         mocked.side_effect = RESPS
-        assert request(Endpoints.GET_USER_INFO, "<token>", "arg1", "arg2") == RESPS[1]
+        assert request(Endpoint.GET_USER_INFO, "<token>", "arg1", "arg2") == RESPS[1]
         mocked.assert_has_calls(CALLS)
 
 
 @pytest.mark.slow
 def test_request_timeout():
     # Requests take a bit to timeout so we're just gonna run all of them simultaneously
-    with Pool(len(Endpoints)) as pool:
-        pool.map(_test_request_timeout, list(Endpoints))
+    with Pool(len(Endpoint)) as pool:
+        pool.map(_test_request_timeout, list(Endpoint))
 
 
 def _test_request_timeout(endpoint):

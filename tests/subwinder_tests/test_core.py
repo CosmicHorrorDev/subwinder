@@ -8,7 +8,7 @@ from unittest.mock import call, patch
 import pytest
 
 from subwinder import AuthSubwinder, Subwinder
-from subwinder._request import Endpoints
+from subwinder._request import Endpoint
 from subwinder.exceptions import SubDownloadError
 from subwinder.info import Comment, Movie, TvSeries, User
 from subwinder.names import NameFormatter
@@ -56,7 +56,7 @@ def test_daily_download_info():
         result = Subwinder().daily_download_info()
 
     assert result == IDEAL
-    mocked.assert_called_once_with(Endpoints.SERVER_INFO)
+    mocked.assert_called_once_with(Endpoint.SERVER_INFO)
 
 
 def test_get_languages():
@@ -77,7 +77,7 @@ def test_server_info():
         result = Subwinder().server_info()
 
     assert result == IDEAL
-    mocked.assert_called_once_with(Endpoints.SERVER_INFO)
+    mocked.assert_called_once_with(Endpoint.SERVER_INFO)
 
 
 # TODO: add a proper test for authenticating
@@ -90,7 +90,7 @@ def test_server_info():
 def test__login():
     QUERIES = ("<username>", "<password-hash>", "<useragent>")
     RESP = {"status": "200 OK", "token": "<token>"}
-    CALL = (Endpoints.LOG_IN, "<username>", "<password-hash>", "en", "<useragent>")
+    CALL = (Endpoint.LOG_IN, "<username>", "<password-hash>", "en", "<useragent>")
 
     _standard_asw_mock("_login", "_request", QUERIES, RESP, CALL, "<token>")
 
@@ -99,7 +99,7 @@ def test__login():
 def test__logout():
     QUERIES = ()
     RESP = {"status": "200 OK", "seconds": 0.055}
-    CALL = [Endpoints.LOG_OUT]
+    CALL = [Endpoint.LOG_OUT]
 
     _standard_asw_mock("_logout", "_request", QUERIES, RESP, CALL, None)
 
@@ -107,7 +107,7 @@ def test__logout():
 def test_add_comment():
     QUERIES = (SEARCH_RESULT1, "bad comment", True)
     RESP = {"status": "200 OK", "seconds": "0.228"}
-    CALL = (Endpoints.ADD_COMMENT, SEARCH_RESULT1.subtitles.id, "bad comment", True)
+    CALL = (Endpoint.ADD_COMMENT, SEARCH_RESULT1.subtitles.id, "bad comment", True)
 
     _standard_asw_mock("add_comment", "_request", QUERIES, RESP, CALL, None)
 
@@ -115,7 +115,7 @@ def test_add_comment():
 def test_auto_update():
     PROGRAM_NAME = "SubDownloader"
     QUERIES = [PROGRAM_NAME]
-    CALL = (Endpoints.AUTO_UPDATE, PROGRAM_NAME)
+    CALL = (Endpoint.AUTO_UPDATE, PROGRAM_NAME)
     with (SUBWINDER_RESPONSES / "auto_update.json").open() as f:
         RESP = json.load(f)
 
@@ -187,7 +187,7 @@ def test__download_subtitles():
             asw._download_subtitles([SEARCH_RESULT1.subtitles], [sub_path])
 
         mocked.assert_called_with(
-            Endpoints.DOWNLOAD_SUBTITLES, [SEARCH_RESULT1.subtitles.file_id]
+            Endpoint.DOWNLOAD_SUBTITLES, [SEARCH_RESULT1.subtitles.file_id]
         )
 
         # Check the contents for the correct result
@@ -222,7 +222,7 @@ def test_get_comments():
         ],
     ]
     CALL = (
-        Endpoints.GET_COMMENTS,
+        Endpoint.GET_COMMENTS,
         [SEARCH_RESULT1.subtitles.id, SEARCH_RESULT2.subtitles.id],
     )
 
@@ -240,8 +240,8 @@ def test_guess_media():
     ]
     # The calls are split due to batching
     CALLS = [
-        call(Endpoints.GUESS_MOVIE_FROM_STRING, QUERIES[:3]),
-        call(Endpoints.GUESS_MOVIE_FROM_STRING, QUERIES[3:]),
+        call(Endpoint.GUESS_MOVIE_FROM_STRING, QUERIES[:3]),
+        call(Endpoint.GUESS_MOVIE_FROM_STRING, QUERIES[3:]),
     ]
     IDEAL_RESULT = [
         TvSeries("Heroes", 2006, "0813715", None, None),
@@ -264,7 +264,7 @@ def test_guess_media():
         "",
         "adsfkljadsf",
     ]
-    CALL = (Endpoints.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
+    CALL = (Endpoint.GUESS_MOVIE_FROM_STRING, EDGE_QUERIES)
     IDEAL_RESULT = [None, None]
     with (SUBWINDER_RESPONSES / "guess_media_edge_cases.json").open() as f:
         EDGE_RESP = json.load(f)
@@ -279,14 +279,14 @@ def test_guess_media():
 
 def test_ping():
     RESP = {"status": "200 OK", "seconds": "0.055"}
-    CALL = [Endpoints.NO_OPERATION]
+    CALL = [Endpoint.NO_OPERATION]
 
     _standard_asw_mock("ping", "_request", (), RESP, CALL, None)
 
 
 def test_report_media():
     QUERY = [SEARCH_RESULT2]
-    CALL = (Endpoints.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
+    CALL = (Endpoint.REPORT_WRONG_MOVIE_HASH, SEARCH_RESULT2.subtitles.sub_to_movie_id)
     RESP = {"status": "200 OK", "seconds": "0.115"}
 
     _standard_asw_mock("report_media", "_request", QUERY, RESP, CALL, None)
@@ -317,7 +317,7 @@ def test_search_subtitles():
 def test__search_subtitles_unranked():
     QUERIES = [[(MEDIA1, "en")]]
     CALL = (
-        Endpoints.SEARCH_SUBTITLES,
+        Endpoint.SEARCH_SUBTITLES,
         [
             {
                 "sublanguageid": "eng",
@@ -338,7 +338,7 @@ def test__search_subtitles_unranked():
 
 def test_suggest_media():
     QUERY = ["matrix"]
-    CALL = (Endpoints.SUGGEST_MOVIE, "matrix")
+    CALL = (Endpoint.SUGGEST_MOVIE, "matrix")
     with (SUBWINDER_RESPONSES / "suggest_media.json").open() as f:
         RESP = json.load(f)
     IDEAL = [
@@ -350,7 +350,7 @@ def test_suggest_media():
 
 
 def test_user_info():
-    CALL = [Endpoints.GET_USER_INFO]
+    CALL = [Endpoint.GET_USER_INFO]
     with (SUBWINDER_RESPONSES / "user_info.json").open() as f:
         RESP = json.load(f)
     IDEAL_RESULT = FULL_USER_INFO1
@@ -367,13 +367,13 @@ def test_vote():
     # Test valid scores
     for score in VALID_SCORES:
         query = (SEARCH_RESULT1, score)
-        call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
+        call = (Endpoint.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
         _standard_asw_mock("vote", "_request", query, RESP, call, None)
 
     # Test invalid scores
     for score in INVALID_SCORES:
         query = (SEARCH_RESULT1, score)
-        call = (Endpoints.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
+        call = (Endpoint.SUBTITLES_VOTE, SEARCH_RESULT1.subtitles.id, score)
 
         asw = _dummy_auth_subwinder()
 
@@ -397,7 +397,7 @@ def test_preview_subtitles():
 # XXX: combine with the above
 def test__preview_subtitles():
     QUERIES = [["1951976245"]]
-    CALL = (Endpoints.PREVIEW_SUBTITLES, QUERIES[0])
+    CALL = (Endpoint.PREVIEW_SUBTITLES, QUERIES[0])
     with (SUBWINDER_RESPONSES / "preview_subtitles.json").open() as f:
         RESP = json.load(f)
 

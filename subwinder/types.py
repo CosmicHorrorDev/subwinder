@@ -2,19 +2,20 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, NewType, Tuple, Union
 
 if TYPE_CHECKING:
-    from subwinder.info import Episode, Media, Movie, SearchResult, Subtitles
-
-Lang2 = NewType("Lang2", str)
-Lang3 = NewType("Lang3", str)
-LangLong = NewType("LangLong", str)
+    from subwinder.info import Episode, Movie, SearchResult, Subtitles
+    from subwinder.media import MediaFile
 
 Token = NewType("Token", str)
 
-Searchable = Union["Media", "Movie", "Episode"]
+Lang2 = str
+Lang3 = str
+LangLong = str
+
+Searchable = Union["MediaFile", "Movie", "Episode"]
 SearchQuery = Tuple[Searchable, Lang2]
 
 SubContainer = Union["SearchResult", "Subtitles"]
 
-ApiObj = Dict[str, Any]
+ApiDict = Dict[str, Any]
 
 AnyPath = Union[str, Path]

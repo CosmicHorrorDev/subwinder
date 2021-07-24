@@ -1,33 +1,45 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Optional
 
 from subwinder.exceptions import SubDownloadError
+from subwinder.info import Subtitles
 from subwinder.lang import LangFormat, lang_2s
 
 
 # TODO: move all this once core is split up
+# TODO: Having a formatter setup to indicate hearing impaired would be a good example of
+# extending this. Would be good to see how easy it is to extend off `NameFormatter`
 class BaseNameFormatter(ABC):
     @abstractmethod
     def generate(
-        self, sub_container, media_filename, media_dirname, download_dir
+        self,
+        subtitles: Subtitles,
+        media_filename: Optional[Path],
+        media_dirname: Optional[Path],
+        download_dir: Optional[Path],
     ) -> Path:
         pass
 
 
 class NameFormatter(BaseNameFormatter):
-    def __init__(self, name_format):
+    def __init__(self, name_format: str) -> None:
         self.name_format = name_format
 
     # TODO: is there some easy way to extend this or offer some of its functionality
     def generate(
-        self, sub_container, media_filename, media_dirname, download_dir
+        self,
+        subtitles: Subtitles,
+        media_filename: Optional[Path],
+        media_dirname: Optional[Path],
+        download_dir: Optional[Path],
     ) -> Path:
         # Make sure there is enough context to save subtitles
         if media_dirname is None and download_dir is None:
             # TODO: should be a TypeError or ValueError?
             raise SubDownloadError(
                 "Insufficient context. Need to set either the `dirname` in"
-                f" {sub_container} if possible or `download_dir` in"
+                f" {subtitles} if possible or `download_dir` in"
                 " `download_subtitles`"
             )
 
@@ -47,7 +59,7 @@ class NameFormatter(BaseNameFormatter):
                 # TODO: should be a TypeError or ValueError?
                 raise SubDownloadError(
                     "Insufficient context. Need to set the `filename` for"
-                    f" {sub_container} if you plan on using `media_name` in the"
+                    f" {subtitles} if you plan on using `media_name` in the"
                     " `name_format`"
                 )
 
@@ -59,17 +71,17 @@ class NameFormatter(BaseNameFormatter):
             dir_path = Path(download_dir)
 
         # Format the `filename` according to the `name_format` passed in
-        upload_name = sub_container.filename.stem
+        upload_name = subtitles.filename.stem
         media_name = None if media_filename is None else media_filename.stem
 
         filename = self.name_format.format(
             media_name=media_name,
-            lang_2=sub_container.lang_2,
-            lang_3=lang_2s.convert(sub_container.lang_2, LangFormat.LANG_3),
-            lang_long=lang_2s.convert(sub_container.lang_2, LangFormat.LANG_LONG),
-            ext=sub_container.ext,
+            lang_2=subtitles.lang_2,
+            lang_3=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_3),
+            lang_long=lang_2s.convert(subtitles.lang_2, LangFormat.LANG_LONG),
+            ext=subtitles.ext,
             upload_name=upload_name,
-            upload_filename=sub_container.filename,
+            upload_filename=subtitles.filename,
         )
 
         return dir_path / filename

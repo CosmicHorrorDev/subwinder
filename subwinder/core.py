@@ -13,7 +13,7 @@ import hashlib
 import os
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Iterable, List, Optional, Tuple, Union, cast
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
@@ -21,7 +21,7 @@ import subwinder._request
 from subwinder import utils
 from subwinder._constants import DEV_USERAGENT, Env
 from subwinder._internal_utils import type_check
-from subwinder._request import Endpoints
+from subwinder._request import Endpoint
 from subwinder.exceptions import (
     SubAuthError,
     SubDownloadError,
@@ -45,16 +45,16 @@ from subwinder.lang import LangFormat, lang_2s, lang_3s, lang_longs
 from subwinder.media import MediaFile
 from subwinder.names import BaseNameFormatter, NameFormatter
 from subwinder.ranking import rank_guess_media, rank_search_subtitles
-from subwinder.types import Searchable, SearchQuery, SubContainer, Token
+from subwinder.types import ApiDict, Searchable, SearchQuery, SubContainer, Token
 
 
-def _build_search_query(query: Searchable, lang: str) -> Dict[str, Any]:
+def _build_search_query(query: Searchable, lang: str) -> ApiDict:
     """
     Helper function for `AuthSubwinder.search_subtitles(...)` that handles converting
     the `query` to the appropriate `dict` of information for the API.
     """
     # All queries take a language
-    internal_query: dict = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
+    internal_query = {"sublanguageid": lang_2s.convert(lang, LangFormat.LANG_3)}
 
     # Handle all the different formats for seaching for subtitles
     if isinstance(query, MediaFile):
@@ -109,7 +109,7 @@ class Subwinder:
     def __repr__(self):
         return f"{self.__class__.__name__}()"
 
-    def _request(self, endpoint: Endpoints, *params: Any) -> Dict[str, Any]:
+    def _request(self, endpoint: Endpoint, *params: Any) -> ApiDict:
         """
         Call the API `Endpoint` represented by `method` with any of the given `params`.
         """
@@ -132,7 +132,7 @@ class Subwinder:
         """
         Returns `ServerInfo` for the opensubtitles.
         """
-        return ServerInfo.from_data(self._request(Endpoints.SERVER_INFO))
+        return ServerInfo.from_data(self._request(Endpoint.SERVER_INFO))
 
 
 class AuthSubwinder(Subwinder):
@@ -210,15 +210,15 @@ class AuthSubwinder(Subwinder):
         Handles logging in the user with the provided information and storing the auth
         token. Automatically called by `__init__` so no need to call it directly.
         """
-        resp = self._request(Endpoints.LOG_IN, username, password, "en", useragent)
-        return resp["token"]
+        resp = self._request(Endpoint.LOG_IN, username, password, "en", useragent)
+        return Token(resp["token"])
 
     def _logout(self) -> None:
         """
         Attempts to log out the user from the current session. Automatically called on
         exiting `with` so no need to call it directly.
         """
-        self._request(Endpoints.LOG_OUT)
+        self._request(Endpoint.LOG_OUT)
         self._token = None
 
     def download_subtitles(
@@ -281,7 +281,7 @@ class AuthSubwinder(Subwinder):
         # Get all the file ids
         sub_file_ids = [sub_container.file_id for sub_container in sub_containers]
 
-        data = self._request(Endpoints.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
+        data = self._request(Endpoint.DOWNLOAD_SUBTITLES, sub_file_ids)["data"]
 
         for result, fpath in zip(data, filepaths):
             subtitles = utils.extract(result["data"])
@@ -311,7 +311,7 @@ class AuthSubwinder(Subwinder):
             if isinstance(sub_container, SearchResult):
                 sub_container = sub_container.subtitles
             ids.append(sub_container.id)
-        data = self._request(Endpoints.GET_COMMENTS, ids)["data"]
+        data = self._request(Endpoint.GET_COMMENTS, ids)["data"]
 
         # Group the results, if any, by the query order
         groups = [[] for _ in sub_containers]
@@ -332,7 +332,7 @@ class AuthSubwinder(Subwinder):
         """
         Get information stored for the current user.
         """
-        return FullUser.from_data(self._request(Endpoints.GET_USER_INFO)["data"])
+        return FullUser.from_data(self._request(Endpoint.GET_USER_INFO)["data"])
 
     def ping(self) -> None:
         """
@@ -340,7 +340,7 @@ class AuthSubwinder(Subwinder):
         15 minutes of inactivity so this can be used to keep a session alive if there's
         no meaningful work to do.
         """
-        self._request(Endpoints.NO_OPERATION)
+        self._request(Endpoint.NO_OPERATION)
 
     def guess_media(
         self,
@@ -377,7 +377,7 @@ class AuthSubwinder(Subwinder):
         return _batch(self._guess_media_unranked, 3, [queries])
 
     def _guess_media_unranked(self, queries: List[str]) -> List[GuessMediaResult]:
-        data = self._request(Endpoints.GUESS_MOVIE_FROM_STRING, queries)["data"]
+        data = self._request(Endpoint.GUESS_MOVIE_FROM_STRING, queries)["data"]
 
         # Special case: `""` is just silently excluded from the response so force it
         if "" in queries and "" not in data:
@@ -415,7 +415,7 @@ class AuthSubwinder(Subwinder):
                 " when searching with a `MediaFile` object)."
             )
 
-        self._request(Endpoints.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
+        self._request(Endpoint.REPORT_WRONG_MOVIE_HASH, sub_to_movie_id)
 
     def search_subtitles(
         self,
@@ -497,7 +497,7 @@ class AuthSubwinder(Subwinder):
         self, queries: Sequence[SearchQuery]
     ) -> List[List[SearchResult]]:
         internal_queries = [_build_search_query(q, l) for q, l in queries]
-        data = self._request(Endpoints.SEARCH_SUBTITLES, internal_queries)["data"]
+        data = self._request(Endpoint.SEARCH_SUBTITLES, internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
         groups = [[] for _ in internal_queries]
@@ -521,7 +521,7 @@ class AuthSubwinder(Subwinder):
         """
         type_check(query, str)
 
-        data = self._request(Endpoints.SUGGEST_MOVIE, query)["data"]
+        data = self._request(Endpoint.SUGGEST_MOVIE, query)["data"]
 
         # `data` is an empty list if there were no results
         return [] if not data else [build_media(media) for media in data[query]]
@@ -540,7 +540,7 @@ class AuthSubwinder(Subwinder):
             sub_container = sub_container.subtitles
         sub_id = sub_container.id
 
-        self._request(Endpoints.ADD_COMMENT, sub_id, comment_str, bad)
+        self._request(Endpoint.ADD_COMMENT, sub_id, comment_str, bad)
 
     def vote(self, sub_container: SubContainer, score: int) -> None:
         """
@@ -557,9 +557,9 @@ class AuthSubwinder(Subwinder):
             sub_container = sub_container.subtitles
         sub_id = sub_container.id
 
-        self._request(Endpoints.SUBTITLES_VOTE, sub_id, score)
+        self._request(Endpoint.SUBTITLES_VOTE, sub_id, score)
 
-    def auto_update(self, program_name: str) -> Optional[Dict[str, Any]]:
+    def auto_update(self, program_name: str) -> Optional[ApiDict]:
         """
         Returns information about `program_name` that is supposed to be useful for
         automatic updates. (Version info and download urls)
@@ -568,7 +568,7 @@ class AuthSubwinder(Subwinder):
 
         try:
             # Not sure if I should return this information in a better format
-            return self._request(Endpoints.AUTO_UPDATE, program_name)
+            return self._request(Endpoint.AUTO_UPDATE, program_name)
         except SubLibError:
             # No matching program name is returned as "invalid parameters"
             return None
@@ -592,7 +592,7 @@ class AuthSubwinder(Subwinder):
         return _batch(self._preview_subtitles, 20, [file_ids])
 
     def _preview_subtitles(self, ids: List[str]) -> List[str]:
-        data = self._request(Endpoints.PREVIEW_SUBTITLES, ids)["data"]
+        data = self._request(Endpoint.PREVIEW_SUBTITLES, ids)["data"]
 
         # Unpack our data
         previews = []
