@@ -2,6 +2,7 @@
 import json
 from itertools import repeat
 from pathlib import Path
+from typing import cast
 
 # TODO: can get these imports to work by doing path hacks
 # https://stackoverflow.com/questions/61234609/how-to-import-python-package-from-another-directory
@@ -77,7 +78,8 @@ def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_ex
     print(f"Moving matched media and subtitle files to {output_dir}... ", end="")
     output_dir.mkdir(exist_ok=True, parents=True)
     for result, download in zip(results, download_paths):
-        from_media_path = result.media.get_filepath()
+        # type note: since this came from a `MediaFile` we know there will be a filepath
+        from_media_path = cast(Path, result.media.get_filepath())
         to_media_path = output_dir / from_media_path.name
         from_media_path.rename(to_media_path)
 

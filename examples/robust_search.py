@@ -61,7 +61,8 @@ def robust_search(lang, media_filepaths):
             #    `Episode`. In this example I'm just gonna use a regex, but for your
             #    case you may have more context on what you're searching for already
             if isinstance(guesses[i], info.TvSeries):
-                matches = EPISODE_REGEX.search(guesses[i].get_filename())
+                filename = str(guesses[i].get_filename())
+                matches = EPISODE_REGEX.search(filename)
                 if matches is not None:
                     season_num = int(matches.group(1))
                     episode_num = int(matches.group(2))

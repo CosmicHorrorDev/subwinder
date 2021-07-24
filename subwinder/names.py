@@ -8,16 +8,20 @@ from subwinder.lang import LangFormat, lang_2s
 # TODO: move all this once core is split up
 class BaseNameFormatter(ABC):
     @abstractmethod
-    def generate(self, sub_container, media_filename, media_dirname, download_dir):
+    def generate(
+        self, sub_container, media_filename, media_dirname, download_dir
+    ) -> Path:
         pass
 
 
-class NameFormatter:
+class NameFormatter(BaseNameFormatter):
     def __init__(self, name_format):
         self.name_format = name_format
 
     # TODO: is there some easy way to extend this or offer some of its functionality
-    def generate(self, sub_container, media_filename, media_dirname, download_dir):
+    def generate(
+        self, sub_container, media_filename, media_dirname, download_dir
+    ) -> Path:
         # Make sure there is enough context to save subtitles
         if media_dirname is None and download_dir is None:
             # TODO: should be a TypeError or ValueError?
