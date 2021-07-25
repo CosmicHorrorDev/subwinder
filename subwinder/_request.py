@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from enum import Enum
 from http.client import ResponseNotReady
-from typing import Any, Dict, Final, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import ProtocolError, ServerProxy, Transport
 
@@ -56,7 +56,7 @@ class Endpoint(Enum):
     UPLOAD_SUBTITLES = "UploadSubtitles"
 
 
-_TOKENLESS_ENDPOINTS: Final[List[Endpoint]] = [
+_TOKENLESS_ENDPOINTS: List[Endpoint] = [
     Endpoint.AUTO_UPDATE,
     Endpoint.GET_SUB_LANGUAGES,
     Endpoint.LOG_IN,
@@ -64,7 +64,7 @@ _TOKENLESS_ENDPOINTS: Final[List[Endpoint]] = [
 ]
 
 # Responses 403, 404, 405, 406, 409 should be prevented by API
-_API_ERROR_MAP: Final[Dict[str, Type[SubwinderError]]] = {
+_API_ERROR_MAP: Dict[str, Type[SubwinderError]] = {
     "401": SubAuthError,
     "402": SubUploadError,
     "407": SubDownloadError,
@@ -82,7 +82,7 @@ _API_ERROR_MAP: Final[Dict[str, Type[SubwinderError]]] = {
     "520": SubServerError,
 }
 
-_API_PROTOCOL_ERR_MAP: Final[Dict[int, str]] = {
+_API_PROTOCOL_ERR_MAP: Dict[int, str] = {
     503: "503 Service Unavailable",
     506: "506 Server under maintenance",
     520: "520 Unknown internal error",
@@ -101,8 +101,8 @@ def request(endpoint: Endpoint, token: Optional[Token], *params: Any) -> ApiDict
     Note: Retrying with exponential backoff and exposing appropriate errors are all
     handled automatically.
     """
-    TIMEOUT: Final[int] = 15
-    DELAY_FACTOR: Final[int] = 2
+    TIMEOUT: int = 15
+    DELAY_FACTOR: int = 2
     current_delay: float = 1.5
     start: datetime = datetime.now()
 
