@@ -13,7 +13,7 @@ import hashlib
 import os
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Iterable, List, Optional, Tuple, Union
 
 # See: https://github.com/LovecraftianHorror/subwinder/issues/52#issuecomment-637333960
 # if you want to know why `request` isn't imported with `from`
@@ -34,6 +34,7 @@ from subwinder.info import (
     Episode,
     FullUser,
     GuessMediaResult,
+    Media,
     Movie,
     SearchResult,
     ServerInfo,
@@ -240,8 +241,8 @@ class AuthSubwinder(Subwinder):
         if download_dir is not None:
             download_dir = Path(download_dir)
 
-        sub_containers = []
-        download_paths = []
+        sub_containers: List[Subtitles] = []
+        download_paths: List[Path] = []
         for download in downloads:
             # All downloads should be some container for `Subtitles`
             type_check(download, (SearchResult, Subtitles))
@@ -252,7 +253,7 @@ class AuthSubwinder(Subwinder):
                 media_dirname = download.media.get_dirname()
                 media_filename = download.media.get_filename()
             else:
-                subtitles = cast(Subtitles, download)
+                subtitles = download
                 media_dirname = None
                 media_filename = None
 
@@ -303,13 +304,15 @@ class AuthSubwinder(Subwinder):
                 with fpath.open("wb") as f:
                     f.write(subtitles)
 
-    def get_comments(self, sub_containers: Sequence[SubContainer]) -> List[Comment]:
+    def get_comments(
+        self, sub_containers: Sequence[SubContainer]
+    ) -> List[List[Comment]]:
         """
         Get all `Comment`s for the provided `search_results` if there are any.
         """
         type_check(sub_containers, (list, tuple))
 
-        ids = []
+        ids: List[str] = []
         for sub_container in sub_containers:
             type_check(sub_container, (SearchResult, Subtitles))
 
@@ -319,7 +322,7 @@ class AuthSubwinder(Subwinder):
         data = self._request(Endpoint.GET_COMMENTS, ids)["data"]
 
         # Group the results, if any, by the query order
-        groups = [[] for _ in sub_containers]
+        groups: List[List[ApiDict]] = [[] for _ in sub_containers]
         if data:
             for id, comments in data.items():
                 # Returned `id` has a leading _ for some reason so strip it
@@ -327,7 +330,7 @@ class AuthSubwinder(Subwinder):
                 groups[index] = data[id]
 
         # Pack results, if any, into `Comment` objects
-        comments = []
+        comments: List[List[Comment]] = []
         for raw_comments in groups:
             comments.append([Comment.from_data(c) for c in raw_comments])
 
@@ -347,19 +350,22 @@ class AuthSubwinder(Subwinder):
         """
         self._request(Endpoint.NO_OPERATION)
 
+    # FIXME: specifying a more explicit `Callable` would require being able to specify
+    # some of the arguments. Relevant issue:
+    # https://github.com/python/mypy/issues/5876
     def guess_media(
         self,
         queries: Sequence[str],
-        ranking_func: Callable = rank_guess_media,
+        ranking_func: Callable[..., Optional[Media]] = rank_guess_media,
         *rank_args: Any,
         **rank_kwargs: Any,
-    ) -> List[Union[Movie, TvSeries]]:
+    ) -> List[Optional[Media]]:
         """
         Same as `guess_media_unranked`, but selects the best result using `ranking_func`
         """
         results = self.guess_media_unranked(queries)
 
-        selected = []
+        selected: List[Optional[Media]] = []
         for result, query in zip(results, queries):
             selected.append(ranking_func(result, query, *rank_args, **rank_kwargs))
 
@@ -425,7 +431,7 @@ class AuthSubwinder(Subwinder):
     def search_subtitles(
         self,
         queries: Iterable[SearchQuery],
-        ranking_func: Callable = rank_search_subtitles,
+        ranking_func: Callable[..., Optional[SearchResult]] = rank_search_subtitles,
         *rank_args: Any,
         **rank_kwargs: Any,
     ) -> List[Optional[SearchResult]]:
@@ -442,14 +448,14 @@ class AuthSubwinder(Subwinder):
         groups = self.search_subtitles_unranked(queries)
 
         # And select the best results with the `ranking_func`
-        selected = []
+        selected: List[Optional[SearchResult]] = []
         for group, (query, _) in zip(groups, queries):
             selected.append(ranking_func(group, query, *rank_args, **rank_kwargs))
 
         return selected
 
     def search_subtitles_unranked(
-        self, queries: Sequence[SearchQuery]
+        self, queries: Iterable[SearchQuery]
     ) -> List[List[SearchResult]]:
         """
         Searches for any subtitles that match the provided `queries`. Queries are
@@ -459,10 +465,8 @@ class AuthSubwinder(Subwinder):
         """
         # Verify that all the queries are correct before doing any requests
         type_check(queries, (list, tuple, zip))
-
-        # Expand out the `zip` to a `list`
-        if isinstance(queries, zip):
-            queries = list(queries)
+        # Need to expand out the `zip` if used
+        queries = list(queries)
 
         VALID_CLASSES = (MediaFile, Movie, Episode)
         for query_pair in queries:
@@ -505,7 +509,7 @@ class AuthSubwinder(Subwinder):
         data = self._request(Endpoint.SEARCH_SUBTITLES, internal_queries)["data"]
 
         # Go through the results and organize them in the order of `queries`
-        groups = [[] for _ in internal_queries]
+        groups: List[List[SearchResult]] = [[] for _ in internal_queries]
         for raw_result in data:
             # Results are returned in an arbitrary order so first figure out the query
             query_index = int(raw_result["QueryNumber"])
@@ -586,7 +590,7 @@ class AuthSubwinder(Subwinder):
         type_check(sub_containers, (list, tuple))
 
         # Get the subtitles file_ids from `sub_containers`
-        file_ids = []
+        file_ids: List[str] = []
         for sub_container in sub_containers:
             type_check(sub_container, (SearchResult, Subtitles))
             if isinstance(sub_container, SearchResult):
@@ -600,7 +604,7 @@ class AuthSubwinder(Subwinder):
         data = self._request(Endpoint.PREVIEW_SUBTITLES, ids)["data"]
 
         # Unpack our data
-        previews = []
+        previews: List[str] = []
         for preview in data:
             encoding = preview["encoding"]
             contents = preview["contents"]

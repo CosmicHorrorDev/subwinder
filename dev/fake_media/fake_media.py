@@ -5,15 +5,16 @@ import platform
 import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import List, Optional
 
 
-def _main():
+def main() -> None:
     # TODO: add a warning here
     args = _parse_args()
     fake_media(args.entry_file, args.output_dir, args.entry)
 
 
-def _parse_args():
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-e",
@@ -51,7 +52,11 @@ def _parse_args():
 
 
 # TODO: test that the hashes are right in unit testing
-def fake_media(entry_file=None, output_dir=None, entry_indicies=[]):
+def fake_media(
+    entry_file: Optional[Path] = None,
+    output_dir: Optional[Path] = None,
+    entry_indicies: List[int] = [],
+) -> List[Path]:
     HASH_SIZE = 8
     MAX_HASH = 2 ** (HASH_SIZE * 8) - 1
     MIN_FILE_SIZE = 128 * 1024
@@ -73,7 +78,7 @@ def fake_media(entry_file=None, output_dir=None, entry_indicies=[]):
 
     # Empty `entry_indicies` means all entries
     if len(entry_indicies) == 0:
-        entry_indicies = range(len(entries))
+        entry_indicies = list(range(len(entries)))
 
     # Make sure all entries are within bounds
     for index in entry_indicies:
@@ -189,4 +194,4 @@ def size_on_disk(filepath):
 
 
 if __name__ == "__main__":
-    _main()
+    main()

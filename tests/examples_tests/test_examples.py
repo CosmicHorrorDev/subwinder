@@ -94,7 +94,7 @@ def test_interactive(mock_request, tmp_path):
 # 10. Import the base private portion, or using as to rename
 # TODO: check stdout too?
 @patch("subwinder._request.request")
-def test_adv_quickstart(mock_request, tmp_path):
+def test_adv_quickstart(mock_request, tmp_path: Path):
     # Setup our ideal output directory
     ideal_dir = tmp_path / "ideal"
     ideal_input = ideal_dir / "Input"
@@ -118,7 +118,7 @@ def test_adv_quickstart(mock_request, tmp_path):
 
     # Setup fake media in our test input directory
     input_dir = real_dir / "Input"
-    fake_media(ENTRY_FILE, input_dir, entry_indicies=range(11))
+    fake_media(ENTRY_FILE, input_dir, entry_indicies=list(range(11)))
 
     # Calls to verify against
     search_values = [

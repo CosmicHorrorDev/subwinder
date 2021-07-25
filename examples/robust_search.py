@@ -5,18 +5,18 @@ from typing import List, cast
 
 from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
-from subwinder.types import Searchable
+from subwinder.types import AnyPath, Searchable
 
 
-def main():
+def main() -> None:
     LANG = "en"
     # So let's start off assuming we have two files like in the original Quickstart
-    MEDIA_FILEPATHS = ["/path/to/movie.mkv", "/path/to/episode.avi"]
+    MEDIA_FILEPATHS: List[AnyPath] = ["/path/to/movie.mkv", "/path/to/episode.avi"]
 
     robust_search(LANG, MEDIA_FILEPATHS)
 
 
-def robust_search(lang: str, media_filepaths):
+def robust_search(lang: str, media_filepaths: List[AnyPath]) -> None:
     # Match on a s<num>e<num> snippet for `TvSeries`
     EPISODE_REGEX = re.compile(r"s(\d{1,})e(\d{1,})", re.IGNORECASE)
 

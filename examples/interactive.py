@@ -4,13 +4,13 @@ from datetime import datetime as dt
 from subwinder import AuthSubwinder, info
 
 
-def main():
+def main() -> None:
     # Language of our desired subtitles
     LANG = "en"
     interative(LANG)
 
 
-def interative(lang):
+def interative(lang: str) -> None:
     # Assumes all the credentials are set using environment variables
     with AuthSubwinder() as asw:
         # Give a nice friendly prompt

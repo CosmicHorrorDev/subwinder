@@ -2,7 +2,7 @@
 import json
 from itertools import repeat
 from pathlib import Path
-from typing import cast
+from typing import List, cast
 
 # TODO: can get these imports to work by doing path hacks
 # https://stackoverflow.com/questions/61234609/how-to-import-python-package-from-another-directory
@@ -10,9 +10,10 @@ from subwinder import AuthSubwinder, MediaFile, info
 from subwinder.exceptions import SubHashError
 from subwinder.names import NameFormatter
 from subwinder.ranking import rank_search_subtitles
+from subwinder.types import Lang2
 
 
-def main():
+def main() -> None:
     # Setting up some of the constants for our program
     # Directory that we're scanning from and moving to
     INPUT_DIR = Path("/path/to/input/dir")
@@ -32,7 +33,14 @@ def main():
     )
 
 
-def adv_quickstart(input_dir, output_dir, ledger, lang, author_whitelist, sub_exts):
+def adv_quickstart(
+    input_dir: Path,
+    output_dir: Path,
+    ledger: Path,
+    lang: Lang2,
+    author_whitelist: List[str],
+    sub_exts: List[str],
+) -> None:
     # So now let's get all the files in `INPUT_DIR` as `MediaFile` objects
     print(f"Scanning {input_dir}... ", end="")
     media = []

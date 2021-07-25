@@ -72,14 +72,17 @@ class FullUser(User):
 
     @classmethod
     def from_data(cls, data: ApiDict) -> FullUser:
-        preferred = []
+        user = User.from_data(data)
+        assert user is not None, "`FullUser` will always have user info"
+
+        preferred: List[Lang2] = []
         for lang in data["UserPreferedLanguages"].split(","):
             # Ignore empty string in case of no preferred languages
             if lang:
                 preferred.append(lang_3s.convert(lang, LangFormat.LANG_2))
 
         return cls(
-            **User.from_data(data).__dict__,
+            **user.__dict__,
             rank=data["UserRank"],
             num_uploads=int(data["UploadCnt"]),
             num_downloads=int(data["DownloadCnt"]),
@@ -169,10 +172,6 @@ class Media:
 
         if filename is None or dirname is None:
             return None
-
-        # We know that both the values are `Path`s now
-        filename = cast(Path, filename)
-        dirname = cast(Path, dirname)
 
         return dirname / filename
 

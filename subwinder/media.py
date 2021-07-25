@@ -19,7 +19,7 @@ class MediaFile:
     _dirname: Optional[Path]
     _filename: Optional[Path]
 
-    def __init__(self, filepath: Path) -> None:
+    def __init__(self, filepath: AnyPath) -> None:
         """
         Builds a `MediaFile` object from a local file.
         """

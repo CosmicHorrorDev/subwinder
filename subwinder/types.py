@@ -8,8 +8,6 @@ if TYPE_CHECKING:
 Token = NewType("Token", str)
 
 Lang2 = str
-Lang3 = str
-LangLong = str
 
 Searchable = Union["MediaFile", "Movie", "Episode"]
 SearchQuery = Tuple[Searchable, Lang2]
